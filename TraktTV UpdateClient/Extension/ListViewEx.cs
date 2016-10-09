@@ -180,10 +180,9 @@ namespace TraktTVUpdateClient
         public Control GetEmbeddedControl(ListViewItem item)
         {
             foreach(EmbeddedControl ec in _embeddedControls)
-            {
                 if (ec.Item == item)
                     return ec.Control;
-            }
+
             return null;
         }
 
