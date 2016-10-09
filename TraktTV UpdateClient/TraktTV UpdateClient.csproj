@@ -105,9 +105,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Forms\AuthorizationViewModel\Icons\Authorize.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="Forms\AuthorizationViewModel\Views\AuthorizeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
