@@ -51,15 +51,6 @@ namespace TraktTVUpdateClient
         public async Task Sync(bool NoCache = false)
         {
             if (!NoCache) { await this.Update(); return; }
-            foreach(TraktWatchedShow show in watchedList)
-            {
-                List<Task> taskList = new List<Task>();
-                if(show.Show.Status != TraktShowStatus.Canceled && show.Show.Status != TraktShowStatus.Ended)
-                {
-                    taskList.Add(Task.Run(() => SyncShow(show.Show)));
-                }
-                await Task.WhenAll(taskList);
-            }
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
             if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt > lastRating)
             {
@@ -68,7 +59,7 @@ namespace TraktTVUpdateClient
             }
             if(lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt > lastWatched)
             {
-                var watchedHistory = await getWatchedHistory();
+                /*var watchedHistory = await getWatchedHistory();
                 var distinctShowSlugs = watchedHistory.Select(x => x.Show.Ids.Slug).Distinct();
                 List<Task> taskList = new List<Task>();
                 foreach (string slug in distinctShowSlugs)
@@ -79,6 +70,8 @@ namespace TraktTVUpdateClient
                     }
                 }
                 await Task.WhenAll(taskList);
+                lastWatched = lastActivites.Episodes.WatchedAt.Value;*/
+                await UpdateWatchedShowList();
                 lastWatched = lastActivites.Episodes.WatchedAt.Value;
             }
             OnSyncCompleted();
@@ -124,12 +117,6 @@ namespace TraktTVUpdateClient
             try
             {
                 var newWatchedList = await TraktClient.Sync.GetWatchedShowsAsync(new TraktExtendedInfo().SetFull().SetImages());
-                List<Task> taskList = new List<Task>();
-                foreach (TraktWatchedShow show in newWatchedList.Except(watchedList))
-                {
-                    taskList.Add(Task.Run(() => SyncSeasonOverview(show.Show)));
-                }
-                await Task.WhenAll(taskList);
                 if(watchedList.Count() == 0) { watchedList = newWatchedList; }
                 else
                 {
@@ -170,32 +157,14 @@ namespace TraktTVUpdateClient
             catch (Exception) { return false; }
         }
 
-        private async Task SyncShow(TraktShow show)
-        {
-            show = await TraktClient.Shows.GetShowAsync(show.Ids.Slug, new TraktExtendedInfo().SetFull());
-            await SyncSeasonOverview(show);
-        }
-
-        private async Task SyncSeasonOverview(TraktShow show)
-        {
-            show.Seasons = await TraktClient.Seasons.GetAllSeasonsAsync(show.Ids.Slug, new TraktExtendedInfo().SetFull());
-            foreach (TraktSeason s in show.Seasons)
-            {
-                if (s.Number > 0)
-                {
-                    s.Episodes = await TraktClient.Seasons.GetSeasonAsync(show.Ids.Slug, s.Number.Value, new TraktExtendedInfo().SetFull());
-                }
-            }
-        }
-
-        private async Task SyncShowProgress(TraktShow show)
+        public async Task SyncShowProgress(TraktShow show)
         {
             TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(show.Ids.Slug, false, false, false);
             if (progressList.ContainsKey(show.Ids.Slug)) { progressList.Remove(show.Ids.Slug); }
             progressList.Add(show.Ids.Slug, progress);
         }
 
-        private async Task SyncShowProgress(string showSlug)
+        public async Task SyncShowProgress(string showSlug)
         {
             TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
             if (progressList.ContainsKey(showSlug)) { progressList.Remove(showSlug); }

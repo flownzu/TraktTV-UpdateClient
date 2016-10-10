@@ -204,6 +204,7 @@
             this.nameColumnHeader,
             this.progressColumnHeader,
             this.scoreColumnHeader});
+            this.watchedListView.FullRowSelect = true;
             this.watchedListView.Location = new System.Drawing.Point(12, 168);
             this.watchedListView.MultiSelect = false;
             this.watchedListView.Name = "watchedListView";
