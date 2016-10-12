@@ -38,7 +38,7 @@ namespace TraktTVUpdateClient
         [JsonProperty(PropertyName = "LastWatched")]
         internal DateTime lastWatched { get; set; }
 
-        public event EventHandler SyncCompleted;
+        public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
 
         public Cache(TraktClient Client)
         {
@@ -52,26 +52,16 @@ namespace TraktTVUpdateClient
         {
             if (!NoCache) { await this.Update(); return; }
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
-            if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt > lastRating)
+            if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != lastRating)
             {
                 await UpdateRatingsList();
                 lastRating = lastActivites.Shows.RatedAt.Value;
             }
-            if(lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt > lastWatched)
+            if(lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != lastWatched)
             {
-                /*var watchedHistory = await getWatchedHistory();
-                var distinctShowSlugs = watchedHistory.Select(x => x.Show.Ids.Slug).Distinct();
-                List<Task> taskList = new List<Task>();
-                foreach (string slug in distinctShowSlugs)
-                {
-                    if(watchedList.Where(x => x.Show.Ids.Slug.Equals(slug)).FirstOrDefault() != null)
-                    {
-                        taskList.Add(Task.Run(() => SyncShowProgress(slug)));
-                    }
-                }
-                await Task.WhenAll(taskList);
-                lastWatched = lastActivites.Episodes.WatchedAt.Value;*/
+                var oldWatchedList = watchedList;
                 await UpdateWatchedShowList();
+                await UpdateProgressList();
                 lastWatched = lastActivites.Episodes.WatchedAt.Value;
             }
             OnSyncCompleted();
@@ -79,7 +69,7 @@ namespace TraktTVUpdateClient
 
         protected virtual void OnSyncCompleted()
         {
-            SyncCompleted?.Invoke(this, EventArgs.Empty);
+            SyncCompleted?.Invoke(this, new SyncCompletedEventArgs());
         }
 
         public void Save()
@@ -95,6 +85,7 @@ namespace TraktTVUpdateClient
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
             lastRating = lastActivites.Shows.RatedAt.Value;
             lastWatched = lastActivites.Episodes.WatchedAt.Value;
+            OnSyncCompleted();
         }
 
         public async Task<IEnumerable<TraktHistoryItem>> getWatchedHistory()
@@ -116,12 +107,7 @@ namespace TraktTVUpdateClient
         {
             try
             {
-                var newWatchedList = await TraktClient.Sync.GetWatchedShowsAsync(new TraktExtendedInfo().SetFull().SetImages());
-                if(watchedList.Count() == 0) { watchedList = newWatchedList; }
-                else
-                {
-                    watchedList.Union(newWatchedList.Except(watchedList));
-                }
+                watchedList = await TraktClient.Sync.GetWatchedShowsAsync(new TraktExtendedInfo().SetFull().SetImages());
                 return true;
             }
             catch (Exception) { return false; }
