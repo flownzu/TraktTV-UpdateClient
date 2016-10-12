@@ -17,6 +17,8 @@ using TraktSharp.Examples.Wpf.Views;
 using TraktTVUpdateClient.Extension;
 using TraktTVUpdateClient.Properties;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
+using TraktTVUpdateClient.Forms;
+using System.Collections.Generic;
 
 namespace TraktTVUpdateClient
 {
@@ -26,7 +28,8 @@ namespace TraktTVUpdateClient
         public Cache TraktCache;
         public bool NoCache = true;
 
-        public MainForm() {
+        public MainForm()
+        {
             InitializeComponent();
             Client = new TraktClient(Resources.ClientID, Resources.ClientSecret);
             Client.Authentication.RedirectUri = "app://authorized";
@@ -37,7 +40,6 @@ namespace TraktTVUpdateClient
                 TraktCache.TraktClient = Client;
                 NoCache = false;
             }
-            UpdateListView(true);
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
         }
 
@@ -50,7 +52,8 @@ namespace TraktTVUpdateClient
             return TraktCache == null ? new Cache(Client) : TraktCache;
         }
 
-        public async Task<bool> login() {
+        public async Task<bool> login()
+        {
             var authorizeViewModel = new AuthorizeViewModel(Client);
             var window = new AuthorizeView(authorizeViewModel);
             window.ShowDialog();
@@ -58,8 +61,10 @@ namespace TraktTVUpdateClient
             return Client.Authentication.IsAuthorized;
         }
 
-        private void MainForm_Shown(object sender, EventArgs e) {
+        private void MainForm_Shown(object sender, EventArgs e)
+        {
             StartSTATask(() => loginThread());
+            UpdateListView();
         }
 
         private async void loginThread()
@@ -93,51 +98,21 @@ namespace TraktTVUpdateClient
             return tcs.Task;
         }
 
-        private void UpdateListView(bool programStart = false)
+        private void UpdateListView()
         {
-            lock (this.watchedListView)
+            lock (watchedListView)
             {
-                if (programStart)
+                foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
                 {
-                    foreach(TraktWatchedShow watchedShow in TraktCache.watchedList)
+                    TraktShowWatchedProgress showProgress;
+                    if (TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
                     {
-                        TraktShowWatchedProgress showProgress;
-                        if(TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
-                        {
-                            ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
-                            pb.Value = showProgress.Completed.Value;
-                            var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
-                            int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                            var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
-                            watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach(TraktWatchedShow watchedShow in TraktCache.watchedList)
-                    {
-                        TraktShowWatchedProgress showProgress;
-                        if(TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
-                        {
-                            var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
-                            int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                            var ListViewItem = watchedListView.FindItemWithText(watchedShow.Show.Title);
-                            if(ListViewItem != null)
-                            {
-                                ProgressBar pb = (ProgressBar)watchedListView.GetEmbeddedControl(ListViewItem);
-                                pb.Maximum = showProgress.Aired.Value;
-                                pb.Value = showProgress.Completed.Value;
-                                ListViewItem.SubItems[2].Text = showRating.ToString();
-                            }
-                            else
-                            {
-                                ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
-                                pb.Value = showProgress.Completed.Value;
-                                ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
-                                watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
-                            }
-                        }
+                        ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
+                        pb.Value = showProgress.Completed.Value;
+                        var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
+                        int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
+                        var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
+                        watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
                     }
                 }
             }
@@ -171,8 +146,8 @@ namespace TraktTVUpdateClient
                 TraktShowWatchedProgress progress;
                 if (TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress) && show != null)
                 {
-                    int seasonNumber = progress.Seasons.MaxBy(x => x.Number).Number.Value; //get latest season the user has watched
-                    int episodeNumber = progress.Seasons.MaxBy(x => x.Number).Episodes.MaxBy(x => x.Number).Number.Value; //get latest episode the user has watched of the latest season
+                    int seasonNumber = progress.Seasons.MaxBy(x => x.Number).Number.Value;
+                    int episodeNumber = progress.Seasons.MaxBy(x => x.Number).Episodes.MaxBy(x => x.Number).Number.Value;
                     TraktSyncHistoryRemovePostBuilder historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
                     historyRemoveBuilder.AddEpisode(await Client.Episodes.GetEpisodeAsync(show.Show.Ids.Slug, seasonNumber, episodeNumber));
                     var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
@@ -187,7 +162,8 @@ namespace TraktTVUpdateClient
 
         private void addShowButton_Click(object sender, EventArgs e)
         {
-
+            SearchShowForm searchShowForm = new SearchShowForm(TraktCache);
+            searchShowForm.Show();
         }
 
         private async void updateButton_Click(object sender, EventArgs e)
@@ -289,9 +265,49 @@ namespace TraktTVUpdateClient
             TraktCache.Save();
         }
 
-        private void TraktCache_SyncCompleted(object sender, EventArgs e)
+        private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
         {
-            UpdateListView();
+            foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
+            {
+                TraktShowWatchedProgress showProgress;
+                if (TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
+                {
+                    ListViewItem lvItem = new ListViewItem();
+                    var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
+                    int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
+                    this.Invoke(new Action(() => lvItem = watchedListView.FindItemWithText(watchedShow.Show.Title)));
+                    if (lvItem != null)
+                    {
+                        ProgressBar progressBar = new ProgressBar();
+                        this.Invoke(new Action(() => lvItem.SubItems[2].Text = showRating.ToString()));
+                        this.Invoke(new Action(() => progressBar = watchedListView.GetEmbeddedControl(lvItem).ConvertTo<ProgressBar>()));
+                        this.Invoke(new Action(() => progressBar.Maximum = showProgress.Aired.Value));
+                        this.Invoke(new Action(() => progressBar.Value = showProgress.Completed.Value));
+                    }
+                    else
+                    {
+                        ProgressBar progressBar = new ProgressBar() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value };
+                        this.Invoke(new Action(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }))));
+                        this.Invoke(new Action(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0)));
+                    }
+                }
+            }
+            List<ListViewItem> removeList = new List<ListViewItem>();
+            for (int i = 0; i < watchedListView.Items.Count; i++)
+            {
+                TraktWatchedShow show = null;
+                string showTitle = string.Empty;
+                this.Invoke(new Action(() => showTitle = watchedListView.Items[i].Text));
+                this.Invoke(new Action(() => show = TraktCache.watchedList.Where(x => x.Show.Title.Equals(showTitle)).FirstOrDefault()));
+                if(show == null)
+                {
+                    ListViewItem lvItem = new ListViewItem();
+                    this.Invoke(new Action(() => lvItem = watchedListView.Items[i]));
+                    if (lvItem != default(ListViewItem)) removeList.Add(lvItem);
+                }
+            }
+            foreach (ListViewItem lvItem in removeList)
+                this.Invoke(new Action(() => watchedListView.Items.Remove(lvItem)));
         }
     }
 }

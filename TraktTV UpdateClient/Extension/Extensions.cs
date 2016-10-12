@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using TraktApiSharp.Authentication;
 
 namespace TraktTVUpdateClient.Extension
@@ -31,6 +33,15 @@ namespace TraktTVUpdateClient.Extension
                 }
             }
             return new string(array);
+        }
+
+        public static T ConvertTo<T>(this Control c)
+        {
+            try
+            {
+                return (T)Convert.ChangeType(c, typeof(T));
+            }
+            catch (Exception) { return default(T); }
         }
 
         public static void Forget(this Task t) { }
