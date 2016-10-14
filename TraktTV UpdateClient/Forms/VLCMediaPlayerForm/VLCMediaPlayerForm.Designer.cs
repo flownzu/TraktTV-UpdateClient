@@ -87,9 +87,7 @@
             this.vlcControl.PositionChanged += new System.EventHandler<Vlc.DotNet.Core.VlcMediaPlayerPositionChangedEventArgs>(this.vlcControl_PositionChanged);
             this.vlcControl.TimeChanged += new System.EventHandler<Vlc.DotNet.Core.VlcMediaPlayerTimeChangedEventArgs>(this.vlcControl_TimeChanged);
             this.vlcControl.Stopped += new System.EventHandler<Vlc.DotNet.Core.VlcMediaPlayerStoppedEventArgs>(this.vlcControl_Stopped);
-            this.vlcControl.DoubleClick += new System.EventHandler(this.vlcControl_DoubleClick);
             this.vlcControl.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.vlcControl_KeyPress);
-            this.vlcControl.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.vlcControl_MouseDoubleClick);
             // 
             // menuStrip1
             // 
@@ -316,9 +314,10 @@
             this.currentlyPlayingLabel.AutoSize = true;
             this.currentlyPlayingLabel.Location = new System.Drawing.Point(61, 558);
             this.currentlyPlayingLabel.Name = "currentlyPlayingLabel";
-            this.currentlyPlayingLabel.Size = new System.Drawing.Size(239, 13);
+            this.currentlyPlayingLabel.Size = new System.Drawing.Size(94, 13);
             this.currentlyPlayingLabel.TabIndex = 9;
-            this.currentlyPlayingLabel.Text = "Currently Playing:  [Test dafsdfasjkdfa titltejaksdjf]";
+            this.currentlyPlayingLabel.Text = "Currently Playing:  ";
+            this.currentlyPlayingLabel.DoubleClick += new System.EventHandler(this.currentlyPlayingLabel_DoubleClick);
             // 
             // currentPlayTimeSlider
             // 
@@ -332,6 +331,7 @@
             this.currentPlayTimeSlider.SmartLockAmount = 1;
             this.currentPlayTimeSlider.SmartLockingFlags = ((TraktTVUpdateClient.SmartLocking)((TraktTVUpdateClient.SmartLocking.Left | TraktTVUpdateClient.SmartLocking.Middle)));
             this.currentPlayTimeSlider.TabIndex = 6;
+            this.currentPlayTimeSlider.ValueChanged += new System.EventHandler(this.currentPlayTimeSlider_ValueChanged);
             this.currentPlayTimeSlider.MouseClick += new System.Windows.Forms.MouseEventHandler(this.currentPlayTimeSlider_MouseClick);
             // 
             // VLCMediaPlayerForm
@@ -353,7 +353,6 @@
             this.Name = "VLCMediaPlayerForm";
             this.Text = "Media Player";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.VLCMediaPlayerForm_FormClosing);
-            this.SizeChanged += new System.EventHandler(this.VLCMediaPlayerForm_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.vlcControl)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

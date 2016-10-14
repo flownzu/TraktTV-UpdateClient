@@ -21,7 +21,8 @@ namespace TraktTVUpdateClient
         private BufferedGraphics _bufGraphics;
         private Rectangle _knobRect;
         private int _lastX;
-        private bool _isMouseOverSlider, _draggingKnob;
+        private bool _isMouseOverSlider;
+        public bool _draggingKnob;
 
         public Slider()
         {

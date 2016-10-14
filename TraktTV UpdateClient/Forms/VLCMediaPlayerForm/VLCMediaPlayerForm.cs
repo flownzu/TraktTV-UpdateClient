@@ -45,16 +45,6 @@ namespace TraktTVUpdateClient.Forms.VLCMediaPlayerForm
 
         }
 
-        private void vlcControl_DoubleClick(object sender, EventArgs e)
-        {
-
-        }
-
-        private void vlcControl_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            
-        }
-
         private void vlcControl_MediaChanged(object sender, VlcMediaPlayerMediaChangedEventArgs e)
         {
 
@@ -72,7 +62,8 @@ namespace TraktTVUpdateClient.Forms.VLCMediaPlayerForm
 
         private void vlcControl_EncounteredError(object sender, VlcMediaPlayerEncounteredErrorEventArgs e)
         {
-
+            MessageBox.Show("The VLC control encountered an error...the player will now shutdown.");
+            this.Close();
         }
 
         private void vlcControl_PositionChanged(object sender, VlcMediaPlayerPositionChangedEventArgs e)
@@ -80,26 +71,24 @@ namespace TraktTVUpdateClient.Forms.VLCMediaPlayerForm
 
         }
 
-        private void VLCMediaPlayerForm_SizeChanged(object sender, EventArgs e)
-        {
-            ResizeVLCControl();
-        }
-
-        private void ResizeVLCControl()
-        {
-
-        }
-
         private void playButton_Click(object sender, EventArgs e)
         {
-            if (!vlcControl.IsPlaying)
+            if (vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.NothingSpecial)
             {
                 vlcControl.Play(new FileInfo(@"L:\VLC Remote Test\Breaking Bad\TestDatei S05E04.flv"));
                 vlcControl.Audio.Volume = volumeProgressBar.Value;
             }
-            else
+            else if (vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Playing)
             {
-                vlcControl.Time += 10000;
+                vlcControl.Pause();
+            }
+            else if (vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Paused)
+            {
+                vlcControl.Play();
+            }
+            else if (vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Stopped || vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Ended)
+            {
+                vlcControl.Play(vlcControl.GetCurrentMedia().Mrl);
             }
         }
 
@@ -117,12 +106,13 @@ namespace TraktTVUpdateClient.Forms.VLCMediaPlayerForm
         private void vlcControl_LengthChanged(object sender, VlcMediaPlayerLengthChangedEventArgs e)
         {
             maximumPlaytimeLabel.InvokeIfRequired(l => l.Text = new DateTime(new TimeSpan((long)e.NewLength).Ticks).ToString("T"));
+            currentPlayTimeSlider.InvokeIfRequired(s => s.Maximum = (int)(e.NewLength/10000));
         }
 
         private void vlcControl_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
             currentPlaytimeLabel.InvokeIfRequired(l => l.Text = new DateTime(new TimeSpan((long)e.NewTime).Ticks * 10000).ToString("T"));
-            if(e.NewTime != 0) currentPlayTimeSlider.InvokeIfRequired(s => s.Percent = ((float)e.NewTime / (float)vlcControl.Length));
+            currentPlayTimeSlider.InvokeIfRequired(s => s.Value = (int)e.NewTime);
         }
 
         private void currentPlayTimeSlider_MouseClick(object sender, MouseEventArgs e)
@@ -148,8 +138,44 @@ namespace TraktTVUpdateClient.Forms.VLCMediaPlayerForm
 
         private void VLCMediaPlayerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            vlcControl.Dispose();
+            DisposeVLC();
             this.Dispose();
+        }
+
+        private void currentPlayTimeSlider_ValueChanged(object sender, EventArgs e)
+        {
+            if ((sender as Slider)._draggingKnob)
+            {
+                float percent = ((float)currentPlayTimeSlider.KnobX / (float)currentPlayTimeSlider.Width);
+                if (vlcControl.State != Vlc.DotNet.Core.Interops.Signatures.MediaStates.Error && vlcControl.State != Vlc.DotNet.Core.Interops.Signatures.MediaStates.Buffering)
+                {
+                    if (vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Stopped || vlcControl.State == Vlc.DotNet.Core.Interops.Signatures.MediaStates.Ended)
+                    {
+                        vlcControl.Play(vlcControl.GetCurrentMedia().Mrl);
+                        vlcControl.Position = percent;
+                    }
+                    else
+                    {
+                        if (vlcControl.Length > 0)
+                        {
+                            vlcControl.Position = percent;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DisposeVLC()
+        {
+            vlcControl.Position = 1f;
+            this.Controls.Remove(vlcControl);
+            GC.SuppressFinalize(vlcControl);
+            vlcControl = null;
+        }
+
+        private void currentlyPlayingLabel_DoubleClick(object sender, EventArgs e)
+        {
+            vlcControl.GoFullScreen();
         }
     }
 }
