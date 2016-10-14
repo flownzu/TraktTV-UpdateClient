@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp.Authentication;
@@ -42,6 +43,25 @@ namespace TraktTVUpdateClient.Extension
                 return (T)Convert.ChangeType(c, typeof(T));
             }
             catch (Exception) { return default(T); }
+        }
+
+        public static TimeSpan ToTimeSpan(this float timeStamp)
+        {
+            return new TimeSpan(ticks: (long)timeStamp);
+        }
+
+        public static T InvokeIfRequired<T>(this T source, Action<T> action)
+            where T : Control
+        {
+            try
+            {
+                if (!source.InvokeRequired)
+                    action(source);
+                else
+                    source.Invoke(new Action(() => action(source)));
+            }
+            catch (Exception ex) { Debug.Write(ex.Message); return default(T); }
+            return source;
         }
 
         public static void Forget(this Task t) { }

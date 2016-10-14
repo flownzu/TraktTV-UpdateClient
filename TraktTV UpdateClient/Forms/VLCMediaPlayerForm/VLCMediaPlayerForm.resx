@@ -117,16 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ClientID" xml:space="preserve">
-    <value>12491a73bfaea1f053409d59bc13286220b8f7c8f30c5f2c8b7a5f48d0cb8eec</value>
-    <comment>TraktAPI ClientID</comment>
-  </data>
-  <data name="ClientSecret" xml:space="preserve">
-    <value>501e30e23785a4321e39f6c5e405f1e94f94cf611af9576ec59b0d463a416b42</value>
-    <comment>TraktAPI ClientSecret</comment>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="SliderKnob" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SliderKnob.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="currentPlayTimeSlider.KnobImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        Qk0CAQAAAAAAADYAAAAoAAAAAwAAABEAAAABABgAAAAAAAAAAADEDgAAxA4AAAAAAAAAAAAAqampqamp
+        qampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqamp
+        qampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqamp
+        qampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqampqampAAAAqampqamp
+        qampAAAAqampqampqampAAAA
+</value>
   </data>
 </root>
