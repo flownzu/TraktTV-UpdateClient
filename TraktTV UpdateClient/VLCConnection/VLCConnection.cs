@@ -19,7 +19,9 @@ namespace TraktTVUpdateClient
         public VLCConnection(int _port)
         {
             client = new TcpClient();
-            client.Connect("localhost", 2150);            
+            port = _port;
+
+            client.Connect("localhost", port);
             writeStream = new StreamWriter(client.GetStream());
             read();
         }
