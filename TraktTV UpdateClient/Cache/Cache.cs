@@ -51,6 +51,7 @@ namespace TraktTVUpdateClient
         public async Task Sync(bool NoCache = false)
         {
             if (!NoCache) { await this.Update(); return; }
+            await UpdateProgressList();
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
             if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != lastRating)
             {
