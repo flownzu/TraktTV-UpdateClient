@@ -47,6 +47,7 @@
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.settingButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -230,11 +231,22 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
+            // settingButton
+            // 
+            this.settingButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Settings;
+            this.settingButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.settingButton.Location = new System.Drawing.Point(499, 3);
+            this.settingButton.Name = "settingButton";
+            this.settingButton.Size = new System.Drawing.Size(32, 32);
+            this.settingButton.TabIndex = 17;
+            this.settingButton.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 388);
+            this.Controls.Add(this.settingButton);
             this.Controls.Add(this.addShowButton);
             this.Controls.Add(this.connectStatusLabel);
             this.Controls.Add(this.updateButton);
@@ -282,6 +294,7 @@
         private System.Windows.Forms.ColumnHeader scoreColumnHeader;
         private System.Windows.Forms.Label connectStatusLabel;
         private System.Windows.Forms.Button addShowButton;
+        private System.Windows.Forms.Button settingButton;
     }
 }
 

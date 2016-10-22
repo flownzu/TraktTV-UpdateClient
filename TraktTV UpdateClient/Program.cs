@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TraktTVUpdateClient.Forms.VLCMediaPlayerForm;
+using TraktTVUpdateClient.Forms.VLCConnectForm;
 
 namespace TraktTVUpdateClient
 {
@@ -17,8 +17,7 @@ namespace TraktTVUpdateClient
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new MainForm());
-            Application.Run(new VLCMediaPlayerForm());
+            Application.Run(new MainForm());
         }
     }
 }

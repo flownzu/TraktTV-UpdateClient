@@ -181,6 +181,12 @@
     <Compile Include="Forms\SearchShowForm\SearchShowForm.Designer.cs">
       <DependentUpon>SearchShowForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\VLCConnectForm\VLCConnectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VLCConnectForm\VLCConnectForm.Designer.cs">
+      <DependentUpon>VLCConnectForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\VLCMediaPlayerForm\VLCMediaPlayerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -195,11 +201,15 @@
     <Compile Include="Forms\AuthorizationViewModel\Views\AuthorizeView.xaml.cs">
       <DependentUpon>AuthorizeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VLCConnection\VLCConnection.cs" />
     <EmbeddedResource Include="Forms\MainForm\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SearchShowForm\SearchShowForm.resx">
       <DependentUpon>SearchShowForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\VLCConnectForm\VLCConnectForm.resx">
+      <DependentUpon>VLCConnectForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\VLCMediaPlayerForm\VLCMediaPlayerForm.resx">
       <DependentUpon>VLCMediaPlayerForm.cs</DependentUpon>
@@ -239,6 +249,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\SliderKnob.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Settings.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

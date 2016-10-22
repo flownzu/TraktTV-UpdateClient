@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp;
-using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Objects.Post.Syncs.History;
@@ -204,7 +203,7 @@ namespace TraktTVUpdateClient
         {
             if(watchedListView.SelectedItems.Count == 1)
             {
-                Process.Start("http://www.trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug);
+                Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug);
             }
         }
 
