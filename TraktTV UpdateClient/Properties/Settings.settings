@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TraktTVUpdateClient.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="VLCPort" Description="The port to connect to the VLC Interface." Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2150</Value>
+    </Setting>
+    <Setting Name="WatchedPercent" Description="The progress in percent where the program will add the currently playing Episode to the watched list." Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.9</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
