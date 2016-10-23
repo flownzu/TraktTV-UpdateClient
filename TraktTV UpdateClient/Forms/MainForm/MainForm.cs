@@ -25,7 +25,10 @@ namespace TraktTVUpdateClient
     {
         public TraktClient Client;
         public Cache TraktCache;
+        public VLCConnection vlcClient;
         public bool NoCache = true;
+
+        private SettingsForm settingsForm;
 
         public MainForm()
         {
@@ -40,6 +43,9 @@ namespace TraktTVUpdateClient
                 NoCache = false;
             }
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
+            Thread vlcConnectionThread = new Thread(waitForVLCConnection);
+            vlcConnectionThread.IsBackground = true;
+            vlcConnectionThread.Start();
         }
 
         public Cache LoadCache(string cacheFile = "cache.json")
@@ -49,6 +55,36 @@ namespace TraktTVUpdateClient
                 using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<Cache>(sr.ReadToEnd()); }
             }
             return TraktCache == null ? new Cache(Client) : TraktCache;
+        }
+
+        public void waitForVLCConnection()
+        {
+            while (true)
+            {
+                if(Process.GetProcessesByName("vlc").Count() > 0)
+                {
+                    try
+                    {
+                        vlcClient = new VLCConnection(Settings.Default.VLCPort);
+                    }
+                    catch(Exception e) { }
+                }
+                if(vlcClient != null && vlcClient.client.Connected) { break; }
+                Thread.Sleep(100);
+            }
+            vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
+            vlcClient.ConnectionLost += OnConnectionToVLCLost;
+            Thread vlcThread = new Thread(vlcClient.ConnectionThread);
+            vlcThread.IsBackground = true;
+            vlcThread.Start();
+        }
+
+        public void OnConnectionToVLCLost(object sender, EventArgs e)
+        {
+            vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: not connected"));
+            Thread vlcConnectionThread = new Thread(waitForVLCConnection);
+            vlcConnectionThread.IsBackground = true;
+            vlcConnectionThread.Start();
         }
 
         public async Task<bool> login()
@@ -72,7 +108,7 @@ namespace TraktTVUpdateClient
             {
                 await login();
             } while (Client.Authentication.IsAuthorized == false);
-            connectStatusLabel.Invoke(new MethodInvoker(() => connectStatusLabel.Text = connectStatusLabel.Text.Replace("not ", "")));
+            traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync(NoCache)).Forget();
             NoCache = !NoCache;
         }
@@ -307,6 +343,19 @@ namespace TraktTVUpdateClient
             }
             foreach (ListViewItem lvItem in removeList)
                 this.Invoke(new Action(() => watchedListView.Items.Remove(lvItem)));
+        }
+
+        private void settingButton_Click(object sender, EventArgs e)
+        {
+            if (settingsForm == null || settingsForm.IsDisposed)
+            {
+                settingsForm = new SettingsForm();
+                settingsForm.Show();
+            }
+            else
+            {
+                settingsForm.Focus();
+            }
         }
     }
 }

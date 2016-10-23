@@ -41,13 +41,14 @@
             this.scoreLabel = new System.Windows.Forms.Label();
             this.scoreComboBox = new System.Windows.Forms.ComboBox();
             this.updateButton = new System.Windows.Forms.Button();
-            this.connectStatusLabel = new System.Windows.Forms.Label();
+            this.traktConnectStatusLabel = new System.Windows.Forms.Label();
             this.addShowButton = new System.Windows.Forms.Button();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.settingButton = new System.Windows.Forms.Button();
+            this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -180,14 +181,14 @@
             this.updateButton.UseVisualStyleBackColor = true;
             this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
             // 
-            // connectStatusLabel
+            // traktConnectStatusLabel
             // 
-            this.connectStatusLabel.AutoSize = true;
-            this.connectStatusLabel.Location = new System.Drawing.Point(119, 149);
-            this.connectStatusLabel.Name = "connectStatusLabel";
-            this.connectStatusLabel.Size = new System.Drawing.Size(151, 13);
-            this.connectStatusLabel.TabIndex = 15;
-            this.connectStatusLabel.Text = "trakt.tv Status:  not connected";
+            this.traktConnectStatusLabel.AutoSize = true;
+            this.traktConnectStatusLabel.Location = new System.Drawing.Point(119, 129);
+            this.traktConnectStatusLabel.Name = "traktConnectStatusLabel";
+            this.traktConnectStatusLabel.Size = new System.Drawing.Size(151, 13);
+            this.traktConnectStatusLabel.TabIndex = 15;
+            this.traktConnectStatusLabel.Text = "trakt.tv Status:  not connected";
             // 
             // addShowButton
             // 
@@ -240,15 +241,26 @@
             this.settingButton.Size = new System.Drawing.Size(32, 32);
             this.settingButton.TabIndex = 17;
             this.settingButton.UseVisualStyleBackColor = true;
+            this.settingButton.Click += new System.EventHandler(this.settingButton_Click);
+            // 
+            // vlcConnectStatusLabel
+            // 
+            this.vlcConnectStatusLabel.AutoSize = true;
+            this.vlcConnectStatusLabel.Location = new System.Drawing.Point(118, 149);
+            this.vlcConnectStatusLabel.Name = "vlcConnectStatusLabel";
+            this.vlcConnectStatusLabel.Size = new System.Drawing.Size(138, 13);
+            this.vlcConnectStatusLabel.TabIndex = 18;
+            this.vlcConnectStatusLabel.Text = "VLC Status:  not connected";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 388);
+            this.Controls.Add(this.vlcConnectStatusLabel);
             this.Controls.Add(this.settingButton);
             this.Controls.Add(this.addShowButton);
-            this.Controls.Add(this.connectStatusLabel);
+            this.Controls.Add(this.traktConnectStatusLabel);
             this.Controls.Add(this.updateButton);
             this.Controls.Add(this.scoreComboBox);
             this.Controls.Add(this.scoreLabel);
@@ -292,9 +304,10 @@
         private System.Windows.Forms.ColumnHeader nameColumnHeader;
         private System.Windows.Forms.ColumnHeader progressColumnHeader;
         private System.Windows.Forms.ColumnHeader scoreColumnHeader;
-        private System.Windows.Forms.Label connectStatusLabel;
+        private System.Windows.Forms.Label traktConnectStatusLabel;
         private System.Windows.Forms.Button addShowButton;
         private System.Windows.Forms.Button settingButton;
+        private System.Windows.Forms.Label vlcConnectStatusLabel;
     }
 }
 
