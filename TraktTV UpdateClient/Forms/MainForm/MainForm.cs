@@ -75,7 +75,7 @@ namespace TraktTVUpdateClient
                     {
                         vlcClient = new VLCConnection(Settings.Default.VLCPort);
                     }
-                    catch(Exception e) { }
+                    catch(Exception) { }
                 }
                 if(vlcClient != null && vlcClient.Connected) { break; }
                 Thread.Sleep(100);
