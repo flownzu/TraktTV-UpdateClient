@@ -9,27 +9,24 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TraktTVUpdateClient
+namespace TraktTVUpdateClient.VLC
 {
     public class VLCConnection
     {
-        public int port { get; set; }
-        public TcpClient client { get; set; }        
-        public StreamWriter writeStream { get; set; }
+        public VLCMediaItem CurrentMediaItem = new VLCMediaItem();
+        public bool Connected { get { return client.Connected; } }
 
         public EventHandler ConnectionLost;
-        public EventHandler MediaItemChanged;
+        public EventHandler<MediaItemChangedEventArgs> MediaItemChanged;
         public EventHandler PlaybackPaused;
         public EventHandler PlaybackResumed;
         public EventHandler PlaybackStopped;
         public EventHandler WatchedPercentReached;
 
-        private string CurrentMediaItem = String.Empty;
-        private string CurrentMediaTitle = String.Empty;
-        private string CurrentMediaState = String.Empty;
-        private uint CurrentMediaLength = 0;
-        private bool CurrentMediaWatchedPercentReached = false;
-        
+        private int port { get; set; }
+        private StreamWriter writeStream { get; set; }
+        private TcpClient client { get; set; }
+
         public VLCConnection(int _port)
         {
             client = new TcpClient();
@@ -42,22 +39,16 @@ namespace TraktTVUpdateClient
 
         protected virtual void OnConnectionLost()
         {
-            CurrentMediaItem = String.Empty;
-            CurrentMediaTitle = String.Empty;
-            CurrentMediaState = String.Empty;
-            CurrentMediaLength = 0;
-            CurrentMediaWatchedPercentReached = false;
+            CurrentMediaItem = null;
             ConnectionLost?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void OnMediaItemChanged()
+        protected virtual void OnMediaItemChanged(string mediaItem)
         {
-            CurrentMediaItem = String.Empty;
-            CurrentMediaTitle = String.Empty;
-            CurrentMediaState = String.Empty;
-            CurrentMediaLength = 0;
-            CurrentMediaWatchedPercentReached = false;
-            MediaItemChanged?.Invoke(this, EventArgs.Empty);
+            CurrentMediaItem.Path = mediaItem;
+            CurrentMediaItem.State = String.Empty;
+            CurrentMediaItem.WatchedPercentReached = false;
+            MediaItemChanged?.Invoke(this, new MediaItemChangedEventArgs(CurrentMediaItem));
         }
 
         protected virtual void OnPlaybackPaused()
@@ -77,7 +68,7 @@ namespace TraktTVUpdateClient
 
         protected virtual void OnWatchedPercentReached()
         {
-            CurrentMediaWatchedPercentReached = true;
+            CurrentMediaItem.WatchedPercentReached = true;
             WatchedPercentReached?.Invoke(this, EventArgs.Empty);
         }
 
@@ -107,6 +98,20 @@ namespace TraktTVUpdateClient
             return String.Empty;
         }
 
+        private async Task UpdateCurrentMediaLength()
+        {
+            await write("get_length");
+            string getLengthResponse = await read();
+            if (!String.IsNullOrEmpty(getLengthResponse.Trim()) && !String.IsNullOrWhiteSpace(getLengthResponse.Trim())) { UInt32.TryParse(getLengthResponse.Trim(), out CurrentMediaItem.Length); }
+        }
+
+        private async Task UpdateCurrentMediaTitle()
+        {
+            await write("get_title");
+            string getTitleResponse = await read();
+            if (!String.IsNullOrEmpty(getTitleResponse.Trim())) { CurrentMediaItem.Title = getTitleResponse.Trim(); }
+        }
+
         public async void ConnectionThread()
         {
             while (client.Connected)
@@ -117,38 +122,33 @@ namespace TraktTVUpdateClient
                     string statusResponse = await read();
                     await write("get_time");
                     string getTimeResponse = await read();
-                    if (CurrentMediaLength == 0)
+                    if (CurrentMediaItem.Length == 0)
                     {
-                        await write("get_length");
-                        string getLengthResponse = await read();
-                        if (!String.IsNullOrEmpty(getLengthResponse.Trim()) && !String.IsNullOrWhiteSpace(getLengthResponse.Trim())) { UInt32.TryParse(getLengthResponse.Trim(), out CurrentMediaLength); }
+                        await UpdateCurrentMediaLength();
                     }
 
                     Match m = Regex.Match(statusResponse, @"new input\: (.*) \)(?:[\S\s].*){3}state (\w+)");
                     if (m.Success)
                     {
                         string MediaItem = m.Groups[1].Value;
-                        if (!CurrentMediaItem.Equals(MediaItem))
+                        if (!CurrentMediaItem.Path.Equals(MediaItem))
                         {
-                            Debug.WriteLine("Current Media: " + CurrentMediaItem + Environment.NewLine + "New Media: " + MediaItem);
-                            OnMediaItemChanged();
-                            CurrentMediaItem = MediaItem;
-                            await write("get_title");
-                            string getTitleResponse = await read();
-                            if (!String.IsNullOrEmpty(getTitleResponse)) { CurrentMediaTitle = getTitleResponse; }
+                            await UpdateCurrentMediaTitle();
+                            await UpdateCurrentMediaLength();
+                            OnMediaItemChanged(MediaItem);
                         }
                         string MediaState = m.Groups[2].Value;
-                        if (CurrentMediaState.Equals(String.Empty)) { CurrentMediaState = MediaState; }
+                        if (CurrentMediaItem.State.Equals(String.Empty)) { CurrentMediaItem.State = MediaState; }
                         else
                         {
-                            if (!CurrentMediaState.Equals(MediaState))
+                            if (!CurrentMediaItem.State.Equals(MediaState))
                             {
-                                CurrentMediaState = MediaState;
-                                if (CurrentMediaState.Equals("playing"))
+                                CurrentMediaItem.State = MediaState;
+                                if (CurrentMediaItem.State.Equals("playing"))
                                 {
                                     OnPlaybackResumed();
                                 }
-                                else if (CurrentMediaState.Equals("paused"))
+                                else if (CurrentMediaItem.State.Equals("paused"))
                                 {
                                     OnPlaybackPaused();
                                 }
@@ -159,17 +159,17 @@ namespace TraktTVUpdateClient
                     {
                         if (statusResponse.Contains("state stopped"))
                         {
-                            CurrentMediaState = "stopped";
+                            CurrentMediaItem.State = "stopped";
                             OnPlaybackStopped();
                         }
                     }
 
-                    if(!String.IsNullOrWhiteSpace(getTimeResponse) && CurrentMediaLength > 0)
+                    if(!String.IsNullOrWhiteSpace(getTimeResponse) && CurrentMediaItem.Length > 0)
                     {
                         uint currentTime = 0;
                         UInt32.TryParse(getTimeResponse.Trim(), out currentTime);
-                        float watchedPercent = (float)currentTime / (float)CurrentMediaLength;
-                        if(!CurrentMediaWatchedPercentReached && watchedPercent >= Properties.Settings.Default.WatchedPercent)
+                        float watchedPercent = (float)currentTime / (float)CurrentMediaItem.Length;
+                        if(!CurrentMediaItem.WatchedPercentReached && watchedPercent >= Properties.Settings.Default.WatchedPercent)
                         {
                             OnWatchedPercentReached();
                         }
