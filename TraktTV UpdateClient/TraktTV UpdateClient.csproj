@@ -145,18 +145,6 @@
       <HintPath>..\packages\TraktApiSharp.0.5.1\lib\portable-net45+netcore45+wpa81\TraktApiSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Vlc.DotNet.Core, Version=2014.10.15.0, Culture=neutral, PublicKeyToken=84529da31f4eb963, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\32bit\Vlc.DotNet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Vlc.DotNet.Core.Interops, Version=2014.10.15.0, Culture=neutral, PublicKeyToken=84529da31f4eb963, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\32bit\Vlc.DotNet.Core.Interops.dll</HintPath>
-    </Reference>
-    <Reference Include="Vlc.DotNet.Forms, Version=2014.10.15.0, Culture=neutral, PublicKeyToken=84529da31f4eb963, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\32bit\Vlc.DotNet.Forms.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -193,12 +181,6 @@
     <Compile Include="Forms\VLCConnectForm\VLCConnectForm.Designer.cs">
       <DependentUpon>VLCConnectForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\VLCMediaPlayerForm\VLCMediaPlayerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\VLCMediaPlayerForm\VLCMediaPlayerForm.Designer.cs">
-      <DependentUpon>VLCMediaPlayerForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Forms\AuthorizationViewModel\NativeMethods.cs" />
@@ -226,9 +208,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\VLCConnectForm\VLCConnectForm.resx">
       <DependentUpon>VLCConnectForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\VLCMediaPlayerForm\VLCMediaPlayerForm.resx">
-      <DependentUpon>VLCMediaPlayerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -274,11 +253,21 @@
     <None Include="Resources\Settings.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <MergeAssemblies Include="$(OutputPath)\$(AssemblyName).exe" />
+      <MergeAssemblies Include="$(OutputPath)\MoreLinq.dll" />
+      <MergeAssemblies Include="$(OutputPath)\Newtonsoft.Json.dll" />
+      <MergeAssemblies Include="$(OutputPath)\TraktApiSharp.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <OutputAssembly>$(SolutionDir)\out\$(AssemblyName).exe</OutputAssembly>
+      <Merger Condition="('$(OS)' == 'Windows_NT')">"$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe"</Merger>
+      <Merger Condition="('$(OS)' != 'Windows_NT')">mono --runtime=v4.0.30319 "$(SolutionDir)\packages\ILRepack.2.0.12\tools\ILRepack.exe"</Merger>
+    </PropertyGroup>
+    <Message Text="MERGING: @(MergeAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
+    <Exec Command="$(Merger) /out:&quot;$(OutputAssembly)&quot; @(MergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
   </Target>
-  -->
 </Project>
