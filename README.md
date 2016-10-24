@@ -10,9 +10,10 @@ Add ratings to watched shows.
 
 Search for new shows to add to your watched list.
 
-To Do List:
+Basic functionality:
 
-Enable VLC compatibility -> the Client will automatically update your watched list with episodes you watch with VLC ~~either~~ by
-communicating with the VLC TCP Interface ~~or straight up initializing VLC instances with VLC.DotNet...I haven't decided yet~~.
+Connecting and re-connecting to VLC. Upon playing a new video file in VLC the program will recognize the file name that is played and will try to recognize the show name and search for it on trakt.tv (searches for up to 15 entries, I'm still debating with myself whether this value will be customizable for the user) and pick the one that is the most similar to the recognized show title. After that it will wait until a certain play percent is reached (defaults to 90% but fully customizable down to 50%) and add the recognized episode to your watched list.
 
-**Will definitely work with the dodgy TCP interface of VLC since my dream of using VLC.DotNet got crushed by not being able to toggle fullscreen video and not being able to capture mouse events when the video is playing. I will not remove it from this project in case this stuff gets fixed (I certainly tried but couldn't)**
+This will currently only work if the file you are watching is following the naming standards of most file sharing sites (eg. The.Night.Of.S01E01.720p.WEB-DL.DD5.1.H.264-NTb.mkv). 
+
+**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
