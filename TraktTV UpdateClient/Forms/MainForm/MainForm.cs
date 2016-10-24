@@ -18,6 +18,12 @@ using TraktTVUpdateClient.Properties;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
 using TraktTVUpdateClient.Forms;
 using System.Collections.Generic;
+using TraktApiSharp.Objects.Get.Shows.Episodes;
+using TraktTVUpdateClient.VLC;
+using System.Text.RegularExpressions;
+using TraktApiSharp.Enums;
+using TraktApiSharp.Requests.Params;
+using TraktApiSharp.Objects.Basic;
 
 namespace TraktTVUpdateClient
 {
@@ -26,6 +32,8 @@ namespace TraktTVUpdateClient
         public TraktClient Client;
         public Cache TraktCache;
         public VLCConnection vlcClient;
+        public TraktShow CurrentShow;
+        public TraktEpisode CurrentEpisode;
         public bool NoCache = true;
 
         private SettingsForm settingsForm;
@@ -69,17 +77,75 @@ namespace TraktTVUpdateClient
                     }
                     catch(Exception e) { }
                 }
-                if(vlcClient != null && vlcClient.client.Connected) { break; }
+                if(vlcClient != null && vlcClient.Connected) { break; }
                 Thread.Sleep(100);
             }
             vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
-            vlcClient.ConnectionLost += OnConnectionToVLCLost;
+            vlcClient.ConnectionLost += vlcClient_ConnectionLost;
+            vlcClient.WatchedPercentReached += vlcClient_WatchedPercentReached;
+            vlcClient.MediaItemChanged += vlcClient_MediaItemChanged;
             Thread vlcThread = new Thread(vlcClient.ConnectionThread);
             vlcThread.IsBackground = true;
             vlcThread.Start();
         }
 
-        public void OnConnectionToVLCLost(object sender, EventArgs e)
+        private async void vlcClient_MediaItemChanged(object sender, MediaItemChangedEventArgs e)
+        {
+            await GetShowAndEpisodeFromMediaItem(e.MediaItem);
+        }
+
+        private async Task GetShowAndEpisodeFromMediaItem(VLCMediaItem mediaItem)
+        {
+            string fileName = Regex.Match(mediaItem.Path, @".*\/(.*)").Groups[1].Value;
+            Match m = Regex.Match(fileName, @"(.*)[sS](\d+)[eE](\d+)");
+            if (m.Success)
+            {
+                string showName = m.Groups[1].Value.Replace('.', ' ').Trim(); //replace dots in show name with spaces and remove any whitespace at the end
+                int seasonNumber = Int16.Parse(m.Groups[2].Value);
+                int episodeNumber = Int16.Parse(m.Groups[3].Value);
+                TraktShow show = await getClosestMatch(showName);
+                if(show != null)
+                {
+                    CurrentShow = show;
+                    CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                    Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
+                }
+            }
+        }
+
+        private async Task<TraktShow> getClosestMatch(string showName)
+        {
+            var searchResult = await Client.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, showName, TraktSearchField.Title, limitPerPage: 15);
+
+            double highestSimilarity = 0;
+            TraktShow highestSimilarityShow = null;
+            foreach (TraktSearchResult searchResultItem in searchResult.Items)
+            {
+                double d1 = 0;
+                double d2 = 0;
+                double d = GetSimilarityRatio(searchResultItem.Show.Title, showName, out d1, out d2);
+                Debug.WriteLine("Comparing " + showName + " to " + searchResultItem.Show.Title + ": " + d + "," + d1 + "," + d2);
+                if (d > highestSimilarity) { highestSimilarity = d; highestSimilarityShow = searchResultItem.Show; }
+            }
+            return highestSimilarityShow;
+        }
+
+        private async void vlcClient_WatchedPercentReached(object sender, EventArgs e)
+        {
+            if (CurrentEpisode != null && CurrentShow != null)
+            {
+                TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                historyPostBuilder.AddEpisode(CurrentEpisode);
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    await TraktCache.SyncShowProgress(CurrentShow);
+                    Task.Run(() => TraktCache.Sync()).Forget();
+                }
+            }
+        }
+
+        private void vlcClient_ConnectionLost(object sender, EventArgs e)
         {
             vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: not connected"));
             Thread vlcConnectionThread = new Thread(waitForVLCConnection);
@@ -167,7 +233,7 @@ namespace TraktTVUpdateClient
                     if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                     {
                         await TraktCache.SyncShowProgress(show.Show);
-                        UpdateListView();
+                        Task.Run(() => TraktCache.Sync()).Forget();
                     }
                 }
             }
@@ -189,7 +255,7 @@ namespace TraktTVUpdateClient
                     if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
                     {
                         await TraktCache.SyncShowProgress(show.Show);
-                        UpdateListView();
+                        Task.Run(() => TraktCache.Sync()).Forget();
                     }
                 }
             }
@@ -356,6 +422,133 @@ namespace TraktTVUpdateClient
             {
                 settingsForm.Focus();
             }
+        }
+
+        private double GetSimilarityRatio(String FullString1, String FullString2, out double WordsRatio, out double RealWordsRatio)
+        {
+            double theResult = 0;
+            String[] Splitted1 = FullString1.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            String[] Splitted2 = FullString2.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (Splitted1.Length < Splitted2.Length)
+            {
+                String[] Temp = Splitted2;
+                Splitted2 = Splitted1;
+                Splitted1 = Temp;
+            }
+            int[,] theScores = new int[Splitted1.Length, Splitted2.Length];
+            int[] BestWord = new int[Splitted1.Length];
+
+            for (int loop = 0; loop < Splitted1.Length; loop++)
+            {
+                for (int loop1 = 0; loop1 < Splitted2.Length; loop1++) theScores[loop, loop1] = 1000;
+                BestWord[loop] = -1;
+            }
+            int WordsMatched = 0;
+            for (int loop = 0; loop < Splitted1.Length; loop++)
+            {
+                String String1 = Splitted1[loop];
+                for (int loop1 = 0; loop1 < Splitted2.Length; loop1++)
+                {
+                    String String2 = Splitted2[loop1];
+                    int LevenshteinDistance = Compute(String1, String2);
+                    theScores[loop, loop1] = LevenshteinDistance;
+                    if (BestWord[loop] == -1 || theScores[loop, BestWord[loop]] > LevenshteinDistance) BestWord[loop] = loop1;
+                }
+            }
+
+            for (int loop = 0; loop < Splitted1.Length; loop++)
+            {
+                if (theScores[loop, BestWord[loop]] == 1000) continue;
+                for (int loop1 = loop + 1; loop1 < Splitted1.Length; loop1++)
+                {
+                    if (theScores[loop1, BestWord[loop1]] == 1000) continue;
+                    if (BestWord[loop] == BestWord[loop1])
+                    {
+                        if (theScores[loop, BestWord[loop]] <= theScores[loop1, BestWord[loop1]])
+                        {
+                            theScores[loop1, BestWord[loop1]] = 1000;
+                            int CurrentBest = -1;
+                            int CurrentScore = 1000;
+                            for (int loop2 = 0; loop2 < Splitted2.Length; loop2++)
+                            {
+                                if (CurrentBest == -1 || CurrentScore > theScores[loop1, loop2])
+                                {
+                                    CurrentBest = loop2;
+                                    CurrentScore = theScores[loop1, loop2];
+                                }
+                            }
+                            BestWord[loop1] = CurrentBest;
+                        }
+                        else
+                        {
+                            theScores[loop, BestWord[loop]] = 1000;
+                            int CurrentBest = -1;
+                            int CurrentScore = 1000;
+                            for (int loop2 = 0; loop2 < Splitted2.Length; loop2++)
+                            {
+                                if (CurrentBest == -1 || CurrentScore > theScores[loop, loop2])
+                                {
+                                    CurrentBest = loop2;
+                                    CurrentScore = theScores[loop, loop2];
+                                }
+                            }
+                            BestWord[loop] = CurrentBest;
+                        }
+
+                        loop = -1;
+                        break;
+                    }
+                }
+            }
+            for (int loop = 0; loop < Splitted1.Length; loop++)
+            {
+                if (theScores[loop, BestWord[loop]] == 1000) theResult += Splitted1[loop].Length;
+                else
+                {
+                    theResult += theScores[loop, BestWord[loop]];
+                    if (theScores[loop, BestWord[loop]] == 0) WordsMatched++;
+                }
+            }
+            int theLength = (FullString1.Replace(" ", "").Length > FullString2.Replace(" ", "").Length) ? FullString1.Replace(" ", "").Length : FullString2.Replace(" ", "").Length;
+            if (theResult > theLength) theResult = theLength;
+            theResult = (1 - (theResult / theLength)) * 100;
+            WordsRatio = ((double)WordsMatched / (double)Splitted2.Length) * 100;
+            RealWordsRatio = ((double)WordsMatched / (double)Splitted1.Length) * 100;
+            return theResult;
+        }
+
+        private int Compute(string s, string t)
+        {
+            int n = s.Length;
+            int m = t.Length;
+            int[,] d = new int[n + 1, m + 1];
+            if (n == 0)
+            {
+                return m;
+            }
+
+            if (m == 0)
+            {
+                return n;
+            }
+            for (int i = 0; i <= n; d[i, 0] = i++)
+            {
+            }
+
+            for (int j = 0; j <= m; d[0, j] = j++)
+            {
+            }
+            for (int i = 1; i <= n; i++)
+            {
+                for (int j = 1; j <= m; j++)
+                {
+                    int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            return d[n, m];
         }
     }
 }

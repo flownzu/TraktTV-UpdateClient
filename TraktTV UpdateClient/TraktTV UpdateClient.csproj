@@ -212,7 +212,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="VLCConnection\VLCConnection.cs" />
+    <Compile Include="VLC\MediaItemChangedEventArgs.cs" />
+    <Compile Include="VLC\VLCConnection.cs" />
+    <Compile Include="VLC\VLCMediaItem.cs" />
     <EmbeddedResource Include="Forms\MainForm\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
