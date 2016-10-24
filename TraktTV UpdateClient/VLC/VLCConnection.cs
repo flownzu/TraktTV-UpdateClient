@@ -34,7 +34,9 @@ namespace TraktTVUpdateClient.VLC
 
             client.Connect("localhost", port);
             writeStream = new StreamWriter(client.GetStream());
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             read();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         protected virtual void OnConnectionLost()
@@ -176,7 +178,7 @@ namespace TraktTVUpdateClient.VLC
                     }
                     Thread.Sleep(1000);
                 }
-                catch (IOException ex) { break; }
+                catch (IOException) { break; }
             }
             OnConnectionLost();
         }
