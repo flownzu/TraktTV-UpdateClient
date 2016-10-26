@@ -22,7 +22,6 @@ using TraktApiSharp.Objects.Get.Shows.Episodes;
 using TraktTVUpdateClient.VLC;
 using System.Text.RegularExpressions;
 using TraktApiSharp.Enums;
-using TraktApiSharp.Requests.Params;
 using TraktApiSharp.Objects.Basic;
 
 namespace TraktTVUpdateClient
@@ -100,10 +99,10 @@ namespace TraktTVUpdateClient
             Match m = Regex.Match(fileName, @"(.*)[sS](\d+)[eE](\d+)");
             if (m.Success)
             {
-                string showName = m.Groups[1].Value.Replace('.', ' ').Trim(); //replace dots in show name with spaces and remove any whitespace at the end
+                string showName = m.Groups[1].Value.Replace('.', ' ').Trim();
                 int seasonNumber = Int16.Parse(m.Groups[2].Value);
                 int episodeNumber = Int16.Parse(m.Groups[3].Value);
-                TraktShow show = await getClosestMatch(showName);
+                TraktShow show = await getClosestMatch(showName, 80);
                 if(show != null)
                 {
                     CurrentShow = show;
@@ -111,9 +110,64 @@ namespace TraktTVUpdateClient
                     Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
                 }
             }
+            string[] mediaPath = Regex.Split(mediaItem.Path.Replace(@"file:///", ""), @"\/");
+            try
+            {
+                string parentFolderName = mediaPath[mediaPath.Length - 2];
+                TraktShow show = await getClosestMatch(parentFolderName, 80);
+                if(show != null)
+                {
+                    show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+                    if (show.Seasons.Count() == 1)
+                    {
+                        int seasonNumber = 1;
+                        m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
+                        if (m.Success)
+                        {
+                            int episodeNumber = Int16.Parse(m.Groups[1].Value);
+                            CurrentShow = show;
+                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                            Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
+                        }
+                        else
+                        {
+                            m = Regex.Match(fileName, @".*?(\d+)");
+                            if(m.Success)
+                            {
+                                int episodeNumber = Int16.Parse(m.Groups[1].Value);
+                                CurrentShow = show;
+                                CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                                Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string parentsParentFolderName = mediaPath[mediaPath.Length - 3];
+                    show = await getClosestMatch(parentsParentFolderName, 80);
+                    if(show != null)
+                    {
+                        m = Regex.Match(parentFolderName, @"(\d+)");
+                        if(m.Success)
+                        {
+                            int seasonNumber = Int16.Parse(m.Groups[1].Value);
+                            m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
+                            if (m.Success)
+                            {
+                                int episodeNumber = Int16.Parse(m.Groups[1].Value);
+                                CurrentShow = show;
+                                CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                                Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
         }
 
-        private async Task<TraktShow> getClosestMatch(string showName)
+        private async Task<TraktShow> getClosestMatch(string showName, double minSimilarity = 0)
         {
             var searchResult = await Client.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, showName, TraktSearchField.Title, limitPerPage: 15);
 
@@ -127,7 +181,8 @@ namespace TraktTVUpdateClient
                 Debug.WriteLine("Comparing " + showName + " to " + searchResultItem.Show.Title + ": " + d + "," + d1 + "," + d2);
                 if (d > highestSimilarity) { highestSimilarity = d; highestSimilarityShow = searchResultItem.Show; }
             }
-            return highestSimilarityShow;
+            if(highestSimilarity >= minSimilarity) return highestSimilarityShow;
+            else { return null; }
         }
 
         private async void vlcClient_WatchedPercentReached(object sender, EventArgs e)
