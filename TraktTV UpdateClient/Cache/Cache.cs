@@ -70,6 +70,7 @@ namespace TraktTVUpdateClient
 
         protected virtual void OnSyncCompleted()
         {
+            Save();
             SyncCompleted?.Invoke(this, new SyncCompletedEventArgs());
         }
 
