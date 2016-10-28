@@ -43,12 +43,12 @@
             this.updateButton = new System.Windows.Forms.Button();
             this.traktConnectStatusLabel = new System.Windows.Forms.Label();
             this.addShowButton = new System.Windows.Forms.Button();
+            this.settingButton = new System.Windows.Forms.Button();
+            this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.settingButton = new System.Windows.Forms.Button();
-            this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -173,6 +173,7 @@
             // 
             // updateButton
             // 
+            this.updateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.updateButton.Location = new System.Drawing.Point(463, 140);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(68, 22);
@@ -192,6 +193,7 @@
             // 
             // addShowButton
             // 
+            this.addShowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.addShowButton.Location = new System.Drawing.Point(389, 140);
             this.addShowButton.Name = "addShowButton";
             this.addShowButton.Size = new System.Drawing.Size(68, 22);
@@ -200,8 +202,31 @@
             this.addShowButton.UseVisualStyleBackColor = true;
             this.addShowButton.Click += new System.EventHandler(this.addShowButton_Click);
             // 
+            // settingButton
+            // 
+            this.settingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.settingButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Settings;
+            this.settingButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.settingButton.Location = new System.Drawing.Point(499, 3);
+            this.settingButton.Name = "settingButton";
+            this.settingButton.Size = new System.Drawing.Size(32, 32);
+            this.settingButton.TabIndex = 17;
+            this.settingButton.UseVisualStyleBackColor = true;
+            this.settingButton.Click += new System.EventHandler(this.settingButton_Click);
+            // 
+            // vlcConnectStatusLabel
+            // 
+            this.vlcConnectStatusLabel.AutoSize = true;
+            this.vlcConnectStatusLabel.Location = new System.Drawing.Point(118, 149);
+            this.vlcConnectStatusLabel.Name = "vlcConnectStatusLabel";
+            this.vlcConnectStatusLabel.Size = new System.Drawing.Size(138, 13);
+            this.vlcConnectStatusLabel.TabIndex = 18;
+            this.vlcConnectStatusLabel.Text = "VLC Status:  not connected";
+            // 
             // watchedListView
             // 
+            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.watchedListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.nameColumnHeader,
             this.progressColumnHeader,
@@ -232,26 +257,6 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
-            // settingButton
-            // 
-            this.settingButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Settings;
-            this.settingButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.settingButton.Location = new System.Drawing.Point(499, 3);
-            this.settingButton.Name = "settingButton";
-            this.settingButton.Size = new System.Drawing.Size(32, 32);
-            this.settingButton.TabIndex = 17;
-            this.settingButton.UseVisualStyleBackColor = true;
-            this.settingButton.Click += new System.EventHandler(this.settingButton_Click);
-            // 
-            // vlcConnectStatusLabel
-            // 
-            this.vlcConnectStatusLabel.AutoSize = true;
-            this.vlcConnectStatusLabel.Location = new System.Drawing.Point(118, 149);
-            this.vlcConnectStatusLabel.Name = "vlcConnectStatusLabel";
-            this.vlcConnectStatusLabel.Size = new System.Drawing.Size(138, 13);
-            this.vlcConnectStatusLabel.TabIndex = 18;
-            this.vlcConnectStatusLabel.Text = "VLC Status:  not connected";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -275,6 +280,8 @@
             this.Controls.Add(this.episodeLabel);
             this.Controls.Add(this.showNameLabel);
             this.Controls.Add(this.pictureBox1);
+            this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(559, 426);
             this.Name = "MainForm";
             this.Text = "trakt.tv Updater";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
