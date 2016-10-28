@@ -302,8 +302,8 @@ namespace TraktTVUpdateClient
                 TraktShowWatchedProgress progress;
                 if (TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress) && show != null)
                 {
-                    int seasonNumber = progress.Seasons.MaxBy(x => x.Number).Number.Value;
-                    int episodeNumber = progress.Seasons.MaxBy(x => x.Number).Episodes.MaxBy(x => x.Number).Number.Value;
+                    int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
+                    int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value;
                     TraktSyncHistoryRemovePostBuilder historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
                     historyRemoveBuilder.AddEpisode(await Client.Episodes.GetEpisodeAsync(show.Show.Ids.Slug, seasonNumber, episodeNumber));
                     var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
@@ -464,6 +464,7 @@ namespace TraktTVUpdateClient
             }
             foreach (ListViewItem lvItem in removeList)
                 this.Invoke(new Action(() => watchedListView.Items.Remove(lvItem)));
+            this.Invoke(new Action(() => watchedListView_SelectedIndexChanged(this, EventArgs.Empty)));
         }
 
         private void settingButton_Click(object sender, EventArgs e)
