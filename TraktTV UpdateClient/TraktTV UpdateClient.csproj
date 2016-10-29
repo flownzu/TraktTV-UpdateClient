@@ -154,9 +154,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extension\Extensions.cs" />
-    <Compile Include="Extension\Slider.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Forms\MainForm\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
