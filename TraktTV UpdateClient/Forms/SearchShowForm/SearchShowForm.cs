@@ -28,11 +28,11 @@ namespace TraktTVUpdateClient.Forms
             TraktCache = cache;
         }
 
-        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+        private void addEpisodesContextMenu_Opening(object sender, CancelEventArgs e)
         {
-            if (this.listView1.SelectedItems.Count == 0)
+            if (this.foundShowsListView.SelectedItems.Count == 0)
             {
-                foreach (ToolStripMenuItem item in this.contextMenuStrip1.Items)
+                foreach (ToolStripMenuItem item in this.addEpisodesContextMenu.Items)
                 {
                     item.Enabled = false;
                 }
@@ -41,7 +41,7 @@ namespace TraktTVUpdateClient.Forms
             {
                 addSpecificSeasonToolStripMenuItem.DropDownItems.Clear();
                 addSpecificEpisodeToolStripMenuItem.DropDownItems.Clear();
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(listView1.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 if (selectedShow.Seasons != null)
                 {
                     var seasons = selectedShow.Seasons.Where(x => x.Number > 0 && x.Episodes != null);
@@ -83,7 +83,7 @@ namespace TraktTVUpdateClient.Forms
         {
             if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
             {
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(listView1.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
                 String tag = (string)clickedItem.Tag;
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
@@ -116,19 +116,19 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private async void searchBtn_Click(object sender, EventArgs e)
         {
-            if (this.textBox1.Text != String.Empty)
+            if (this.searchShowNameTxtBox.Text != String.Empty)
             {
-                this.listView1.Items.Clear();
+                this.foundShowsListView.Items.Clear();
                 int maxResults = 5;
-                if (this.textBox2.Text != String.Empty) Int32.TryParse(this.textBox2.Text, out maxResults);
-                lastSearch = await searchShows(this.textBox1.Text, maxResults + 1);
+                if (this.searchLimitTxtBox.Text != String.Empty) Int32.TryParse(this.searchLimitTxtBox.Text, out maxResults);
+                lastSearch = await searchShows(this.searchShowNameTxtBox.Text, maxResults + 1);
                 List<Task> taskList = new List<Task>();
                 foreach(TraktShow show in lastSearch)
                 {
                     taskList.Add(Task.Run(() => SyncSeasonOverview(show)));
-                    ListViewItem lvi = listView1.Items.Add(new ListViewItem(new string[] { show.Title, "" }));
+                    ListViewItem lvi = foundShowsListView.Items.Add(new ListViewItem(new string[] { show.Title, "" }));
                     if (show.Year.HasValue) lvi.SubItems[1].Text = show.Year.ToString();
                     String genreString = "";
                     foreach (String s in show.Genres)
@@ -178,7 +178,7 @@ namespace TraktTVUpdateClient.Forms
         {
             if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
             {
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.listView1.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSeason firstSeason = selectedShow.Seasons.Where(x => x.Number.Value.Equals(1)).First();
                 TraktEpisode firstEpisode = firstSeason.Episodes.Where(x => x.Number.Value.Equals(1)).First();
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
@@ -196,7 +196,7 @@ namespace TraktTVUpdateClient.Forms
         {
             if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
             {
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.listView1.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
                 historyPostBuilder.AddShow(selectedShow);
                 var addShowResponse = await TraktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
