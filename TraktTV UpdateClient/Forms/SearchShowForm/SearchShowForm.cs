@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TraktApiSharp;
 using TraktApiSharp.Enums;
 using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Objects.Get.Shows;
@@ -161,29 +158,6 @@ namespace TraktTVUpdateClient.Forms
         private async Task SyncSeasonEpisodes(string showIdOrSlug, TraktSeason season)
         {
             season.Episodes = await TraktCache.TraktClient.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
-        }
-
-        private String UpperCase(String s)
-        {
-            char[] array = s.ToCharArray();
-            if (array.Length >= 1)
-            {
-                if (char.IsLower(array[0]))
-                {
-                    array[0] = char.ToUpper(array[0]);
-                }
-            }
-            for (int i = 1; i < array.Length; i++)
-            {
-                if (array[i - 1] == ' ' || array[i - 1] == '-')
-                {
-                    if (char.IsLower(array[i]))
-                    {
-                        array[i] = char.ToUpper(array[i]);
-                    }
-                }
-            }
-            return new String(array);
         }
 
         private async Task<List<TraktShow>> searchShows(String title, int maxSearchResults = 5)
