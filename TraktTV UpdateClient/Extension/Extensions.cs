@@ -60,7 +60,7 @@ namespace TraktTVUpdateClient.Extension
                 else
                     source.Invoke(new Action(() => action(source)));
             }
-            catch (Exception ex) { Debug.Write(ex.Message); return default(T); }
+            catch (Exception ex) { return default(T); }
             return source;
         }
 

@@ -107,7 +107,6 @@ namespace TraktTVUpdateClient
                 {
                     CurrentShow = show;
                     CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                    Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
                 }
             }
             string[] mediaPath = Regex.Split(mediaItem.Path.Replace(@"file:///", ""), @"\/");
@@ -127,7 +126,6 @@ namespace TraktTVUpdateClient
                             int episodeNumber = Int16.Parse(m.Groups[1].Value);
                             CurrentShow = show;
                             CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                            Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
                         }
                         else
                         {
@@ -137,7 +135,6 @@ namespace TraktTVUpdateClient
                                 int episodeNumber = Int16.Parse(m.Groups[1].Value);
                                 CurrentShow = show;
                                 CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                                Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
                             }
                         }
                     }
@@ -158,7 +155,6 @@ namespace TraktTVUpdateClient
                                 int episodeNumber = Int16.Parse(m.Groups[1].Value);
                                 CurrentShow = show;
                                 CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                                Debug.WriteLine("Currently watching " + show.Title + " Season " + seasonNumber + " Episode " + episodeNumber + ".");
                             }
                         }
                     }
@@ -178,7 +174,6 @@ namespace TraktTVUpdateClient
                 double d1 = 0;
                 double d2 = 0;
                 double d = Extensions.GetSimilarityRatio(searchResultItem.Show.Title, showName, out d1, out d2);
-                Debug.WriteLine("Comparing " + showName + " to " + searchResultItem.Show.Title + ": " + d + "," + d1 + "," + d2);
                 if (d > highestSimilarity) { highestSimilarity = d; highestSimilarityShow = searchResultItem.Show; }
             }
             if(highestSimilarity >= minSimilarity) return highestSimilarityShow;
