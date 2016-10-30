@@ -24,6 +24,8 @@ using System.Text.RegularExpressions;
 using TraktApiSharp.Enums;
 using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Services;
+using System.Reflection;
+using System.Linq.Expressions;
 
 namespace TraktTVUpdateClient
 {
@@ -439,20 +441,19 @@ namespace TraktTVUpdateClient
                     ListViewItem lvItem = new ListViewItem();
                     var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                    this.Invoke(new Action(() => lvItem = watchedListView.FindItemWithText(watchedShow.Show.Title)));
+                    lvItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(watchedShow.Show.Title));
                     if (lvItem != null)
                     {
-                        ProgressBar progressBar = new ProgressBar();
-                        this.Invoke(new Action(() => lvItem.SubItems[2].Text = showRating.ToString()));
-                        this.Invoke(new Action(() => progressBar = watchedListView.GetEmbeddedControl(lvItem).ConvertTo<ProgressBar>()));
-                        this.Invoke(new Action(() => progressBar.Maximum = showProgress.Aired.Value));
-                        this.Invoke(new Action(() => progressBar.Value = showProgress.Completed.Value));
+                        this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString());
+                        ProgressBar progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBar>();
+                        this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
+                        this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
                     }
                     else
                     {
                         ProgressBar progressBar = new ProgressBar() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value };
-                        this.Invoke(new Action(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }))));
-                        this.Invoke(new Action(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0)));
+                        this.InvokeIfRequired(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() })));
+                        this.InvokeIfRequired(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0));
                     }
                 }
             }
@@ -461,18 +462,18 @@ namespace TraktTVUpdateClient
             {
                 TraktWatchedShow show = null;
                 string showTitle = string.Empty;
-                this.Invoke(new Action(() => showTitle = watchedListView.Items[i].Text));
-                this.Invoke(new Action(() => show = TraktCache.watchedList.Where(x => x.Show.Title.Equals(showTitle)).FirstOrDefault()));
+                this.InvokeIfRequired(() => showTitle = watchedListView.Items[i].Text);
+                this.InvokeIfRequired(() => show = TraktCache.watchedList.Where(x => x.Show.Title.Equals(showTitle)).FirstOrDefault());
                 if(show == null)
                 {
                     ListViewItem lvItem = new ListViewItem();
-                    this.Invoke(new Action(() => lvItem = watchedListView.Items[i]));
+                    this.InvokeIfRequired(() => lvItem = watchedListView.Items[i]);
                     if (lvItem != default(ListViewItem)) removeList.Add(lvItem);
                 }
             }
             foreach (ListViewItem lvItem in removeList)
-                this.Invoke(new Action(() => watchedListView.Items.Remove(lvItem)));
-            this.Invoke(new Action(() => watchedListView_SelectedIndexChanged(this, EventArgs.Empty)));
+                this.InvokeIfRequired(() => watchedListView.Items.Remove(lvItem));
+            this.InvokeIfRequired(() => watchedListView_SelectedIndexChanged(this, EventArgs.Empty));
         }
 
         private void settingButton_Click(object sender, EventArgs e)

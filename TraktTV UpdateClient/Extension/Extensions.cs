@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp.Authentication;
 using TraktApiSharp.Services;
+using static System.Windows.Forms.ListView;
 
 namespace TraktTVUpdateClient.Extension
 {
@@ -62,18 +64,57 @@ namespace TraktTVUpdateClient.Extension
             return new TimeSpan(ticks: (long)timeStamp);
         }
 
-        public static T InvokeIfRequired<T>(this T source, Action<T> action)
+        public static TResult InvokeIfRequired<T, TResult>(this T source, Func<TResult> func)
+            where T : Control
+        {
+            TResult returnValue = default(TResult);
+            try
+            {
+                if (!source.InvokeRequired)
+                    returnValue = func();
+                else
+                {
+                    TResult temp = default(TResult);
+                    source.Invoke(new Action(() => temp = func()));
+                    returnValue = temp;
+                }
+            }
+            catch (Exception) { return default(TResult); }
+            return returnValue;
+        }
+
+        public static void InvokeIfRequired<T>(this T source, Action action)
             where T : Control
         {
             try
             {
                 if (!source.InvokeRequired)
-                    action(source);
+                    action();
                 else
-                    source.Invoke(new Action(() => action(source)));
+                    source.Invoke(new Action(() => action()));
             }
-            catch (Exception) { return default(T); }
-            return source;
+            catch (Exception) { return; }
+        }
+
+        public static ListViewItem FindItemWithTextExact(this ListView lv, string searchText)
+        {
+            ListViewItem[] items = lv.Items.Find(searchText);
+            if(items.Length > 1)
+            {
+                return null;
+            }
+            else if(items.Length == 1) { return items[0]; }
+            return null;
+        }
+
+        public static ListViewItem[] Find(this ListViewItemCollection Items, string searchText)
+        {
+            List<ListViewItem> foundItems = new List<ListViewItem>();
+            foreach(ListViewItem lvi in Items)
+            {
+                if (lvi.Text.Equals(searchText)) { foundItems.Add(lvi); }
+            }
+            return foundItems.ToArray();
         }
 
         public static void Forget(this Task t) { }
