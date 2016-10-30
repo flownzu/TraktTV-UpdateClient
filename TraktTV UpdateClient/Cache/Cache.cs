@@ -131,7 +131,6 @@ namespace TraktTVUpdateClient
             {
                 if (watchedList != null)
                 {
-                    progressList = new Dictionary<string, TraktShowWatchedProgress>();
                     List<Task> taskList = new List<Task>();
                     foreach (TraktWatchedShow show in watchedList)
                     {
