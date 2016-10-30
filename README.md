@@ -1,19 +1,30 @@
 # TraktTV-UpdateClient
 
-A simple trakt.tv Desktop Client that enables you to update your watched shows more efficiently.
+##A simple trakt.tv Desktop Client that enables you to update your watched shows more efficiently.
 
-Working List:
+###Working List:
 
-Add/Remove episodes from your watched list.
+- Add/Remove episodes from your watched list.
 
-Add ratings to watched shows.
+- Add ratings to watched shows.
 
-Search for new shows to add to your watched list.
+- Search for new shows to add to your watched list.
 
-Basic functionality:
+- VLC Media Player connectivity
 
-Connecting and re-connecting to VLC. Upon playing a new video file in VLC the program will recognize the file name that is played and will try to recognize the show name and search for it on trakt.tv (searches for up to 15 entries, I'm still debating with myself whether this value will be customizable for the user) and pick the one that is the most similar to the recognized show title. After that it will wait until a certain play percent is reached (defaults to 90% but fully customizable down to 50%) and add the recognized episode to your watched list.
+  - Connecting and re-connecting to VLC. 
 
-This will currently only work if the file you are watching is following the naming standards of most file sharing sites (eg. The.Night.Of.S01E01.720p.WEB-DL.DD5.1.H.264-NTb.mkv). 
+  - Recognizing the episode that is played and marking it as watched when a certain play percent is reached.
 
-**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
+  - **This is still in early development so your episodes might not get recognized - if this happens please [contact me](mailto:florian.jaeckel@gmx.net) with the path to the episode file**
+  
+###To Do List:
+- [ ] [Displaying the current season and episode number](https://github.com/flownzu/TraktTV-UpdateClient/issues/1)
+
+- [ ] [Display show posters](https://github.com/flownzu/TraktTV-UpdateClient/issues/2)
+
+- [ ] General code clean-up and optimizations
+
+- [ ] Probably a lot of other stuff that I cannot think of at the moment
+
+####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
