@@ -23,6 +23,7 @@ using TraktTVUpdateClient.VLC;
 using System.Text.RegularExpressions;
 using TraktApiSharp.Enums;
 using TraktApiSharp.Objects.Basic;
+using TraktApiSharp.Services;
 
 namespace TraktTVUpdateClient
 {
@@ -205,10 +206,17 @@ namespace TraktTVUpdateClient
 
         public async Task<bool> login()
         {
-            var authorizeViewModel = new AuthorizeViewModel(Client);
-            var window = new AuthorizeView(authorizeViewModel);
-            window.ShowDialog();
-            await Client.OAuth.GetAuthorizationAsync();
+            if (Client.Authorization.IsRefreshPossible)
+            {
+                await Client.OAuth.RefreshAuthorizationAsync();
+            }
+            if (!Client.Authentication.IsAuthorized)
+            {
+                var authorizeViewModel = new AuthorizeViewModel(Client);
+                var window = new AuthorizeView(authorizeViewModel);
+                window.ShowDialog();
+                await Client.OAuth.GetAuthorizationAsync();
+            }
             return Client.Authentication.IsAuthorized;
         }
 
@@ -220,10 +228,15 @@ namespace TraktTVUpdateClient
 
         private async void loginThread()
         {
-            do
+            if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
+            if (!Client.Authorization.IsValid || Client.Authorization.IsExpired)
             {
-                await login();
-            } while (Client.Authentication.IsAuthorized == false);
+                do
+                {
+                    await login();
+                } while (Client.Authentication.IsAuthorized == false);
+                Client.Authorization.Serialize();
+            }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync(NoCache)).Forget();
             NoCache = !NoCache;

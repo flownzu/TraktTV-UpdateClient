@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp.Authentication;
+using TraktApiSharp.Services;
 
 namespace TraktTVUpdateClient.Extension
 {
@@ -11,6 +13,16 @@ namespace TraktTVUpdateClient.Extension
         public static string CreateAuthorizationUrlNoPin(this TraktOAuth OAuth)
         {
             return OAuth.CreateAuthorizationUrl().Replace("redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob", "redirect_uri=app:%2f%2fauthorized");
+        }
+
+        public static void Serialize(this TraktAuthorization auth)
+        {
+            using (StreamWriter sw = File.CreateText("auth.json")) { sw.Write(TraktSerializationService.Serialize(auth)); }
+        }
+
+        public static TraktAuthorization LoadAuthorization(string file = "auth.json")
+        {
+            using (StreamReader sr = File.OpenText(file)) { return TraktSerializationService.DeserializeAuthorization(sr.ReadToEnd()); }
         }
 
         public static string UpperCase(this string s)
@@ -60,7 +72,7 @@ namespace TraktTVUpdateClient.Extension
                 else
                     source.Invoke(new Action(() => action(source)));
             }
-            catch (Exception ex) { return default(T); }
+            catch (Exception) { return default(T); }
             return source;
         }
 
