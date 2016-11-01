@@ -35,7 +35,6 @@
             this.episodeCountLabel = new System.Windows.Forms.Label();
             this.removeEpisodeButton = new System.Windows.Forms.Button();
             this.addEpisodeButton = new System.Windows.Forms.Button();
-            this.episodeProgressBar = new System.Windows.Forms.ProgressBar();
             this.yearLabel = new System.Windows.Forms.Label();
             this.genreLabel = new System.Windows.Forms.Label();
             this.scoreLabel = new System.Windows.Forms.Label();
@@ -45,10 +44,12 @@
             this.addShowButton = new System.Windows.Forms.Button();
             this.settingButton = new System.Windows.Forms.Button();
             this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
+            this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -115,13 +116,6 @@
             this.addEpisodeButton.Text = "+";
             this.addEpisodeButton.UseVisualStyleBackColor = true;
             this.addEpisodeButton.Click += new System.EventHandler(this.addEpisodeButton_Click);
-            // 
-            // episodeProgressBar
-            // 
-            this.episodeProgressBar.Location = new System.Drawing.Point(308, 41);
-            this.episodeProgressBar.Name = "episodeProgressBar";
-            this.episodeProgressBar.Size = new System.Drawing.Size(223, 23);
-            this.episodeProgressBar.TabIndex = 7;
             // 
             // yearLabel
             // 
@@ -223,6 +217,17 @@
             this.vlcConnectStatusLabel.TabIndex = 18;
             this.vlcConnectStatusLabel.Text = "VLC Status:  not connected";
             // 
+            // seasonOverviewTreeView
+            // 
+            this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.seasonOverviewTreeView.CheckBoxes = true;
+            this.seasonOverviewTreeView.Location = new System.Drawing.Point(537, 3);
+            this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
+            this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 373);
+            this.seasonOverviewTreeView.TabIndex = 19;
+            this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.seasonOverviewTreeView_BeforeCheck);
+            // 
             // watchedListView
             // 
             this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -257,11 +262,22 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
+            // nextUnwatchedEpisodeLbl
+            // 
+            this.nextUnwatchedEpisodeLbl.AutoSize = true;
+            this.nextUnwatchedEpisodeLbl.Location = new System.Drawing.Point(308, 44);
+            this.nextUnwatchedEpisodeLbl.Name = "nextUnwatchedEpisodeLbl";
+            this.nextUnwatchedEpisodeLbl.Size = new System.Drawing.Size(76, 13);
+            this.nextUnwatchedEpisodeLbl.TabIndex = 20;
+            this.nextUnwatchedEpisodeLbl.Text = "Next Episode: ";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(543, 388);
+            this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.nextUnwatchedEpisodeLbl);
+            this.Controls.Add(this.seasonOverviewTreeView);
             this.Controls.Add(this.vlcConnectStatusLabel);
             this.Controls.Add(this.settingButton);
             this.Controls.Add(this.addShowButton);
@@ -272,7 +288,6 @@
             this.Controls.Add(this.watchedListView);
             this.Controls.Add(this.genreLabel);
             this.Controls.Add(this.yearLabel);
-            this.Controls.Add(this.episodeProgressBar);
             this.Controls.Add(this.addEpisodeButton);
             this.Controls.Add(this.removeEpisodeButton);
             this.Controls.Add(this.episodeCountLabel);
@@ -281,7 +296,7 @@
             this.Controls.Add(this.showNameLabel);
             this.Controls.Add(this.pictureBox1);
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(559, 426);
+            this.MinimumSize = new System.Drawing.Size(710, 426);
             this.Name = "MainForm";
             this.Text = "trakt.tv Updater";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -302,7 +317,6 @@
         private System.Windows.Forms.Label episodeCountLabel;
         private System.Windows.Forms.Button removeEpisodeButton;
         private System.Windows.Forms.Button addEpisodeButton;
-        private System.Windows.Forms.ProgressBar episodeProgressBar;
         private System.Windows.Forms.Label yearLabel;
         private System.Windows.Forms.Label genreLabel;
         private System.Windows.Forms.Label scoreLabel;
@@ -315,6 +329,8 @@
         private System.Windows.Forms.Button addShowButton;
         private System.Windows.Forms.Button settingButton;
         private System.Windows.Forms.Label vlcConnectStatusLabel;
+        private TreeViewEx seasonOverviewTreeView;
+        private System.Windows.Forms.Label nextUnwatchedEpisodeLbl;
     }
 }
 

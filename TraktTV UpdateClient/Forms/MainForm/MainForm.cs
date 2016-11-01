@@ -26,6 +26,7 @@ using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Services;
 using System.Reflection;
 using System.Linq.Expressions;
+using TraktApiSharp.Objects.Get.Shows.Seasons;
 
 namespace TraktTVUpdateClient
 {
@@ -233,11 +234,15 @@ namespace TraktTVUpdateClient
             if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
             if (!Client.Authorization.IsValid || Client.Authorization.IsExpired)
             {
-                do
+                try
                 {
-                    await login();
-                } while (Client.Authentication.IsAuthorized == false);
-                Client.Authorization.Serialize();
+                    do
+                    {
+                        await login();
+                    } while (Client.Authentication.IsAuthorized == false);
+                    Client.Authorization.Serialize();
+                }
+                catch (Exception) { return; }
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync(NoCache)).Forget();
@@ -347,7 +352,7 @@ namespace TraktTVUpdateClient
             {
                 TraktWatchedShow show = TraktCache.watchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
                 TraktShowWatchedProgress progress;
-                if (TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress) && show != null)
+                if (show != null && TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress))
                 {
                     showNameLabel.Text = show.Show.Title;
                     episodeCountLabel.Text = "/ " + progress.Aired.ToString();
@@ -360,8 +365,33 @@ namespace TraktTVUpdateClient
                         genres += genre.UpperCase() + ", ";
                     }
                     genreLabel.Text = genres != String.Empty ? "Genre: " + genres.Substring(0, genres.Length - 2) : "Genre: unspecified";
-                    episodeProgressBar.Maximum = progress.Aired.GetValueOrDefault();
-                    episodeProgressBar.Value = progress.Completed.GetValueOrDefault();
+                    if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
+                    else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
+
+                    if (sender != null)
+                    {
+                        seasonOverviewTreeView.Nodes.Clear();
+                        foreach (TraktSeasonWatchedProgress season in progress.Seasons)
+                        {
+                            int index = seasonOverviewTreeView.Nodes.Add(new TreeNode("Season " + season.Number) { Checked = (season.Completed == season.Aired) , Tag = season.Number });
+                            foreach (TraktEpisodeWatchedProgress episode in season.Episodes)
+                            {
+                                seasonOverviewTreeView.Nodes[index].Nodes.Add(new TreeNode("Episode " + episode.Number) { Checked = episode.Completed.Value , Tag = episode.Number });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach(TreeNode seasonNode in seasonOverviewTreeView.Nodes)
+                        {
+                            var seasonProgress = progress.Seasons.Where(x => x.Number.Equals(seasonNode.Tag)).First();
+                            seasonNode.Checked = (seasonProgress.Completed == seasonProgress.Aired);
+                            foreach(TreeNode episodeNode in seasonNode.Nodes)
+                            {
+                                episodeNode.Checked = seasonProgress.Episodes.Where(x => x.Number.Equals(episodeNode.Tag)).First().Completed.Value;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -473,7 +503,7 @@ namespace TraktTVUpdateClient
             }
             foreach (ListViewItem lvItem in removeList)
                 this.InvokeIfRequired(() => watchedListView.Items.Remove(lvItem));
-            this.InvokeIfRequired(() => watchedListView_SelectedIndexChanged(this, EventArgs.Empty));
+            this.InvokeIfRequired(() => watchedListView_SelectedIndexChanged(null, EventArgs.Empty));
         }
 
         private void settingButton_Click(object sender, EventArgs e)
@@ -487,6 +517,11 @@ namespace TraktTVUpdateClient
             {
                 settingsForm.Focus();
             }
-        }        
+        }
+
+        private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
+        {
+            e.Cancel = true;
+        }
     }
 }
