@@ -365,6 +365,7 @@ namespace TraktTVUpdateClient
                     genreLabel.Text = genres != String.Empty ? "Genre: " + genres.Substring(0, genres.Length - 2) : "Genre: unspecified";
                     if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
                     else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
+                    showPosterBox.ImageLocation = Path.Combine(ImageCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
 
                     if (sender != null)
                     {
@@ -519,7 +520,8 @@ namespace TraktTVUpdateClient
 
         private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
         {
-            e.Cancel = true;
+            if(e.Action == TreeViewAction.ByKeyboard || e.Action == TreeViewAction.ByMouse)
+                e.Cancel = true;
         }
     }
 }

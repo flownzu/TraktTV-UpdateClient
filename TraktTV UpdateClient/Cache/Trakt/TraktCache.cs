@@ -12,6 +12,7 @@ using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Requests.Params;
+using TraktTVUpdateClient.Extension;
 
 namespace TraktTVUpdateClient.Cache
 {
@@ -68,6 +69,7 @@ namespace TraktTVUpdateClient.Cache
         protected virtual void OnSyncCompleted()
         {
             Save();
+            Task.Run(() => ImageCache.Sync(this)).Forget();
             SyncCompleted?.Invoke(this, new SyncCompletedEventArgs());
         }
 

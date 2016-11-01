@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.showPosterBox = new System.Windows.Forms.PictureBox();
             this.showNameLabel = new System.Windows.Forms.Label();
             this.episodeLabel = new System.Windows.Forms.Label();
             this.currentEpisodeTextBox = new System.Windows.Forms.TextBox();
@@ -50,17 +50,17 @@
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // showPosterBox
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 150);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            this.showPosterBox.Location = new System.Drawing.Point(12, 12);
+            this.showPosterBox.Name = "showPosterBox";
+            this.showPosterBox.Size = new System.Drawing.Size(100, 150);
+            this.showPosterBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.showPosterBox.TabIndex = 0;
+            this.showPosterBox.TabStop = false;
             // 
             // showNameLabel
             // 
@@ -294,14 +294,14 @@
             this.Controls.Add(this.currentEpisodeTextBox);
             this.Controls.Add(this.episodeLabel);
             this.Controls.Add(this.showNameLabel);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.showPosterBox);
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(710, 426);
             this.Name = "MainForm";
             this.Text = "trakt.tv Updater";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -310,7 +310,7 @@
         #endregion
 
         private ListViewEx watchedListView;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox showPosterBox;
         private System.Windows.Forms.Label showNameLabel;
         private System.Windows.Forms.Label episodeLabel;
         private System.Windows.Forms.TextBox currentEpisodeTextBox;
