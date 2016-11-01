@@ -61,16 +61,16 @@ namespace TraktTVUpdateClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 12491a73bfaea1f053409d59bc13286220b8f7c8f30c5f2c8b7a5f48d0cb8eec.
+        ///   Looks up the trakt.tv API ClientID.
         /// </summary>
         internal static string ClientID {
             get {
                 return ResourceManager.GetString("ClientID", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   Looks up a localized string similar to 501e30e23785a4321e39f6c5e405f1e94f94cf611af9576ec59b0d463a416b42.
+        ///   Looks up the trakt.tv API ClientSecret.
         /// </summary>
         internal static string ClientSecret {
             get {
@@ -79,7 +79,7 @@ namespace TraktTVUpdateClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 78b5cfe70c62bdabde314bc25d3cf251.
+        ///   Looks up the fanart.tv API Key.
         /// </summary>
         internal static string FanartAPIKey {
             get {
