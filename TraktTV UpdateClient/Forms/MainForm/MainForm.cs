@@ -394,7 +394,7 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private async void watchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void watchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if(watchedListView.SelectedItems.Count == 1)
             {
@@ -515,6 +515,11 @@ namespace TraktTVUpdateClient
             {
                 settingsForm.Focus();
             }
+        }
+
+        private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
+        {
+            e.Cancel = true;
         }
     }
 }

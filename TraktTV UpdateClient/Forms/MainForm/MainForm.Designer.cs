@@ -226,6 +226,7 @@
             this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
             this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 373);
             this.seasonOverviewTreeView.TabIndex = 19;
+            this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.seasonOverviewTreeView_BeforeCheck);
             // 
             // watchedListView
             // 
