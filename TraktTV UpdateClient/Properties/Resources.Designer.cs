@@ -79,6 +79,15 @@ namespace TraktTVUpdateClient.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 78b5cfe70c62bdabde314bc25d3cf251.
+        /// </summary>
+        internal static string FanartAPIKey {
+            get {
+                return ResourceManager.GetString("FanartAPIKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Settings {

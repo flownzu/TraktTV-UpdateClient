@@ -13,19 +13,20 @@ using TraktApiSharp.Objects.Get.Shows.Episodes;
 using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Objects.Post.Syncs.History;
 using TraktApiSharp.Requests.Params;
+using TraktTVUpdateClient.Cache;
 using TraktTVUpdateClient.Extension;
 
 namespace TraktTVUpdateClient.Forms
 {
     public partial class SearchShowForm : Form
     {
-        Cache TraktCache;
+        TraktCache traktCache;
         List<TraktShow> lastSearch = new List<TraktShow>();
 
-        public SearchShowForm(Cache cache)
+        public SearchShowForm(TraktCache cache)
         {
             InitializeComponent();
-            TraktCache = cache;
+            traktCache = cache;
         }
 
         private void addEpisodesContextMenu_Opening(object sender, CancelEventArgs e)
@@ -81,7 +82,7 @@ namespace TraktTVUpdateClient.Forms
 
         private async void MenuItemClickHandler(object sender, EventArgs e)
         {
-            if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
+            if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
                 TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 ToolStripMenuItem clickedItem = (ToolStripMenuItem)sender;
@@ -91,11 +92,11 @@ namespace TraktTVUpdateClient.Forms
                 {
                     int seasonnumber = Int32.Parse(tag.Replace("season", ""));
                     historyPostBuilder.AddShow(selectedShow, seasonnumber);
-                    var addHistoryResponse = await TraktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                    var addHistoryResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if((addHistoryResponse.Added.Seasons.HasValue && addHistoryResponse.Added.Seasons.Value >= 1) || (addHistoryResponse.Added.Episodes.HasValue && addHistoryResponse.Added.Episodes.Value >= 1))
                     {
-                        await TraktCache.SyncShowProgress(selectedShow.Ids.Slug);
-                        Task.Run(() => TraktCache.Sync()).Forget();
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        Task.Run(() => traktCache.Sync()).Forget();
                     }
                     MessageBox.Show("The selected season was added to the watched list.");
                 }
@@ -105,11 +106,11 @@ namespace TraktTVUpdateClient.Forms
                     int episodenumber = Int32.Parse(Regex.Replace(tag, @"s\d+e(\d+)", "$1"));
                     TraktEpisode ep = selectedShow.Seasons.Where(x => x.Number.Equals(seasonnumber)).First().Episodes.Where(x => x.Number.Equals(episodenumber)).First();
                     historyPostBuilder.AddEpisode(ep);
-                    var addHistoryResponse = await TraktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                    var addHistoryResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if(addHistoryResponse.Added.Episodes.HasValue && addHistoryResponse.Added.Episodes.Value >= 1)
                     {
-                        await TraktCache.SyncShowProgress(selectedShow.Ids.Slug);
-                        Task.Run(() => TraktCache.Sync()).Forget();
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        Task.Run(() => traktCache.Sync()).Forget();
                     }
                     MessageBox.Show("The selected episode was added to the watched list.");
                 }
@@ -143,7 +144,7 @@ namespace TraktTVUpdateClient.Forms
 
         private async Task SyncSeasonOverview(TraktShow show)
         {
-            show.Seasons = await TraktCache.TraktClient.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+            show.Seasons = await traktCache.TraktClient.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
             List<Task> taskList = new List<Task>();
             foreach(TraktSeason season in show.Seasons)
             {
@@ -157,13 +158,13 @@ namespace TraktTVUpdateClient.Forms
 
         private async Task SyncSeasonEpisodes(string showIdOrSlug, TraktSeason season)
         {
-            season.Episodes = await TraktCache.TraktClient.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
+            season.Episodes = await traktCache.TraktClient.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
         }
 
         private async Task<List<TraktShow>> searchShows(String title, int maxSearchResults = 5)
         {
             List<TraktShow> showList = new List<TraktShow>();
-            var searchResult = await TraktCache.TraktClient.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, title, TraktSearchField.Title, limitPerPage: maxSearchResults, extendedInfo: new TraktExtendedInfo().SetFull());
+            var searchResult = await traktCache.TraktClient.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, title, TraktSearchField.Title, limitPerPage: maxSearchResults, extendedInfo: new TraktExtendedInfo().SetFull());
             if (searchResult != null)
             {
                 foreach(TraktSearchResult searchItem in searchResult.Items)
@@ -176,34 +177,34 @@ namespace TraktTVUpdateClient.Forms
 
         private async void add1stEpisodeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
+            if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
                 TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSeason firstSeason = selectedShow.Seasons.Where(x => x.Number.Value.Equals(1)).First();
                 TraktEpisode firstEpisode = firstSeason.Episodes.Where(x => x.Number.Value.Equals(1)).First();
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
                 historyPostBuilder.AddEpisode(firstEpisode);
-                var addEpisodeResponse = await TraktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                var addEpisodeResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                 {
-                    await TraktCache.SyncShowProgress(selectedShow);
-                    Task.Run(() => TraktCache.Sync()).Forget();
+                    await traktCache.SyncShowProgress(selectedShow);
+                    Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
         }
 
         private async void addAllEpisodesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (TraktCache.TraktClient.IsValidForUseWithAuthorization)
+            if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
                 TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
                 historyPostBuilder.AddShow(selectedShow);
-                var addShowResponse = await TraktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                var addShowResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if((addShowResponse.Added.Shows.HasValue && addShowResponse.Added.Shows.Value >= 1) || (addShowResponse.Added.Seasons.HasValue && addShowResponse.Added.Seasons.Value >= 1) || (addShowResponse.Added.Episodes.HasValue && addShowResponse.Added.Episodes.Value >= 1))
                 {
-                    await TraktCache.SyncShowProgress(selectedShow);
-                    Task.Run(() => TraktCache.Sync()).Forget();
+                    await traktCache.SyncShowProgress(selectedShow);
+                    Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
         }

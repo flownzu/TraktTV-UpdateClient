@@ -1,39 +1,37 @@
 ﻿using Newtonsoft.Json;
 using MoreLinq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp;
-using TraktApiSharp.Objects.Get.Shows;
-using TraktApiSharp.Objects.Get.Watched;
-using TraktApiSharp.Objects.Post.Syncs.History;
-using TraktSharp.Examples.Wpf.ViewModels;
-using TraktSharp.Examples.Wpf.Views;
-using TraktTVUpdateClient.Extension;
-using TraktTVUpdateClient.Properties;
-using TraktApiSharp.Objects.Post.Syncs.Ratings;
-using TraktTVUpdateClient.Forms;
-using System.Collections.Generic;
-using TraktApiSharp.Objects.Get.Shows.Episodes;
-using TraktTVUpdateClient.VLC;
-using System.Text.RegularExpressions;
 using TraktApiSharp.Enums;
 using TraktApiSharp.Objects.Basic;
-using TraktApiSharp.Services;
-using System.Reflection;
-using System.Linq.Expressions;
+using TraktApiSharp.Objects.Get.Shows;
+using TraktApiSharp.Objects.Get.Shows.Episodes;
 using TraktApiSharp.Objects.Get.Shows.Seasons;
+using TraktApiSharp.Objects.Get.Watched;
+using TraktApiSharp.Objects.Post.Syncs.History;
+using TraktApiSharp.Objects.Post.Syncs.Ratings;
+using TraktSharp.Examples.Wpf.ViewModels;
+using TraktSharp.Examples.Wpf.Views;
+using TraktTVUpdateClient.Cache;
+using TraktTVUpdateClient.Forms;
+using TraktTVUpdateClient.Extension;
+using TraktTVUpdateClient.Properties;
+using TraktTVUpdateClient.VLC;
 
 namespace TraktTVUpdateClient
 {
     public partial class MainForm : Form
     {
         public TraktClient Client;
-        public Cache TraktCache;
+        public TraktCache TraktCache;
         public VLCConnection vlcClient;
         public TraktShow CurrentShow;
         public TraktEpisode CurrentEpisode;
@@ -59,13 +57,13 @@ namespace TraktTVUpdateClient
             vlcConnectionThread.Start();
         }
 
-        public Cache LoadCache(string cacheFile = "cache.json")
+        public TraktCache LoadCache(string cacheFile = "cache.json")
         {
             if (File.Exists(cacheFile))
             {
-                using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<Cache>(sr.ReadToEnd()); }
+                using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
             }
-            return TraktCache == null ? new Cache(Client) : TraktCache;
+            return TraktCache == null ? new TraktCache(Client) : TraktCache;
         }
 
         public void waitForVLCConnection()
@@ -396,7 +394,7 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private void watchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        private async void watchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if(watchedListView.SelectedItems.Count == 1)
             {
@@ -517,11 +515,6 @@ namespace TraktTVUpdateClient
             {
                 settingsForm.Focus();
             }
-        }
-
-        private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Cancel = true;
         }
     }
 }

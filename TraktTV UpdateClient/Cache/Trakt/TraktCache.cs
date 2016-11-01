@@ -6,19 +6,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
-using TraktApiSharp.Extensions;
 using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Objects.Get.History;
 using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
-using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Requests.Params;
-using TraktTVUpdateClient.Extension;
 
-namespace TraktTVUpdateClient
+namespace TraktTVUpdateClient.Cache
 {
-    public class Cache
+    public class TraktCache
     {
         [JsonProperty(PropertyName = "WatchedList")]
         internal IEnumerable<TraktWatchedShow> watchedList { get; private set; }
@@ -40,7 +37,7 @@ namespace TraktTVUpdateClient
 
         public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
 
-        public Cache(TraktClient Client)
+        public TraktCache(TraktClient Client)
         {
             TraktClient = Client;
             watchedList = Enumerable.Empty<TraktWatchedShow>();
