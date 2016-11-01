@@ -19,9 +19,6 @@
   - **This is still in early development so your episodes might not get recognized - if this happens please [contact me](mailto:florian.jaeckel@gmx.net) with the path to the episode file**
   
 ###To Do List:
-- [ ] [Displaying the current season and episode number](https://github.com/flownzu/TraktTV-UpdateClient/issues/1)
-
-- [ ] [Display show posters](https://github.com/flownzu/TraktTV-UpdateClient/issues/2)
 
 - [ ] General code clean-up and optimizations
 
