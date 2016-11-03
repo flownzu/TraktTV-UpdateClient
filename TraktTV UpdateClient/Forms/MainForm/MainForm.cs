@@ -510,12 +510,12 @@ namespace TraktTVUpdateClient
             if (settingsForm == null || settingsForm.IsDisposed)
             {
                 settingsForm = new SettingsForm();
+                settingsForm.StartPosition = FormStartPosition.Manual;
+                settingsForm.Location = MousePosition;
                 settingsForm.Show();
             }
             else
-            {
                 settingsForm.Focus();
-            }
         }
 
         private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
