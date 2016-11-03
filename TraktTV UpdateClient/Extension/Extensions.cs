@@ -23,7 +23,11 @@ namespace TraktTVUpdateClient.Extension
 
         public static TraktAuthorization LoadAuthorization(string file = "auth.json")
         {
-            using (StreamReader sr = File.OpenText(file)) { return TraktSerializationService.DeserializeAuthorization(sr.ReadToEnd()); }
+            try
+            {
+                using (StreamReader sr = File.OpenText(file)) { return TraktSerializationService.DeserializeAuthorization(sr.ReadToEnd()); }
+            }
+            catch (Exception) { return default(TraktAuthorization); }
         }
 
         public static string UpperCase(this string s)
