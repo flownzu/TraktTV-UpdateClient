@@ -59,11 +59,15 @@ namespace TraktTVUpdateClient
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
         {
-            if (File.Exists(cacheFile))
+            try
             {
-                using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
+                if (File.Exists(cacheFile))
+                {
+                    using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
+                }
+                return TraktCache == null ? new TraktCache(Client) : TraktCache;
             }
-            return TraktCache == null ? new TraktCache(Client) : TraktCache;
+            catch (Exception) { return new TraktCache(Client); }
         }
 
         public void waitForVLCConnection()
