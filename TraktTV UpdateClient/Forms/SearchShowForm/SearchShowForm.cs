@@ -51,6 +51,7 @@ namespace TraktTVUpdateClient.Forms
                         ToolStripMenuItem[] episodeMenu = new ToolStripMenuItem[seasons.Count()];
                         ToolStripMenuItem[] seasonMenu = new ToolStripMenuItem[seasons.Count()];
                         int index = 0;
+                        int airedEpisodes = selectedShow.AiredEpisodes.Value;
                         foreach (TraktSeason season in seasons)
                         {
                             episodeMenu[index] = new ToolStripMenuItem();
@@ -63,16 +64,20 @@ namespace TraktTVUpdateClient.Forms
                             seasonMenu[index].Click += new EventHandler(MenuItemClickHandler);
                             seasonMenu[index].Tag = "season" + season.Number.Value;
                             ToolStripMenuItem[] episodeList = new ToolStripMenuItem[season.Episodes.Count()];
-                            for (int a = 0; a < season.Episodes.Count(); a++)
+                            for (int a = 0; a < season.Episodes.Count() && airedEpisodes > 0; a++)
                             {
                                 episodeList[a] = new ToolStripMenuItem();
                                 episodeList[a].Text = "Episode " + (a + 1);
                                 episodeList[a].Tag = "s" + season.Number.Value + "e" + (a + 1);
                                 episodeList[a].Click += new EventHandler(MenuItemClickHandler);
+                                airedEpisodes--;
                             }
                             episodeMenu[index].DropDownItems.AddRange(episodeList);
+                            if (airedEpisodes <= 0) { break; }
                             index++;
                         }
+                        seasonMenu = seasonMenu.Where(x => x != null).ToArray();
+                        episodeMenu = episodeMenu.Where(x => x != null).ToArray();
                         addSpecificSeasonToolStripMenuItem.DropDownItems.AddRange(seasonMenu);
                         addSpecificEpisodeToolStripMenuItem.DropDownItems.AddRange(episodeMenu);
                     }
