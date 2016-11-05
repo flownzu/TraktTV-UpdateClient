@@ -36,13 +36,14 @@ namespace TraktTVUpdateClient.Forms
             this.watchedPercentTrackBar = new System.Windows.Forms.TrackBar();
             this.watchedPercentLbl = new System.Windows.Forms.Label();
             this.saveSettingsBtn = new System.Windows.Forms.Button();
+            this.enableVLCCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.watchedPercentTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
             // vlcPortLbl
             // 
             this.vlcPortLbl.AutoSize = true;
-            this.vlcPortLbl.Location = new System.Drawing.Point(12, 9);
+            this.vlcPortLbl.Location = new System.Drawing.Point(12, 41);
             this.vlcPortLbl.Name = "vlcPortLbl";
             this.vlcPortLbl.Size = new System.Drawing.Size(55, 13);
             this.vlcPortLbl.TabIndex = 0;
@@ -50,7 +51,7 @@ namespace TraktTVUpdateClient.Forms
             // 
             // vlcPortTxtBox
             // 
-            this.vlcPortTxtBox.Location = new System.Drawing.Point(73, 6);
+            this.vlcPortTxtBox.Location = new System.Drawing.Point(73, 38);
             this.vlcPortTxtBox.Name = "vlcPortTxtBox";
             this.vlcPortTxtBox.Size = new System.Drawing.Size(65, 20);
             this.vlcPortTxtBox.TabIndex = 1;
@@ -59,7 +60,7 @@ namespace TraktTVUpdateClient.Forms
             // markEpisodeLbl
             // 
             this.markEpisodeLbl.AutoSize = true;
-            this.markEpisodeLbl.Location = new System.Drawing.Point(11, 38);
+            this.markEpisodeLbl.Location = new System.Drawing.Point(11, 70);
             this.markEpisodeLbl.Name = "markEpisodeLbl";
             this.markEpisodeLbl.Size = new System.Drawing.Size(127, 13);
             this.markEpisodeLbl.TabIndex = 2;
@@ -67,7 +68,7 @@ namespace TraktTVUpdateClient.Forms
             // 
             // watchedPercentTrackBar
             // 
-            this.watchedPercentTrackBar.Location = new System.Drawing.Point(144, 12);
+            this.watchedPercentTrackBar.Location = new System.Drawing.Point(144, 44);
             this.watchedPercentTrackBar.Maximum = 100;
             this.watchedPercentTrackBar.Minimum = 50;
             this.watchedPercentTrackBar.Name = "watchedPercentTrackBar";
@@ -79,7 +80,7 @@ namespace TraktTVUpdateClient.Forms
             // watchedPercentLbl
             // 
             this.watchedPercentLbl.AutoSize = true;
-            this.watchedPercentLbl.Location = new System.Drawing.Point(274, 38);
+            this.watchedPercentLbl.Location = new System.Drawing.Point(274, 70);
             this.watchedPercentLbl.Name = "watchedPercentLbl";
             this.watchedPercentLbl.Size = new System.Drawing.Size(76, 13);
             this.watchedPercentLbl.TabIndex = 4;
@@ -87,7 +88,7 @@ namespace TraktTVUpdateClient.Forms
             // 
             // saveSettingsBtn
             // 
-            this.saveSettingsBtn.Location = new System.Drawing.Point(12, 59);
+            this.saveSettingsBtn.Location = new System.Drawing.Point(12, 91);
             this.saveSettingsBtn.Name = "saveSettingsBtn";
             this.saveSettingsBtn.Size = new System.Drawing.Size(75, 23);
             this.saveSettingsBtn.TabIndex = 5;
@@ -95,11 +96,22 @@ namespace TraktTVUpdateClient.Forms
             this.saveSettingsBtn.UseVisualStyleBackColor = true;
             this.saveSettingsBtn.Click += new System.EventHandler(this.saveSettingsBtn_Click);
             // 
+            // enableVLCCheckBox
+            // 
+            this.enableVLCCheckBox.AutoSize = true;
+            this.enableVLCCheckBox.Location = new System.Drawing.Point(15, 12);
+            this.enableVLCCheckBox.Name = "enableVLCCheckBox";
+            this.enableVLCCheckBox.Size = new System.Drawing.Size(82, 17);
+            this.enableVLCCheckBox.TabIndex = 6;
+            this.enableVLCCheckBox.Text = "Enable VLC";
+            this.enableVLCCheckBox.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(371, 94);
+            this.ClientSize = new System.Drawing.Size(371, 124);
+            this.Controls.Add(this.enableVLCCheckBox);
             this.Controls.Add(this.saveSettingsBtn);
             this.Controls.Add(this.watchedPercentLbl);
             this.Controls.Add(this.watchedPercentTrackBar);
@@ -123,5 +135,6 @@ namespace TraktTVUpdateClient.Forms
         private System.Windows.Forms.TrackBar watchedPercentTrackBar;
         private System.Windows.Forms.Label watchedPercentLbl;
         private System.Windows.Forms.Button saveSettingsBtn;
+        private System.Windows.Forms.CheckBox enableVLCCheckBox;
     }
 }

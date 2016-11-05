@@ -55,5 +55,17 @@ namespace TraktTVUpdateClient.Properties {
                 this["WatchedPercent"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool VLCEnabled {
+            get {
+                return ((bool)(this["VLCEnabled"]));
+            }
+            set {
+                this["VLCEnabled"] = value;
+            }
+        }
     }
 }

@@ -8,5 +8,8 @@
     <Setting Name="WatchedPercent" Description="The progress in percent where the program will add the currently playing Episode to the watched list." Type="System.Single" Scope="User">
       <Value Profile="(Default)">0.9</Value>
     </Setting>
+    <Setting Name="VLCEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
