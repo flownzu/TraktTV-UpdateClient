@@ -25,6 +25,7 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task Init()
         {
+            TmdbRateLimiter.CheckLimiter();
             configuration = await GetConfiguration();
             IsReadyForImageCaching = true;
         }
@@ -44,7 +45,7 @@ namespace TraktTVUpdateClient.Cache
             catch (Exception) { return null; }
         }
 
-        public async Task<TmdbGetImagesResponse> GetImages(string tmdb_id)
+        private async Task<TmdbGetImagesResponse> GetImages(string tmdb_id)
         {
             try
             {
@@ -59,7 +60,7 @@ namespace TraktTVUpdateClient.Cache
             catch (Exception) { return null; }
         }
 
-        public async Task SaveShowPoster(string tmdb_id, string traktid)
+        private async Task SaveShowPoster(string tmdb_id, string traktid)
         {
             var imgList = await GetImages(tmdb_id);
             if(imgList.posters != null && imgList.posters.Length > 0)
@@ -68,7 +69,7 @@ namespace TraktTVUpdateClient.Cache
             }
         }
 
-        public string GetBestPosterSize(int size)
+        private string GetBestPosterSize(int size)
         {
             string bestPosterSize = "original";
             int smallestDifference = int.MaxValue;
