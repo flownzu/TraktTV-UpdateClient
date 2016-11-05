@@ -69,7 +69,6 @@ namespace TraktTVUpdateClient.Cache
         protected virtual void OnSyncCompleted()
         {
             Save();
-            Task.Run(() => ImageCache.Sync(this)).Forget();
             SyncCompleted?.Invoke(this, new SyncCompletedEventArgs());
         }
 

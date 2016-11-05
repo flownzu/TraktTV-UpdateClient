@@ -157,9 +157,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cache\Images\FanartImage.cs" />
     <Compile Include="Cache\Images\ImageCache.cs" />
-    <Compile Include="Cache\Images\FanartShowImages.cs" />
+    <Compile Include="Cache\Images\Configuration\TmbdImageConfiguration.cs" />
+    <Compile Include="Cache\Images\Configuration\TmdbConfiguration.cs" />
+    <Compile Include="Cache\Images\TmdbGetImagesResponse.cs" />
+    <Compile Include="Cache\Images\TmdbImage.cs" />
     <Compile Include="Cache\Trakt\TraktCache.cs" />
     <Compile Include="Cache\Trakt\SyncCompletedEventArgs.cs" />
     <Compile Include="Extension\ListViewEx.cs">

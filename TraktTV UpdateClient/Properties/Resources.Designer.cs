@@ -61,29 +61,20 @@ namespace TraktTVUpdateClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up the trakt.tv API ClientID.
+        ///   Looks up a localized string similar to 12491a73bfaea1f053409d59bc13286220b8f7c8f30c5f2c8b7a5f48d0cb8eec.
         /// </summary>
         internal static string ClientID {
             get {
                 return ResourceManager.GetString("ClientID", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up the trakt.tv API ClientSecret.
+        ///   Looks up a localized string similar to 501e30e23785a4321e39f6c5e405f1e94f94cf611af9576ec59b0d463a416b42.
         /// </summary>
         internal static string ClientSecret {
             get {
                 return ResourceManager.GetString("ClientSecret", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up the fanart.tv API Key.
-        /// </summary>
-        internal static string FanartAPIKey {
-            get {
-                return ResourceManager.GetString("FanartAPIKey", resourceCulture);
             }
         }
         
@@ -94,6 +85,15 @@ namespace TraktTVUpdateClient.Properties {
             get {
                 object obj = ResourceManager.GetObject("Settings", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to a593e2fa2b5fec5eae4076dc0fd175ed.
+        /// </summary>
+        internal static string TMDbAPIKey {
+            get {
+                return ResourceManager.GetString("TMDbAPIKey", resourceCulture);
             }
         }
     }

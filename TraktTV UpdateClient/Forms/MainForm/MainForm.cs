@@ -32,6 +32,7 @@ namespace TraktTVUpdateClient
     {
         public TraktClient Client;
         public TraktCache TraktCache;
+        public ImageCache TmdbImageCache;
         public VLCConnection vlcClient;
         public TraktShow CurrentShow;
         public TraktEpisode CurrentEpisode;
@@ -54,6 +55,8 @@ namespace TraktTVUpdateClient
             }
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
             if (Settings.Default.VLCEnabled) { Task.Run(() => waitForVLCConnection()).Forget(); }
+            TmdbImageCache = new ImageCache();
+            Task.Run(() => TmdbImageCache.Init()).Forget();
         }
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
@@ -366,7 +369,7 @@ namespace TraktTVUpdateClient
                     genreLabel.Text = "Genre: " + show.Show.Genres.ToGenreString();
                     if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
                     else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
-                    showPosterBox.ImageLocation = Path.Combine(ImageCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
+                    showPosterBox.ImageLocation = Path.Combine(TmdbImageCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
 
                     if (sender != null)
                     {
@@ -463,6 +466,7 @@ namespace TraktTVUpdateClient
 
         private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
         {
+            Task.Run(() => TmdbImageCache.Sync(TraktCache)).Forget();
             foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
             {
                 TraktShowWatchedProgress showProgress;

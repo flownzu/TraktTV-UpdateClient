@@ -129,8 +129,8 @@
   <data name="Settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="FanartAPIKey" xml:space="preserve">
-    <value>78b5cfe70c62bdabde314bc25d3cf251</value>
-    <comment>Fanart.tv API Key</comment>
+  <data name="TMDbAPIKey" xml:space="preserve">
+    <value>a593e2fa2b5fec5eae4076dc0fd175ed</value>
+    <comment>The Movie Database API Key</comment>
   </data>
 </root>

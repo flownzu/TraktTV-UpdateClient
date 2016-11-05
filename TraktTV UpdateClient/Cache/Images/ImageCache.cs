@@ -9,76 +9,103 @@ using TraktTVUpdateClient.Properties;
 
 namespace TraktTVUpdateClient.Cache
 {
-    static class ImageCache
+    public class ImageCache
     {
-        private static Uri baseAdress = new Uri("http://webservice.fanart.tv/v3/");
-        private static string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
+        internal Uri baseAdress = new Uri("https://api.themoviedb.org/3/");
+        internal int rateLimit = 40;
+        internal TmdbConfiguration configuration;
 
-        public static string ImagePath => imagePath;
+        public bool IsReadyForImageCaching = false;
+        public string ImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
 
-        public static async Task<FanartShowImages> GetImages(string tvdbid)
+
+        public ImageCache()
+        {
+
+        }
+
+        public async Task Init()
+        {
+            configuration = await GetConfiguration();
+            IsReadyForImageCaching = true;
+        }
+
+        private async Task<TmdbConfiguration> GetConfiguration()
         {
             try
             {
-                using (var httpClient = new HttpClient() { BaseAddress = baseAdress })
+                using(var httpClient = new HttpClient() { BaseAddress = baseAdress })
                 {
-                    using (var response = await httpClient.GetAsync("tv/" + tvdbid + "?api_key=" + Resources.FanartAPIKey))
+                    using(var response = await httpClient.GetAsync("configuration?api_key=" + Resources.TMDbAPIKey))
                     {
-                        return JsonConvert.DeserializeObject<FanartShowImages>(await response.Content.ReadAsStringAsync());
+                        return JsonConvert.DeserializeObject<TmdbConfiguration>(await response.Content.ReadAsStringAsync());
                     }
                 }
             }
             catch (Exception) { return null; }
         }
 
-        public static async Task SaveImage(this FanartImage img, string fileName)
+        public async Task<TmdbGetImagesResponse> GetImages(string tmdb_id)
         {
             try
             {
-                using(var httpClient = new HttpClient())
+                using (var httpClient = new HttpClient() { BaseAddress = baseAdress })
                 {
-                    using(var response = await httpClient.GetAsync(img.url))
+                    using (var response = await httpClient.GetAsync("tv/" + tmdb_id + "/images?api_key=" + Resources.TMDbAPIKey))
                     {
-                        var image = await response.Content.ReadAsByteArrayAsync();
-                        using(FileStream fs = new FileStream(Path.Combine(imagePath, fileName + GetImageFileExtensionFromURL(img)), FileMode.Create))
-                        {
-                            using (BinaryWriter bw = new BinaryWriter(fs))
-                            {
-                                bw.Write(image);
-                            }
-                        }
+                        return JsonConvert.DeserializeObject<TmdbGetImagesResponse>(await response.Content.ReadAsStringAsync());
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception) { return null; }
         }
 
-        public static async Task SaveShowPoster(string tvdbid, string traktid)
+        public async Task SaveShowPoster(string tmdb_id, string traktid)
         {
-            var imgList = await GetImages(tvdbid);
-            if(imgList.tvposter != null && imgList.tvposter.Length > 0)
-            {
-                await imgList.tvposter[0].SaveImage(traktid);
+            var imgList = await GetImages(tmdb_id);
+            if(imgList.posters != null && imgList.posters.Length > 0)
+            {                
+                await imgList.posters[0].Save(Path.Combine(ImagePath, traktid), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
             }
         }
 
-        public static void Sync(TraktCache traktCache)
+        public string GetBestPosterSize(int size)
         {
-            if (!Directory.Exists(imagePath)) { Directory.CreateDirectory(imagePath); }
+            string bestPosterSize = "original";
+            int smallestDifference = int.MaxValue;
+            foreach (string posterSize in configuration.imageConfiguration.posterSizes)
+            {
+                if (posterSize.StartsWith("w"))
+                {
+                    int width = int.Parse(posterSize.Replace("w", ""));
+                    if (width < size) continue;
+                    else
+                    {
+                        int difference = width - size;
+                        if (difference < smallestDifference)
+                        {
+                            smallestDifference = difference;
+                            bestPosterSize = posterSize;
+                        }
+                    }
+
+                }
+            }
+            return bestPosterSize;
+        }
+
+        public void Sync(TraktCache traktCache)
+        {
+            Directory.CreateDirectory(ImagePath);
             foreach (TraktWatchedShow show in traktCache.watchedList)
             {
-                var dirInfo = new DirectoryInfo(imagePath);
+                var dirInfo = new DirectoryInfo(ImagePath);
                 var fileInfo = dirInfo.GetFiles(show.Show.Ids.Trakt + ".*");
                 if(fileInfo.Length == 0)
                 {
-                    Task.Run(() => SaveShowPoster(show.Show.Ids.Tvdb.ToString(), show.Show.Ids.Trakt.ToString())).Forget();
+                    Task.Run(() => SaveShowPoster(show.Show.Ids.Tmdb.ToString(), show.Show.Ids.Trakt.ToString())).Forget();
                 }
             }
-        }
-
-        private static string GetImageFileExtensionFromURL(this FanartImage img)
-        {
-            return Path.GetExtension(img.url);
         }
     }
 }
