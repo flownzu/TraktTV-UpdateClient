@@ -12,7 +12,6 @@ namespace TraktTVUpdateClient.Cache
     public class ImageCache
     {
         internal Uri baseAdress = new Uri("https://api.themoviedb.org/3/");
-        internal int rateLimit = 40;
         internal TmdbConfiguration configuration;
 
         public bool IsReadyForImageCaching = false;
@@ -103,6 +102,7 @@ namespace TraktTVUpdateClient.Cache
                 var fileInfo = dirInfo.GetFiles(show.Show.Ids.Trakt + ".*");
                 if(fileInfo.Length == 0)
                 {
+                    TmdbRateLimiter.CheckLimiter();
                     Task.Run(() => SaveShowPoster(show.Show.Ids.Tmdb.ToString(), show.Show.Ids.Trakt.ToString())).Forget();
                 }
             }

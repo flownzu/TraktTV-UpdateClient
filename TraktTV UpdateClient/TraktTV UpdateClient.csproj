@@ -157,6 +157,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache\Images\Configuration\TmdbRateLimiter.cs" />
     <Compile Include="Cache\Images\ImageCache.cs" />
     <Compile Include="Cache\Images\Configuration\TmbdImageConfiguration.cs" />
     <Compile Include="Cache\Images\Configuration\TmdbConfiguration.cs" />
