@@ -72,6 +72,7 @@ namespace TraktTVUpdateClient.Forms
                                 episodeList[a].Click += new EventHandler(MenuItemClickHandler);
                                 airedEpisodes--;
                             }
+                            episodeList = episodeList.Where(x => x != null).ToArray();
                             episodeMenu[index].DropDownItems.AddRange(episodeList);
                             if (airedEpisodes <= 0) { break; }
                             index++;
@@ -136,12 +137,6 @@ namespace TraktTVUpdateClient.Forms
                     taskList.Add(Task.Run(() => SyncSeasonOverview(show)));
                     ListViewItem lvi = foundShowsListView.Items.Add(new ListViewItem(new string[] { show.Title, "" }));
                     if (show.Year.HasValue) lvi.SubItems[1].Text = show.Year.ToString();
-                    String genreString = "";
-                    foreach (String s in show.Genres)
-                    {
-                        genreString += s.UpperCase() + ", ";
-                    }
-                    if (genreString.Equals(String.Empty)) genreString = "None, ";
                 }
                 await Task.WhenAll(taskList);
             }
@@ -192,7 +187,7 @@ namespace TraktTVUpdateClient.Forms
                 var addEpisodeResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                 {
-                    await traktCache.SyncShowProgress(selectedShow);
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
                     Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
@@ -202,15 +197,106 @@ namespace TraktTVUpdateClient.Forms
         {
             if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
                 historyPostBuilder.AddShow(selectedShow);
                 var addShowResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if((addShowResponse.Added.Shows.HasValue && addShowResponse.Added.Shows.Value >= 1) || (addShowResponse.Added.Seasons.HasValue && addShowResponse.Added.Seasons.Value >= 1) || (addShowResponse.Added.Episodes.HasValue && addShowResponse.Added.Episodes.Value >= 1))
                 {
-                    await traktCache.SyncShowProgress(selectedShow);
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
                     Task.Run(() => traktCache.Sync()).Forget();
                 }
+            }
+        }
+
+        private void searchShowNameTxtBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter) { searchBtn_Click(this, EventArgs.Empty); }
+        }
+
+        private void foundShowsListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(foundShowsListView.SelectedItems.Count == 1)
+            {
+                TraktShow selectedShow = lastSearch.Find(X => X.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
+                showSummaryRTxtBox.ResetText();
+                showSummaryRTxtBox.Text =
+                    "Title: " + selectedShow.Title + " (" + selectedShow.Year + ")" + Environment.NewLine + Environment.NewLine +
+                    "Rating: " + Math.Round(selectedShow.Rating.Value) + Environment.NewLine +
+                    "Genres: " + selectedShow.Genres.ToGenreString() + Environment.NewLine + Environment.NewLine +
+                    "Synopsis: " + selectedShow.Overview;
+                seasonOverviewTreeView.Nodes.Clear();
+                foreach(TraktSeason season in selectedShow.Seasons.Where(x => x.Number > 0))
+                {
+                    var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
+                    foreach(TraktEpisode episode in season.Episodes)
+                    {
+                        seasonNode.Nodes.Add("Episode " + episode.Number);
+                    }
+                }                    
+            }
+            else
+            {
+                showSummaryRTxtBox.Clear();
+                seasonOverviewTreeView.Nodes.Clear();
+            }
+        }
+
+        private void seasonOverviewTreeView_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Text.Contains("Season"))
+            {
+                foreach (TreeNode episodeNode in e.Node.Nodes)
+                    episodeNode.Checked = e.Node.Checked;
+            }
+        }
+
+        private async void addCompleteShowBtn_Click(object sender, EventArgs e)
+        {
+            if (traktCache.TraktClient.IsValidForUseWithAuthorization && foundShowsListView.SelectedItems.Count == 1)
+            {
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
+                TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                historyPostBuilder.AddShow(selectedShow);
+                var addShowResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if ((addShowResponse.Added.Shows.HasValue && addShowResponse.Added.Shows.Value >= 1) || (addShowResponse.Added.Seasons.HasValue && addShowResponse.Added.Seasons.Value >= 1) || (addShowResponse.Added.Episodes.HasValue && addShowResponse.Added.Episodes.Value >= 1))
+                {
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                    Task.Run(() => traktCache.Sync()).Forget();
+                }
+            }
+        }
+
+        private async void addSelectedEpisodes_Click(object sender, EventArgs e)
+        {
+            if(traktCache.TraktClient.IsValidForUseWithAuthorization && foundShowsListView.SelectedItems.Count == 1)
+            {
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
+                TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                foreach(TreeNode seasonNode in seasonOverviewTreeView.Nodes)
+                {
+                    int seasonNumber = int.Parse(seasonNode.Text.Replace("Season ", ""));
+                    if (seasonNode.Checked) historyPostBuilder.AddShow(selectedShow, seasonNumber);
+                    else
+                    {
+                        foreach(TreeNode episodeNode in seasonNode.Nodes)
+                        {
+                            int episodeNumber = int.Parse(episodeNode.Text.Replace("Episode ", ""));
+                            TraktEpisode episode = selectedShow.Seasons.Where(x => x.Number.Equals(seasonNumber)).First().Episodes.Where(x => x.Number.Equals(episodeNumber)).First();
+                            if (episodeNode.Checked) historyPostBuilder.AddEpisode(episode);
+                        }
+                    }
+                }
+                try
+                {
+                    var addSelectedEpisodesResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                    if ((addSelectedEpisodesResponse.Added.Shows.HasValue && addSelectedEpisodesResponse.Added.Shows.Value >= 1) || (addSelectedEpisodesResponse.Added.Seasons.HasValue && addSelectedEpisodesResponse.Added.Seasons.Value >= 1) || (addSelectedEpisodesResponse.Added.Episodes.HasValue && addSelectedEpisodesResponse.Added.Episodes.Value >= 1))
+                    {
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        Task.Run(() => traktCache.Sync()).Forget();
+                    }
+                }
+                catch (Exception) { }
             }
         }
     }
