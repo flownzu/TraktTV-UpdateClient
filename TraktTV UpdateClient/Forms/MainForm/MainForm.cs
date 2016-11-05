@@ -38,7 +38,6 @@ namespace TraktTVUpdateClient
         public bool NoCache = true;
 
         private SettingsForm settingsForm;
-        private bool vlcThreadStarted;
 
         public MainForm()
         {
@@ -53,22 +52,27 @@ namespace TraktTVUpdateClient
                 NoCache = false;
             }
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
-            if (Settings.Default.VLCEnabled) { Task.Run(() => waitForVLCConnection()).Forget(); }
+            Thread vlcConnectionThread = new Thread(waitForVLCConnection);
+            vlcConnectionThread.IsBackground = true;
+            vlcConnectionThread.Start();
         }
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
         {
-            if (File.Exists(cacheFile))
+            try
             {
-                using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
+                if (File.Exists(cacheFile))
+                {
+                    using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
+                }
+                return TraktCache == null ? new TraktCache(Client) : TraktCache;
             }
-            return TraktCache == null ? new TraktCache(Client) : TraktCache;
+            catch (Exception) { return new TraktCache(Client); }
         }
 
         public void waitForVLCConnection()
         {
-            if (vlcThreadStarted) { return; }
-            while (Settings.Default.VLCEnabled)
+            while (true)
             {
                 if(Process.GetProcessesByName("vlc").Count() > 0)
                 {
@@ -81,15 +85,13 @@ namespace TraktTVUpdateClient
                 if(vlcClient != null && vlcClient.Connected) { break; }
                 Thread.Sleep(100);
             }
-            if (Settings.Default.VLCEnabled)
-            {
-                vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
-                vlcClient.ConnectionLost += vlcClient_ConnectionLost;
-                vlcClient.WatchedPercentReached += vlcClient_WatchedPercentReached;
-                vlcClient.MediaItemChanged += vlcClient_MediaItemChanged;
-                Task.Run(() => vlcClient.ConnectionThread()).Forget();
-            }
-            vlcThreadStarted = false;
+            vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
+            vlcClient.ConnectionLost += vlcClient_ConnectionLost;
+            vlcClient.WatchedPercentReached += vlcClient_WatchedPercentReached;
+            vlcClient.MediaItemChanged += vlcClient_MediaItemChanged;
+            Thread vlcThread = new Thread(vlcClient.ConnectionThread);
+            vlcThread.IsBackground = true;
+            vlcThread.Start();
         }
 
         private async void vlcClient_MediaItemChanged(object sender, MediaItemChangedEventArgs e)
@@ -511,13 +513,13 @@ namespace TraktTVUpdateClient
         {
             if (settingsForm == null || settingsForm.IsDisposed)
             {
-                settingsForm = new SettingsForm(this);
+                settingsForm = new SettingsForm();
+                settingsForm.StartPosition = FormStartPosition.Manual;
+                settingsForm.Location = MousePosition;
                 settingsForm.Show();
             }
             else
-            {
                 settingsForm.Focus();
-            }
         }
 
         private void seasonOverviewTreeView_BeforeCheck(object sender, TreeViewCancelEventArgs e)
