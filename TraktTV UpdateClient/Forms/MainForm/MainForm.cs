@@ -38,6 +38,7 @@ namespace TraktTVUpdateClient
         public bool NoCache = true;
 
         private SettingsForm settingsForm;
+        private bool vlcThreadStarted;
 
         public MainForm()
         {
@@ -52,9 +53,7 @@ namespace TraktTVUpdateClient
                 NoCache = false;
             }
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
-            Thread vlcConnectionThread = new Thread(waitForVLCConnection);
-            vlcConnectionThread.IsBackground = true;
-            vlcConnectionThread.Start();
+            if (Settings.Default.VLCEnabled) { Task.Run(() => waitForVLCConnection()).Forget(); }
         }
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
@@ -72,7 +71,8 @@ namespace TraktTVUpdateClient
 
         public void waitForVLCConnection()
         {
-            while (true)
+            if (vlcThreadStarted) return;
+            while (Settings.Default.VLCEnabled)
             {
                 if(Process.GetProcessesByName("vlc").Count() > 0)
                 {
@@ -85,13 +85,15 @@ namespace TraktTVUpdateClient
                 if(vlcClient != null && vlcClient.Connected) { break; }
                 Thread.Sleep(100);
             }
-            vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
-            vlcClient.ConnectionLost += vlcClient_ConnectionLost;
-            vlcClient.WatchedPercentReached += vlcClient_WatchedPercentReached;
-            vlcClient.MediaItemChanged += vlcClient_MediaItemChanged;
-            Thread vlcThread = new Thread(vlcClient.ConnectionThread);
-            vlcThread.IsBackground = true;
-            vlcThread.Start();
+            if (Settings.Default.VLCEnabled)
+            {
+                vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: connected"));
+                vlcClient.ConnectionLost += vlcClient_ConnectionLost;
+                vlcClient.WatchedPercentReached += vlcClient_WatchedPercentReached;
+                vlcClient.MediaItemChanged += vlcClient_MediaItemChanged;
+                Task.Run(() => vlcClient.ConnectionThread()).Forget();
+            }
+            vlcThreadStarted = false;
         }
 
         private async void vlcClient_MediaItemChanged(object sender, MediaItemChangedEventArgs e)
@@ -513,7 +515,7 @@ namespace TraktTVUpdateClient
         {
             if (settingsForm == null || settingsForm.IsDisposed)
             {
-                settingsForm = new SettingsForm();
+                settingsForm = new SettingsForm(this);
                 settingsForm.StartPosition = FormStartPosition.Manual;
                 settingsForm.Location = MousePosition;
                 settingsForm.Show();
