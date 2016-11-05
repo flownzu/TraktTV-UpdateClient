@@ -528,5 +528,28 @@ namespace TraktTVUpdateClient
             if(e.Action == TreeViewAction.ByKeyboard || e.Action == TreeViewAction.ByMouse)
                 e.Cancel = true;
         }
+
+        private void seasonOverviewTreeView_DoubleClick(object sender, EventArgs e)
+        {
+            TreeNode selectedNode = (sender as TreeViewEx).SelectedNode;
+
+            if (selectedNode.Text.Contains("Season"))
+            {
+                int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""));
+                if (watchedListView.SelectedItems.Count == 1)
+                {
+                    Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber);
+                }
+            }
+            else if (selectedNode.Text.Contains("Episode"))
+            {
+                int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""));
+                int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""));
+                if (watchedListView.SelectedItems.Count == 1)
+                {
+                    Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
+                }
+            }
+        }
     }
 }
