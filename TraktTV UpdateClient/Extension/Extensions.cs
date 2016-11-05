@@ -30,6 +30,16 @@ namespace TraktTVUpdateClient.Extension
             catch (Exception) { return default(TraktAuthorization); }
         }
 
+        public static string ToGenreString(this IEnumerable<string> genres)
+        {
+            string returnString = String.Empty;
+            foreach(String genre in genres)
+            {
+                returnString += genre.UpperCase() + ", ";
+            }
+            return returnString != String.Empty ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
+        }
+
         public static string UpperCase(this string s)
         {
             char[] array = s.ToCharArray();

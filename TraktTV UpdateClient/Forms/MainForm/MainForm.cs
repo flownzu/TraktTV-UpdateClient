@@ -363,12 +363,7 @@ namespace TraktTVUpdateClient
                     currentEpisodeTextBox.Text = progress.Completed.ToString();
                     yearLabel.Text = "Year: " + show.Show.Year.ToString();
                     scoreComboBox.SelectedIndex = scoreComboBox.FindStringExact(watchedListView.SelectedItems[0].SubItems[2].Text);
-                    string genres = String.Empty;
-                    foreach(String genre in show.Show.Genres)
-                    {
-                        genres += genre.UpperCase() + ", ";
-                    }
-                    genreLabel.Text = genres != String.Empty ? "Genre: " + genres.Substring(0, genres.Length - 2) : "Genre: unspecified";
+                    genreLabel.Text = "Genre: " + show.Show.Genres.ToGenreString();
                     if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
                     else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
                     showPosterBox.ImageLocation = Path.Combine(ImageCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
