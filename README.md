@@ -25,3 +25,5 @@
 - [ ] Probably a lot of other stuff that I cannot think of at the moment
 
 ####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
+
+####**Credits to the show posters goes to the TMDb API. Visit their site [here](https://www.themoviedb.org/).**
