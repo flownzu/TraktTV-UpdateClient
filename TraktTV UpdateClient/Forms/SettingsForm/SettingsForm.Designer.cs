@@ -118,6 +118,9 @@ namespace TraktTVUpdateClient.Forms
             this.Controls.Add(this.markEpisodeLbl);
             this.Controls.Add(this.vlcPortTxtBox);
             this.Controls.Add(this.vlcPortLbl);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(387, 162);
+            this.MinimumSize = new System.Drawing.Size(387, 162);
             this.Name = "SettingsForm";
             this.Text = "Settings";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsForm_FormClosing);

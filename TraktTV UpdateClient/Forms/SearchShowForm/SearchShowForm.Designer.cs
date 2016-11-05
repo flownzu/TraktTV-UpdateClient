@@ -43,9 +43,9 @@
             this.addSpecificSeasonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showSummaryAndSeasonOverviewSplitContainer = new System.Windows.Forms.SplitContainer();
             this.showSummaryRTxtBox = new System.Windows.Forms.RichTextBox();
+            this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.addCompleteShowBtn = new System.Windows.Forms.Button();
             this.addSelectedEpisodes = new System.Windows.Forms.Button();
-            this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.addEpisodesContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.showSummaryAndSeasonOverviewSplitContainer)).BeginInit();
             this.showSummaryAndSeasonOverviewSplitContainer.Panel1.SuspendLayout();
@@ -90,6 +90,8 @@
             // 
             // foundShowsListView
             // 
+            this.foundShowsListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.foundShowsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.nameColumnHeader,
             this.yearColumnHeader});
@@ -154,6 +156,9 @@
             // 
             // showSummaryAndSeasonOverviewSplitContainer
             // 
+            this.showSummaryAndSeasonOverviewSplitContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.showSummaryAndSeasonOverviewSplitContainer.Location = new System.Drawing.Point(349, 12);
             this.showSummaryAndSeasonOverviewSplitContainer.Name = "showSummaryAndSeasonOverviewSplitContainer";
             // 
@@ -178,8 +183,19 @@
             this.showSummaryRTxtBox.TabIndex = 0;
             this.showSummaryRTxtBox.Text = "";
             // 
+            // seasonOverviewTreeView
+            // 
+            this.seasonOverviewTreeView.CheckBoxes = true;
+            this.seasonOverviewTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.seasonOverviewTreeView.Location = new System.Drawing.Point(0, 0);
+            this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
+            this.seasonOverviewTreeView.Size = new System.Drawing.Size(135, 204);
+            this.seasonOverviewTreeView.TabIndex = 0;
+            this.seasonOverviewTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.seasonOverviewTreeView_AfterCheck);
+            // 
             // addCompleteShowBtn
             // 
+            this.addCompleteShowBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.addCompleteShowBtn.Location = new System.Drawing.Point(349, 222);
             this.addCompleteShowBtn.Name = "addCompleteShowBtn";
             this.addCompleteShowBtn.Size = new System.Drawing.Size(138, 28);
@@ -190,6 +206,7 @@
             // 
             // addSelectedEpisodes
             // 
+            this.addSelectedEpisodes.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.addSelectedEpisodes.Location = new System.Drawing.Point(491, 222);
             this.addSelectedEpisodes.Name = "addSelectedEpisodes";
             this.addSelectedEpisodes.Size = new System.Drawing.Size(135, 28);
@@ -197,16 +214,6 @@
             this.addSelectedEpisodes.Text = "Add selected Episodes";
             this.addSelectedEpisodes.UseVisualStyleBackColor = true;
             this.addSelectedEpisodes.Click += new System.EventHandler(this.addSelectedEpisodes_Click);
-            // 
-            // seasonOverviewTreeView
-            // 
-            this.seasonOverviewTreeView.CheckBoxes = true;
-            this.seasonOverviewTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.seasonOverviewTreeView.Location = new System.Drawing.Point(0, 0);
-            this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
-            this.seasonOverviewTreeView.Size = new System.Drawing.Size(135, 204);
-            this.seasonOverviewTreeView.TabIndex = 0;
-            this.seasonOverviewTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.seasonOverviewTreeView_AfterCheck);
             // 
             // SearchShowForm
             // 
@@ -221,6 +228,7 @@
             this.Controls.Add(this.searchLimitLbl);
             this.Controls.Add(this.searchBtn);
             this.Controls.Add(this.searchShowNameTxtBox);
+            this.MinimumSize = new System.Drawing.Size(654, 300);
             this.Name = "SearchShowForm";
             this.Text = "Search";
             this.addEpisodesContextMenu.ResumeLayout(false);
