@@ -278,20 +278,17 @@ namespace TraktTVUpdateClient
 
         private void UpdateListView()
         {
-            lock (watchedListView)
+            foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
             {
-                foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
+                TraktShowWatchedProgress showProgress;
+                if (TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
                 {
-                    TraktShowWatchedProgress showProgress;
-                    if (TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
-                    {
-                        ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
-                        pb.Value = showProgress.Completed.Value;
-                        var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
-                        int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                        var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
-                        watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
-                    }
+                    ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
+                    pb.Value = showProgress.Completed.Value;
+                    var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
+                    int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
+                    var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
+                    watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
                 }
             }
         }
