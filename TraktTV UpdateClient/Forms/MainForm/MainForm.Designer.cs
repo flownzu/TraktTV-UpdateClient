@@ -167,7 +167,6 @@
             // 
             // updateButton
             // 
-            this.updateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.updateButton.Location = new System.Drawing.Point(463, 140);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(68, 22);
@@ -187,7 +186,6 @@
             // 
             // addShowButton
             // 
-            this.addShowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.addShowButton.Location = new System.Drawing.Point(389, 140);
             this.addShowButton.Name = "addShowButton";
             this.addShowButton.Size = new System.Drawing.Size(68, 22);
@@ -198,7 +196,6 @@
             // 
             // settingButton
             // 
-            this.settingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.settingButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Settings;
             this.settingButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.settingButton.Location = new System.Drawing.Point(499, 3);
@@ -219,7 +216,8 @@
             // 
             // seasonOverviewTreeView
             // 
-            this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.seasonOverviewTreeView.CheckBoxes = true;
             this.seasonOverviewTreeView.Location = new System.Drawing.Point(537, 3);
@@ -231,8 +229,8 @@
             // 
             // watchedListView
             // 
-            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.watchedListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.nameColumnHeader,
             this.progressColumnHeader,
