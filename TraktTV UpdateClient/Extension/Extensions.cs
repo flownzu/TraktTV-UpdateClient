@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -37,7 +38,7 @@ namespace TraktTVUpdateClient.Extension
             {
                 returnString += genre.UpperCase() + ", ";
             }
-            return returnString != String.Empty ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
+            return String.IsNullOrEmpty(returnString) ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
         }
 
         public static string UpperCase(this string s)
@@ -47,7 +48,7 @@ namespace TraktTVUpdateClient.Extension
             {
                 if (char.IsLower(array[0]))
                 {
-                    array[0] = char.ToUpper(array[0]);
+                    array[0] = char.ToUpper(array[0], CultureInfo.CurrentCulture);
                 }
             }
             for (int i = 1; i < array.Length; i++)
@@ -56,7 +57,7 @@ namespace TraktTVUpdateClient.Extension
                 {
                     if (char.IsLower(array[i]))
                     {
-                        array[i] = char.ToUpper(array[i]);
+                        array[i] = char.ToUpper(array[i], CultureInfo.CurrentCulture);
                     }
                 }
             }
@@ -67,7 +68,7 @@ namespace TraktTVUpdateClient.Extension
         {
             try
             {
-                return (T)Convert.ChangeType(c, typeof(T));
+                return (T)Convert.ChangeType(c, typeof(T), CultureInfo.InvariantCulture);
             }
             catch (Exception) { return default(T); }
         }

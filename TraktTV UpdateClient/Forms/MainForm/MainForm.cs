@@ -25,6 +25,7 @@ using TraktTVUpdateClient.Forms;
 using TraktTVUpdateClient.Extension;
 using TraktTVUpdateClient.Properties;
 using TraktTVUpdateClient.VLC;
+using System.Globalization;
 
 namespace TraktTVUpdateClient
 {
@@ -287,7 +288,7 @@ namespace TraktTVUpdateClient
                     pb.Value = showProgress.Completed.Value;
                     var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                    var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() }));
+                    var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString(CultureInfo.CurrentCulture) }));
                     watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
                 }
             }
@@ -475,7 +476,7 @@ namespace TraktTVUpdateClient
                     lvItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(watchedShow.Show.Title));
                     if (lvItem != null)
                     {
-                        this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString());
+                        this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString(CultureInfo.CurrentCulture));
                         ProgressBar progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBar>();
                         this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
                         this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
@@ -483,7 +484,7 @@ namespace TraktTVUpdateClient
                     else
                     {
                         ProgressBar progressBar = new ProgressBar() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value };
-                        this.InvokeIfRequired(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString() })));
+                        this.InvokeIfRequired(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString(CultureInfo.CurrentCulture) })));
                         this.InvokeIfRequired(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0));
                     }
                 }
@@ -532,7 +533,7 @@ namespace TraktTVUpdateClient
 
             if (selectedNode.Text.Contains("Season"))
             {
-                int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""));
+                int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
                 if (watchedListView.SelectedItems.Count == 1)
                 {
                     Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber);
@@ -540,8 +541,8 @@ namespace TraktTVUpdateClient
             }
             else if (selectedNode.Text.Contains("Episode"))
             {
-                int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""));
-                int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""));
+                int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
+                int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
                 if (watchedListView.SelectedItems.Count == 1)
                 {
                     Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);

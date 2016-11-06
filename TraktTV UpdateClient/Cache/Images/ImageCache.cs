@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -104,9 +105,9 @@ namespace TraktTVUpdateClient.Cache
             int smallestDifference = int.MaxValue;
             foreach (string posterSize in configuration.imageConfiguration.posterSizes)
             {
-                if (posterSize.StartsWith("w"))
+                if (posterSize.StartsWith("w", StringComparison.CurrentCulture))
                 {
-                    int width = int.Parse(posterSize.Replace("w", ""));
+                    int width = int.Parse(posterSize.Replace("w", ""), CultureInfo.InvariantCulture);
                     if (width < size) continue;
                     else
                     {
