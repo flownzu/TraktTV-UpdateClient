@@ -40,6 +40,7 @@ namespace TraktTVUpdateClient
         public bool NoCache = true;
 
         private SettingsForm settingsForm;
+        private SearchShowForm searchForm;
         private bool vlcThreadStarted;
 
         public MainForm()
@@ -338,8 +339,15 @@ namespace TraktTVUpdateClient
 
         private void addShowButton_Click(object sender, EventArgs e)
         {
-            SearchShowForm searchShowForm = new SearchShowForm(TraktCache);
-            searchShowForm.Show();
+            if (searchForm == null || searchForm.IsDisposed)
+            {
+                searchForm = new SearchShowForm(TraktCache);
+                searchForm.StartPosition = FormStartPosition.Manual;
+                searchForm.Location = MousePosition;
+                searchForm.Show();
+            }
+            else
+                searchForm.Focus();
         }
 
         private async void updateButton_Click(object sender, EventArgs e)
