@@ -133,4 +133,8 @@
     <value>a593e2fa2b5fec5eae4076dc0fd175ed</value>
     <comment>The Movie Database API Key</comment>
   </data>
+  <data name="FanartAPIKey" xml:space="preserve">
+    <value>78b5cfe70c62bdabde314bc25d3cf251</value>
+    <comment>Fanart.tv API Key</comment>
+  </data>
 </root>

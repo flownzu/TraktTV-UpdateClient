@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktTVUpdateClient.Extension;
 using TraktTVUpdateClient.Properties;
@@ -11,7 +12,8 @@ namespace TraktTVUpdateClient.Cache
 {
     public class ImageCache
     {
-        internal Uri baseAdress = new Uri("https://api.themoviedb.org/3/");
+        internal Uri tmdbBaseAddress = new Uri("https://api.themoviedb.org/3/");
+        internal Uri fanartBaseAddress = new Uri("http://webservice.fanart.tv/v3/");
         internal TmdbConfiguration configuration;
 
         public bool IsReadyForImageCaching = false;
@@ -26,15 +28,15 @@ namespace TraktTVUpdateClient.Cache
         public async Task Init()
         {
             TmdbRateLimiter.CheckLimiter();
-            configuration = await GetConfiguration();
+            configuration = await GetTmdbConfiguration();
             IsReadyForImageCaching = true;
         }
 
-        private async Task<TmdbConfiguration> GetConfiguration()
+        private async Task<TmdbConfiguration> GetTmdbConfiguration()
         {
             try
             {
-                using(var httpClient = new HttpClient() { BaseAddress = baseAdress })
+                using(var httpClient = new HttpClient() { BaseAddress = tmdbBaseAddress })
                 {
                     using(var response = await httpClient.GetAsync("configuration?api_key=" + Resources.TMDbAPIKey))
                     {
@@ -45,11 +47,11 @@ namespace TraktTVUpdateClient.Cache
             catch (Exception) { return null; }
         }
 
-        private async Task<TmdbGetImagesResponse> GetImages(string tmdb_id)
+        private async Task<TmdbGetImagesResponse> GetTmdbImages(string tmdb_id)
         {
             try
             {
-                using (var httpClient = new HttpClient() { BaseAddress = baseAdress })
+                using (var httpClient = new HttpClient() { BaseAddress = tmdbBaseAddress })
                 {
                     using (var response = await httpClient.GetAsync("tv/" + tmdb_id + "/images?api_key=" + Resources.TMDbAPIKey))
                     {
@@ -60,12 +62,39 @@ namespace TraktTVUpdateClient.Cache
             catch (Exception) { return null; }
         }
 
-        private async Task SaveShowPoster(string tmdb_id, string traktid)
+        private async Task<FanartGetImagesResponse> GetFanartImages(string tvdb_id)
         {
-            var imgList = await GetImages(tmdb_id);
-            if(imgList.posters != null && imgList.posters.Length > 0)
-            {                
-                await imgList.posters[0].Save(Path.Combine(ImagePath, traktid), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
+            try
+            {
+                using (var httpClient = new HttpClient() { BaseAddress = fanartBaseAddress })
+                {
+                    using (var response = await httpClient.GetAsync("tv/" + tvdb_id + "?api_key=" + Resources.FanartAPIKey))
+                    {
+                        return JsonConvert.DeserializeObject<FanartGetImagesResponse>(await response.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+            catch (Exception) { return null; }
+        }
+
+        private async Task SaveShowPoster(TraktShowIds ids)
+        {
+            if (ids.Tmdb.HasValue)
+            {
+                TmdbRateLimiter.CheckLimiter();
+                var imgList = await GetTmdbImages(ids.Tmdb.ToString());
+                if (imgList.posters != null && imgList.posters.Length > 0)
+                {
+                    await imgList.posters[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
+                }
+            }
+            else if (ids.Tvdb.HasValue)
+            {
+                var imgList = await GetFanartImages(ids.Tvdb.ToString());
+                if(imgList.tvposter != null && imgList.tvposter.Length > 0)
+                {
+                    await imgList.tvposter[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()));
+                }
             }
         }
 
@@ -103,8 +132,7 @@ namespace TraktTVUpdateClient.Cache
                 var fileInfo = dirInfo.GetFiles(show.Show.Ids.Trakt + ".*");
                 if(fileInfo.Length == 0)
                 {
-                    TmdbRateLimiter.CheckLimiter();
-                    Task.Run(() => SaveShowPoster(show.Show.Ids.Tmdb.ToString(), show.Show.Ids.Trakt.ToString())).Forget();
+                    Task.Run(() => SaveShowPoster(show.Show.Ids)).Forget();
                 }
             }
         }
