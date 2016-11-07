@@ -38,7 +38,7 @@ namespace TraktTVUpdateClient.Extension
             {
                 returnString += genre.UpperCase() + ", ";
             }
-            return String.IsNullOrEmpty(returnString) ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
+            return !String.IsNullOrEmpty(returnString) ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
         }
 
         public static string UpperCase(this string s)
