@@ -539,21 +539,24 @@ namespace TraktTVUpdateClient
         {
             TreeNode selectedNode = (sender as TreeViewEx).SelectedNode;
 
-            if (selectedNode.Text.Contains("Season"))
+            if (selectedNode != null)
             {
-                int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
-                if (watchedListView.SelectedItems.Count == 1)
+                if (selectedNode.Text.Contains("Season"))
                 {
-                    Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber);
+                    int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
+                    if (watchedListView.SelectedItems.Count == 1)
+                    {
+                        Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber);
+                    }
                 }
-            }
-            else if (selectedNode.Text.Contains("Episode"))
-            {
-                int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
-                int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
-                if (watchedListView.SelectedItems.Count == 1)
+                else if (selectedNode.Text.Contains("Episode"))
                 {
-                    Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
+                    int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
+                    int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
+                    if (watchedListView.SelectedItems.Count == 1)
+                    {
+                        Process.Start("https://trakt.tv/shows/" + TraktCache.watchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
+                    }
                 }
             }
         }
