@@ -470,7 +470,7 @@ namespace TraktTVUpdateClient
             TraktCache.Save();
         }
 
-        private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
+        private void TraktCache_SyncCompleted(object sender, EventArgs e)
         {
             Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
             foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
