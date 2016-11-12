@@ -18,8 +18,6 @@ using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Objects.Post.Syncs.History;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
-using TraktSharp.Examples.Wpf.ViewModels;
-using TraktSharp.Examples.Wpf.Views;
 using TraktTVUpdateClient.Cache;
 using TraktTVUpdateClient.Forms;
 using TraktTVUpdateClient.Extension;
@@ -444,7 +442,6 @@ namespace TraktTVUpdateClient
                                 watchedListView.SelectedItems[0].SubItems[2].Text = traktRating.Rating.ToString();
                             }
                         }
-
                     }
                 }
                 else

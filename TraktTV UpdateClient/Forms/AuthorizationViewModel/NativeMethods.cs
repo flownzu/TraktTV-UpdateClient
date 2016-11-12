@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace TraktSharp.Examples.Wpf {
+namespace TraktTVUpdateClient.Forms
+{
 
-	internal static class NativeMethods {
+    internal static class NativeMethods {
 
 		[DllImport("urlmon.dll"), PreserveSig]
 		[return: MarshalAs(UnmanagedType.Error)]

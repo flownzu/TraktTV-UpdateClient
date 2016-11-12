@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace TraktSharp.Examples.Wpf.ViewModels
+namespace TraktTVUpdateClient.Forms
 {
 
     internal abstract class ViewModelBase : INotifyPropertyChanged {
