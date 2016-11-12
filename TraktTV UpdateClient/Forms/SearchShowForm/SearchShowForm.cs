@@ -130,7 +130,7 @@ namespace TraktTVUpdateClient.Forms
                 this.foundShowsListView.Items.Clear();
                 int maxResults = 5;
                 if (this.searchLimitTxtBox.Text != String.Empty) Int32.TryParse(this.searchLimitTxtBox.Text, out maxResults);
-                lastSearch = await searchShows(this.searchShowNameTxtBox.Text, maxResults + 1);
+                lastSearch = await SearchShows(this.searchShowNameTxtBox.Text, maxResults + 1);
                 List<Task> taskList = new List<Task>();
                 foreach(TraktShow show in lastSearch)
                 {
@@ -161,7 +161,7 @@ namespace TraktTVUpdateClient.Forms
             season.Episodes = await traktCache.TraktClient.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
         }
 
-        private async Task<List<TraktShow>> searchShows(String title, int maxSearchResults = 5)
+        private async Task<List<TraktShow>> SearchShows(String title, int maxSearchResults = 5)
         {
             List<TraktShow> showList = new List<TraktShow>();
             var searchResult = await traktCache.TraktClient.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, title, TraktSearchField.Title, limitPerPage: maxSearchResults, extendedInfo: new TraktExtendedInfo().SetFull());

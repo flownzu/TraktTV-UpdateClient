@@ -88,7 +88,7 @@ namespace TraktTVUpdateClient.Cache
             OnSyncCompleted();
         }
 
-        public async Task<IEnumerable<TraktHistoryItem>> getWatchedHistory()
+        public async Task<IEnumerable<TraktHistoryItem>> GetWatchedHistory()
         {
             TraktPaginationListResult<TraktHistoryItem> episodeHistory = await TraktClient.Sync.GetWatchedHistoryAsync(TraktSyncItemType.Episode, startAt: lastWatched, endAt: DateTime.Now, limitPerPage: 100);
             if(episodeHistory.Page < episodeHistory.PageCount)

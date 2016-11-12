@@ -40,7 +40,7 @@ namespace TraktTVUpdateClient.Forms
                         Properties.Settings.Default.WatchedPercent = watchedPercent;
                         Properties.Settings.Default.VLCPort = vlcPort;
                         Properties.Settings.Default.Save();
-                        if (Properties.Settings.Default.VLCEnabled) { Task.Run(() => mainForm.waitForVLCConnection()).Forget(); }
+                        if (Properties.Settings.Default.VLCEnabled) { Task.Run(() => mainForm.WaitForVlcConnection()).Forget(); }
                     }
                     else if(dialogResult == DialogResult.Cancel)
                     {
@@ -58,7 +58,7 @@ namespace TraktTVUpdateClient.Forms
             Properties.Settings.Default.VLCPort = vlcPort;
             Properties.Settings.Default.VLCEnabled = enableVLCCheckBox.Checked;
             Properties.Settings.Default.Save();
-            if (Properties.Settings.Default.VLCEnabled) { Task.Run(() => mainForm.waitForVLCConnection()).Forget(); }
+            if (Properties.Settings.Default.VLCEnabled) { Task.Run(() => mainForm.WaitForVlcConnection()).Forget(); }
         }
     }
 }
