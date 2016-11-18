@@ -18,8 +18,11 @@ namespace TraktTVUpdateClient.Extension
 
         public ProgressBarEx()
         {
-            if (ProgressBarRenderer.IsSupported) { SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true); }
-            BackColor = Color.DarkTurquoise;
+            if (ProgressBarRenderer.IsSupported)
+            {
+                SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+                BackColor = Color.DarkTurquoise;
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
