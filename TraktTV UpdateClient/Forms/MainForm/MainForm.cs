@@ -285,7 +285,7 @@ namespace TraktTVUpdateClient
                 TraktShowWatchedProgress showProgress;
                 if (TraktCache.progressList.TryGetValue(watchedShow.Show.Ids.Slug, out showProgress))
                 {
-                    ProgressBar pb = new ProgressBar() { Minimum = 0, Maximum = showProgress.Aired.Value };
+                    ProgressBarEx pb = new ProgressBarEx() { Minimum = 0, Maximum = showProgress.Aired.Value, DisplayStyle = ProgressBarDisplayText.CustomText, CustomText = showProgress.Completed + "/" + showProgress.Aired };
                     pb.Value = showProgress.Completed.Value;
                     var traktRating = TraktCache.ratingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
@@ -485,13 +485,13 @@ namespace TraktTVUpdateClient
                     if (lvItem != null)
                     {
                         this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString(CultureInfo.CurrentCulture));
-                        ProgressBar progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBar>();
+                        ProgressBarEx progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBarEx>();
                         this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
                         this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
                     }
                     else
                     {
-                        ProgressBar progressBar = new ProgressBar() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value };
+                        ProgressBarEx progressBar = new ProgressBarEx() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value, DisplayStyle = ProgressBarDisplayText.CustomText, CustomText = showProgress.Completed + "/" + showProgress.Aired };
                         this.InvokeIfRequired(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString(CultureInfo.CurrentCulture) })));
                         this.InvokeIfRequired(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0));
                     }

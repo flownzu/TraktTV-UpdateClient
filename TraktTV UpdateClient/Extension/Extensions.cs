@@ -68,7 +68,7 @@ namespace TraktTVUpdateClient.Extension
         {
             try
             {
-                return (T)Convert.ChangeType(c, typeof(T), CultureInfo.InvariantCulture);
+                return (T)Convert.ChangeType(c, typeof(T), CultureInfo.CurrentCulture);
             }
             catch (Exception) { return default(T); }
         }

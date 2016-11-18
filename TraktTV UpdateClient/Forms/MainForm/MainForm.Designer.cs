@@ -44,12 +44,12 @@
             this.addShowButton = new System.Windows.Forms.Button();
             this.settingButton = new System.Windows.Forms.Button();
             this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
+            this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
             this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -214,6 +214,15 @@
             this.vlcConnectStatusLabel.TabIndex = 18;
             this.vlcConnectStatusLabel.Text = "VLC Status:  not connected";
             // 
+            // nextUnwatchedEpisodeLbl
+            // 
+            this.nextUnwatchedEpisodeLbl.AutoSize = true;
+            this.nextUnwatchedEpisodeLbl.Location = new System.Drawing.Point(308, 44);
+            this.nextUnwatchedEpisodeLbl.Name = "nextUnwatchedEpisodeLbl";
+            this.nextUnwatchedEpisodeLbl.Size = new System.Drawing.Size(76, 13);
+            this.nextUnwatchedEpisodeLbl.TabIndex = 20;
+            this.nextUnwatchedEpisodeLbl.Text = "Next Episode: ";
+            // 
             // seasonOverviewTreeView
             // 
             this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -260,15 +269,6 @@
             // 
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
-            // 
-            // nextUnwatchedEpisodeLbl
-            // 
-            this.nextUnwatchedEpisodeLbl.AutoSize = true;
-            this.nextUnwatchedEpisodeLbl.Location = new System.Drawing.Point(308, 44);
-            this.nextUnwatchedEpisodeLbl.Name = "nextUnwatchedEpisodeLbl";
-            this.nextUnwatchedEpisodeLbl.Size = new System.Drawing.Size(76, 13);
-            this.nextUnwatchedEpisodeLbl.TabIndex = 20;
-            this.nextUnwatchedEpisodeLbl.Text = "Next Episode: ";
             // 
             // MainForm
             // 
