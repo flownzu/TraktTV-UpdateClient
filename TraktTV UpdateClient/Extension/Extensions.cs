@@ -93,7 +93,7 @@ namespace TraktTVUpdateClient.Extension
                     returnValue = temp;
                 }
             }
-            catch (Exception) { return default(TResult); }
+            catch (Exception) { }
             return returnValue;
         }
 

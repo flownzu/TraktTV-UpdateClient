@@ -32,7 +32,7 @@ namespace TraktTVUpdateClient.VLC
             client.Connect("localhost", port);
             writeStream = new StreamWriter(client.GetStream());
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            read();
+            Read();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
@@ -71,13 +71,13 @@ namespace TraktTVUpdateClient.VLC
             WatchedPercentReached?.Invoke(this, EventArgs.Empty);
         }
 
-        public async Task write(String msg)
+        public async Task Write(String msg)
         {
             await writeStream.WriteLineAsync(msg);
             await writeStream.FlushAsync();
         }
 
-        public async Task<string> read()
+        public async Task<string> Read()
         {
             if (client.Connected)
             {
@@ -99,15 +99,15 @@ namespace TraktTVUpdateClient.VLC
 
         private async Task UpdateCurrentMediaLength()
         {
-            await write("get_length");
-            string getLengthResponse = await read();
+            await Write("get_length");
+            string getLengthResponse = await Read();
             if (!String.IsNullOrEmpty(getLengthResponse.Trim()) && !String.IsNullOrWhiteSpace(getLengthResponse.Trim())) { UInt32.TryParse(getLengthResponse.Trim(), out CurrentMediaItem.Length); }
         }
 
         private async Task UpdateCurrentMediaTitle()
         {
-            await write("get_title");
-            string getTitleResponse = await read();
+            await Write("get_title");
+            string getTitleResponse = await Read();
             if (!String.IsNullOrEmpty(getTitleResponse.Trim())) { CurrentMediaItem.Title = getTitleResponse.Trim(); }
         }
 
@@ -117,10 +117,10 @@ namespace TraktTVUpdateClient.VLC
             {
                 try
                 {
-                    await write("status");
-                    string statusResponse = await read();
-                    await write("get_time");
-                    string getTimeResponse = await read();
+                    await Write("status");
+                    string statusResponse = await Read();
+                    await Write("get_time");
+                    string getTimeResponse = await Read();
                     if (CurrentMediaItem.Length == 0)
                     {
                         await UpdateCurrentMediaLength();

@@ -18,8 +18,6 @@ using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Objects.Post.Syncs.History;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
-using TraktSharp.Examples.Wpf.ViewModels;
-using TraktSharp.Examples.Wpf.Views;
 using TraktTVUpdateClient.Cache;
 using TraktTVUpdateClient.Forms;
 using TraktTVUpdateClient.Extension;
@@ -56,7 +54,7 @@ namespace TraktTVUpdateClient
                 NoCache = false;
             }
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
-            if (Settings.Default.VLCEnabled) { Task.Run(() => waitForVLCConnection()).Forget(); }
+            if (Settings.Default.VLCEnabled) { Task.Run(() => WaitForVlcConnection()).Forget(); }
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
         }
@@ -74,7 +72,7 @@ namespace TraktTVUpdateClient
             catch (Exception) { return new TraktCache(Client); }
         }
 
-        public void waitForVLCConnection()
+        public void WaitForVlcConnection()
         {
             if (vlcThreadStarted) return;
             while (Settings.Default.VLCEnabled)
@@ -115,7 +113,7 @@ namespace TraktTVUpdateClient
                 string showName = m.Groups[1].Value.Replace('.', ' ').Trim();
                 int seasonNumber = Int16.Parse(m.Groups[2].Value);
                 int episodeNumber = Int16.Parse(m.Groups[3].Value);
-                TraktShow show = await getClosestMatch(showName, 80);
+                TraktShow show = await GetClosestMatch(showName, 80);
                 if(show != null)
                 {
                     CurrentShow = show;
@@ -126,7 +124,7 @@ namespace TraktTVUpdateClient
             try
             {
                 string parentFolderName = mediaPath[mediaPath.Length - 2];
-                TraktShow show = await getClosestMatch(parentFolderName, 80);
+                TraktShow show = await GetClosestMatch(parentFolderName, 80);
                 if(show != null)
                 {
                     show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
@@ -155,7 +153,7 @@ namespace TraktTVUpdateClient
                 else
                 {
                     string parentsParentFolderName = mediaPath[mediaPath.Length - 3];
-                    show = await getClosestMatch(parentsParentFolderName, 80);
+                    show = await GetClosestMatch(parentsParentFolderName, 80);
                     if(show != null)
                     {
                         m = Regex.Match(parentFolderName, @"(\d+)");
@@ -176,7 +174,7 @@ namespace TraktTVUpdateClient
             catch (Exception) { }
         }
 
-        private async Task<TraktShow> getClosestMatch(string showName, double minSimilarity = 0)
+        private async Task<TraktShow> GetClosestMatch(string showName, double minSimilarity = 0)
         {
             var searchResult = await Client.Search.GetTextQueryResultsAsync(TraktSearchResultType.Show, showName, TraktSearchField.Title, limitPerPage: 15);
 
@@ -211,12 +209,12 @@ namespace TraktTVUpdateClient
         private void vlcClient_ConnectionLost(object sender, EventArgs e)
         {
             vlcConnectStatusLabel.Invoke(new MethodInvoker(() => vlcConnectStatusLabel.Text = "VLC Status: not connected"));
-            Thread vlcConnectionThread = new Thread(waitForVLCConnection);
+            Thread vlcConnectionThread = new Thread(WaitForVlcConnection);
             vlcConnectionThread.IsBackground = true;
             vlcConnectionThread.Start();
         }
 
-        public async Task<bool> login()
+        public async Task<bool> Login()
         {
             if (Client.Authorization.IsRefreshPossible)
             {
@@ -234,11 +232,11 @@ namespace TraktTVUpdateClient
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            StartSTATask(() => loginThread());
+            StartSTATask(() => LoginThread());
             UpdateListView();
         }
 
-        private async void loginThread()
+        private async void LoginThread()
         {
             if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
             if (!Client.Authorization.IsValid || Client.Authorization.IsExpired)
@@ -247,7 +245,7 @@ namespace TraktTVUpdateClient
                 {
                     do
                     {
-                        await login();
+                        await Login();
                     } while (Client.Authentication.IsAuthorized == false);
                     Client.Authorization.Serialize();
                 }
@@ -444,7 +442,6 @@ namespace TraktTVUpdateClient
                                 watchedListView.SelectedItems[0].SubItems[2].Text = traktRating.Rating.ToString();
                             }
                         }
-
                     }
                 }
                 else
@@ -470,7 +467,7 @@ namespace TraktTVUpdateClient
             TraktCache.Save();
         }
 
-        private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
+        private void TraktCache_SyncCompleted(object sender, EventArgs e)
         {
             Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
             foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)

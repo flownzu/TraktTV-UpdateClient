@@ -1,13 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Windows.Navigation;
+﻿using System.Windows.Navigation;
 using TraktTVUpdateClient.Extension;
-using TraktSharp.Examples.Wpf.ViewModels;
 
-namespace TraktSharp.Examples.Wpf.Views {
+namespace TraktTVUpdateClient.Forms
+{
 
-	internal partial class AuthorizeView {
+    internal partial class AuthorizeView {
 
 		private AuthorizeViewModel ViewModel { get; set; }
 

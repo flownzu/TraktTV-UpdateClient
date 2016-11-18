@@ -169,7 +169,6 @@
     <Compile Include="Cache\Images\TMDb\TmdbGetImagesResponse.cs" />
     <Compile Include="Cache\Images\TMDb\TmdbImage.cs" />
     <Compile Include="Cache\Trakt\TraktCache.cs" />
-    <Compile Include="Cache\Trakt\SyncCompletedEventArgs.cs" />
     <Compile Include="Extension\ListViewEx.cs">
       <SubType>Component</SubType>
     </Compile>

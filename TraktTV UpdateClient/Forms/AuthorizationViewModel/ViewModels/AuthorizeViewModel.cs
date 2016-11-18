@@ -2,10 +2,9 @@
 using System.Reflection;
 using System.Windows.Navigation;
 using Microsoft.Win32;
-using TraktSharp.Examples.Wpf.Views;
 using TraktApiSharp;
 
-namespace TraktSharp.Examples.Wpf.ViewModels
+namespace TraktTVUpdateClient.Forms
 {
 
     internal class AuthorizeViewModel : ViewModelBase {

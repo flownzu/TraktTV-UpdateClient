@@ -12,7 +12,6 @@ using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Requests.Params;
-using TraktTVUpdateClient.Extension;
 
 namespace TraktTVUpdateClient.Cache
 {
@@ -36,7 +35,7 @@ namespace TraktTVUpdateClient.Cache
         [JsonProperty(PropertyName = "LastWatched")]
         internal DateTime lastWatched { get; set; }
 
-        public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
+        public event EventHandler SyncCompleted;
 
         public TraktCache(TraktClient Client)
         {
@@ -69,7 +68,7 @@ namespace TraktTVUpdateClient.Cache
         protected virtual void OnSyncCompleted()
         {
             Save();
-            SyncCompleted?.Invoke(this, new SyncCompletedEventArgs());
+            SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         public void Save()
@@ -88,7 +87,7 @@ namespace TraktTVUpdateClient.Cache
             OnSyncCompleted();
         }
 
-        public async Task<IEnumerable<TraktHistoryItem>> getWatchedHistory()
+        public async Task<IEnumerable<TraktHistoryItem>> GetWatchedHistory()
         {
             TraktPaginationListResult<TraktHistoryItem> episodeHistory = await TraktClient.Sync.GetWatchedHistoryAsync(TraktSyncItemType.Episode, startAt: lastWatched, endAt: DateTime.Now, limitPerPage: 100);
             if(episodeHistory.Page < episodeHistory.PageCount)
