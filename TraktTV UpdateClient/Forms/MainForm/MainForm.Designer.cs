@@ -39,7 +39,7 @@
             this.genreLabel = new System.Windows.Forms.Label();
             this.scoreLabel = new System.Windows.Forms.Label();
             this.scoreComboBox = new System.Windows.Forms.ComboBox();
-            this.updateButton = new System.Windows.Forms.Button();
+            this.syncButton = new System.Windows.Forms.Button();
             this.traktConnectStatusLabel = new System.Windows.Forms.Label();
             this.addShowButton = new System.Windows.Forms.Button();
             this.settingButton = new System.Windows.Forms.Button();
@@ -50,6 +50,7 @@
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.eventLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -165,15 +166,16 @@
             this.scoreComboBox.TabIndex = 12;
             this.scoreComboBox.SelectedIndexChanged += new System.EventHandler(this.scoreComboBox_SelectedIndexChanged);
             // 
-            // updateButton
+            // syncButton
             // 
-            this.updateButton.Location = new System.Drawing.Point(463, 140);
-            this.updateButton.Name = "updateButton";
-            this.updateButton.Size = new System.Drawing.Size(68, 22);
-            this.updateButton.TabIndex = 13;
-            this.updateButton.Text = "Update";
-            this.updateButton.UseVisualStyleBackColor = true;
-            this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
+            this.syncButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Update;
+            this.syncButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.syncButton.Location = new System.Drawing.Point(423, 3);
+            this.syncButton.Name = "syncButton";
+            this.syncButton.Size = new System.Drawing.Size(32, 32);
+            this.syncButton.TabIndex = 13;
+            this.syncButton.UseVisualStyleBackColor = true;
+            this.syncButton.Click += new System.EventHandler(this.syncButton_Click);
             // 
             // traktConnectStatusLabel
             // 
@@ -186,11 +188,12 @@
             // 
             // addShowButton
             // 
-            this.addShowButton.Location = new System.Drawing.Point(389, 140);
+            this.addShowButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Search;
+            this.addShowButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.addShowButton.Location = new System.Drawing.Point(461, 3);
             this.addShowButton.Name = "addShowButton";
-            this.addShowButton.Size = new System.Drawing.Size(68, 22);
+            this.addShowButton.Size = new System.Drawing.Size(32, 32);
             this.addShowButton.TabIndex = 16;
-            this.addShowButton.Text = "Add Show";
             this.addShowButton.UseVisualStyleBackColor = true;
             this.addShowButton.Click += new System.EventHandler(this.addShowButton_Click);
             // 
@@ -270,18 +273,27 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
+            // eventLabel
+            // 
+            this.eventLabel.AutoSize = true;
+            this.eventLabel.Location = new System.Drawing.Point(308, 149);
+            this.eventLabel.Name = "eventLabel";
+            this.eventLabel.Size = new System.Drawing.Size(0, 13);
+            this.eventLabel.TabIndex = 21;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.eventLabel);
             this.Controls.Add(this.nextUnwatchedEpisodeLbl);
             this.Controls.Add(this.seasonOverviewTreeView);
             this.Controls.Add(this.vlcConnectStatusLabel);
             this.Controls.Add(this.settingButton);
             this.Controls.Add(this.addShowButton);
             this.Controls.Add(this.traktConnectStatusLabel);
-            this.Controls.Add(this.updateButton);
+            this.Controls.Add(this.syncButton);
             this.Controls.Add(this.scoreComboBox);
             this.Controls.Add(this.scoreLabel);
             this.Controls.Add(this.watchedListView);
@@ -320,7 +332,7 @@
         private System.Windows.Forms.Label genreLabel;
         private System.Windows.Forms.Label scoreLabel;
         private System.Windows.Forms.ComboBox scoreComboBox;
-        private System.Windows.Forms.Button updateButton;
+        private System.Windows.Forms.Button syncButton;
         private System.Windows.Forms.ColumnHeader nameColumnHeader;
         private System.Windows.Forms.ColumnHeader progressColumnHeader;
         private System.Windows.Forms.ColumnHeader scoreColumnHeader;
@@ -330,6 +342,7 @@
         private System.Windows.Forms.Label vlcConnectStatusLabel;
         private TreeViewEx seasonOverviewTreeView;
         private System.Windows.Forms.Label nextUnwatchedEpisodeLbl;
+        private System.Windows.Forms.Label eventLabel;
     }
 }
 

@@ -53,10 +53,12 @@ namespace TraktTVUpdateClient
                 TraktCache.TraktClient = Client;
                 NoCache = false;
             }
+            TraktCache.SyncStarted += TraktCache_SyncStarted;
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
             if (Settings.Default.VLCEnabled) { Task.Run(() => WaitForVlcConnection()).Forget(); }
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
+            eventLabel.Text = "Cache loaded.";
         }
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
@@ -306,8 +308,8 @@ namespace TraktTVUpdateClient
                     var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                     {
+                        eventLabel.Text = "Added episode to watched list.";
                         await TraktCache.SyncShowProgress(show.Show);
-                        Task.Run(() => TraktCache.Sync()).Forget();
                     }
                 }
             }
@@ -328,8 +330,8 @@ namespace TraktTVUpdateClient
                     var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
                     if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
                     {
+                        eventLabel.Text = "Removed episode from watched list.";
                         await TraktCache.SyncShowProgress(show.Show);
-                        Task.Run(() => TraktCache.Sync()).Forget();
                     }
                 }
             }
@@ -348,12 +350,11 @@ namespace TraktTVUpdateClient
                 searchForm.Focus();
         }
 
-        private async void updateButton_Click(object sender, EventArgs e)
+        private void syncButton_Click(object sender, EventArgs e)
         {
             if (Client.Authentication.IsAuthorized)
             {
-                await TraktCache.Update();
-                TraktCache.Save();
+                Task.Run(() => TraktCache.Sync()).Forget();
             }
         }
 
@@ -430,6 +431,7 @@ namespace TraktTVUpdateClient
                             {
                                 await TraktCache.UpdateRatingsList();
                                 watchedListView.SelectedItems[0].SubItems[2].Text = scoreComboBox.SelectedItem.ToString();
+                                eventLabel.Text = "Removed rating from " + watchedListView.SelectedItems[0].Text;
                             }
                         }
                         else
@@ -440,6 +442,7 @@ namespace TraktTVUpdateClient
                             {
                                 traktRating.Rating = int.Parse(scoreComboBox.SelectedItem.ToString());
                                 watchedListView.SelectedItems[0].SubItems[2].Text = traktRating.Rating.ToString();
+                                eventLabel.Text = "Changed rating from " + watchedListView.SelectedItems[0].Text;
                             }
                         }
                     }
@@ -456,6 +459,7 @@ namespace TraktTVUpdateClient
                         {
                             await TraktCache.UpdateRatingsList();
                             watchedListView.SelectedItems[0].SubItems[2].Text = scoreComboBox.SelectedItem.ToString();
+                            eventLabel.Text = "Added rating to " + watchedListView.SelectedItems[0].Text;
                         }
                     }
                 }
@@ -467,8 +471,14 @@ namespace TraktTVUpdateClient
             TraktCache.Save();
         }
 
-        private void TraktCache_SyncCompleted(object sender, EventArgs e)
+        private void TraktCache_SyncStarted(object sender, SyncStartedEventArgs e)
         {
+            if(e != SyncStartedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing started...");
+        }
+
+        private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
+        {
+            if(e != SyncCompletedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing finished!");
             Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
             foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
             {

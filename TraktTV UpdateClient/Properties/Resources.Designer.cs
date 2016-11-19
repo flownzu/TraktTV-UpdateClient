@@ -90,6 +90,16 @@ namespace TraktTVUpdateClient.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Search {
+            get {
+                object obj = ResourceManager.GetObject("Search", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Settings {
             get {
                 object obj = ResourceManager.GetObject("Settings", resourceCulture);
@@ -103,6 +113,16 @@ namespace TraktTVUpdateClient.Properties {
         internal static string TMDbAPIKey {
             get {
                 return ResourceManager.GetString("TMDbAPIKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Update {
+            get {
+                object obj = ResourceManager.GetObject("Update", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

@@ -35,7 +35,8 @@ namespace TraktTVUpdateClient.Cache
         [JsonProperty(PropertyName = "LastWatched")]
         internal DateTime lastWatched { get; set; }
 
-        public event EventHandler SyncCompleted;
+        public event EventHandler<SyncStartedEventArgs> SyncStarted;
+        public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
 
         public TraktCache(TraktClient Client)
         {
@@ -47,6 +48,7 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task Sync(bool NoCache = false)
         {
+            OnSyncStarted(SyncStartedEventArgs.CompleteSync);
             if (!NoCache) { await this.Update(); return; }
             await UpdateProgressList();
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
@@ -62,13 +64,18 @@ namespace TraktTVUpdateClient.Cache
                 await UpdateProgressList();
                 lastWatched = lastActivites.Episodes.WatchedAt.Value;
             }
-            OnSyncCompleted();
+            OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
         }
 
-        protected virtual void OnSyncCompleted()
+        protected virtual void OnSyncStarted(SyncStartedEventArgs e)
+        {
+            SyncStarted?.Invoke(this, e);
+        }
+
+        protected virtual void OnSyncCompleted(SyncCompletedEventArgs e)
         {
             Save();
-            SyncCompleted?.Invoke(this, EventArgs.Empty);
+            SyncCompleted?.Invoke(this, e);
         }
 
         public void Save()
@@ -84,7 +91,7 @@ namespace TraktTVUpdateClient.Cache
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
             lastRating = lastActivites.Shows.RatedAt.Value;
             lastWatched = lastActivites.Episodes.WatchedAt.Value;
-            OnSyncCompleted();
+            OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
         }
 
         public async Task<IEnumerable<TraktHistoryItem>> GetWatchedHistory()
@@ -143,16 +150,20 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task SyncShowProgress(TraktShow show)
         {
+            OnSyncStarted(SyncStartedEventArgs.PartialSync);
             TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(show.Ids.Slug, false, false, false);
             if (progressList.ContainsKey(show.Ids.Slug)) { progressList.Remove(show.Ids.Slug); }
             progressList.Add(show.Ids.Slug, progress);
+            OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
         }
 
         public async Task SyncShowProgress(string showSlug)
         {
+            OnSyncStarted(SyncStartedEventArgs.PartialSync);
             TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
             if (progressList.ContainsKey(showSlug)) { progressList.Remove(showSlug); }
             progressList.Add(showSlug, progress);
+            OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
         }
     }
 }
