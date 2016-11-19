@@ -34,7 +34,7 @@ namespace TraktTVUpdateClient.Extension
             brush = new LinearGradientBrush(rec, this.ForeColor, this.BackColor, LinearGradientMode.Vertical);
             e.Graphics.FillRectangle(brush, 2, 2, rec.Width, rec.Height);
             string text = DisplayStyle == ProgressBarDisplayText.Percentage ? Value.ToString() + '%' : CustomText;
-            using (Font f = new Font("Calibri", 10))
+            using (Font f = new Font("Microsoft Sans Serif", 8))
             {
                 SizeF len = e.Graphics.MeasureString(text, f);
                 Point location = new Point(Convert.ToInt32((Width / 2) - len.Width / 2), Convert.ToInt32((Height / 2) - len.Height / 2));
