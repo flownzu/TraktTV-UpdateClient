@@ -51,6 +51,7 @@
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.eventLabel = new System.Windows.Forms.Label();
+            this.relogButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -281,11 +282,23 @@
             this.eventLabel.Size = new System.Drawing.Size(0, 13);
             this.eventLabel.TabIndex = 21;
             // 
+            // relogButton
+            // 
+            this.relogButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Lock;
+            this.relogButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.relogButton.Location = new System.Drawing.Point(385, 3);
+            this.relogButton.Name = "relogButton";
+            this.relogButton.Size = new System.Drawing.Size(32, 32);
+            this.relogButton.TabIndex = 22;
+            this.relogButton.UseVisualStyleBackColor = true;
+            this.relogButton.Click += new System.EventHandler(this.relogButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.relogButton);
             this.Controls.Add(this.eventLabel);
             this.Controls.Add(this.nextUnwatchedEpisodeLbl);
             this.Controls.Add(this.seasonOverviewTreeView);
@@ -343,6 +356,7 @@
         private TreeViewEx seasonOverviewTreeView;
         private System.Windows.Forms.Label nextUnwatchedEpisodeLbl;
         private System.Windows.Forms.Label eventLabel;
+        private System.Windows.Forms.Button relogButton;
     }
 }
 

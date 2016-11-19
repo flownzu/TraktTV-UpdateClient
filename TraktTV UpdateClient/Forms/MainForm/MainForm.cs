@@ -240,6 +240,7 @@ namespace TraktTVUpdateClient
 
         private async void LoginThread()
         {
+            this.InvokeIfRequired(() => eventLabel.Text = "Logging in...");
             if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
             if (!Client.Authorization.IsValid || Client.Authorization.IsExpired)
             {
@@ -251,7 +252,7 @@ namespace TraktTVUpdateClient
                     } while (Client.Authentication.IsAuthorized == false);
                     Client.Authorization.Serialize();
                 }
-                catch (Exception) { return; }
+                catch (Exception) { this.InvokeIfRequired(() => eventLabel.Text = "Problems logging in, try again in a few minutes."); return; }
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync(NoCache)).Forget();
@@ -576,6 +577,11 @@ namespace TraktTVUpdateClient
                     }
                 }
             }
+        }
+
+        private void relogButton_Click(object sender, EventArgs e)
+        {
+            StartSTATask(() => LoginThread());
         }
     }
 }
