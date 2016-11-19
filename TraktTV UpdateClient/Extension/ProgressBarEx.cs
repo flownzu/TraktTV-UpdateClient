@@ -17,6 +17,10 @@ namespace TraktTVUpdateClient.Extension
         /// <para><seealso cref="ProgressBarDisplayText.CustomText"/> shows a custom text on the control</para>
         /// </summary>
         public ProgressBarDisplayText DisplayStyle { get; set; }
+
+        /// <summary>
+        /// Sets the string that will be displayed when the <see cref="DisplayStyle"/> is set to <seealso cref="ProgressBarDisplayText.CustomText"/>.
+        /// </summary>
         public String CustomText { get; set; }
 
         public ProgressBarEx()
