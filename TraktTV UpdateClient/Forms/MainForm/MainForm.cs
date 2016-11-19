@@ -58,7 +58,7 @@ namespace TraktTVUpdateClient
             if (Settings.Default.VLCEnabled) { Task.Run(() => WaitForVlcConnection()).Forget(); }
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
-            eventLabel.Text = "Cache loaded.";
+            ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
         }
 
         public TraktCache LoadCache(string cacheFile = "cache.json")
@@ -473,13 +473,16 @@ namespace TraktTVUpdateClient
 
         private void TraktCache_SyncStarted(object sender, SyncStartedEventArgs e)
         {
-            if(e != SyncStartedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing started...");
+            if(e != SyncStartedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing with trakt.tv started...");
         }
 
         private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
         {
-            if(e != SyncCompletedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing finished!");
-            Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
+            if (e != SyncCompletedEventArgs.PartialSync)
+            {
+                this.InvokeIfRequired(() => eventLabel.Text = "Syncing show poster started...");
+                Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
+            }
             foreach (TraktWatchedShow watchedShow in TraktCache.watchedList)
             {
                 TraktShowWatchedProgress showProgress;
@@ -523,6 +526,11 @@ namespace TraktTVUpdateClient
             foreach (ListViewItem lvItem in removeList)
                 this.InvokeIfRequired(() => watchedListView.Items.Remove(lvItem));
             this.InvokeIfRequired(() => watchedListView_SelectedIndexChanged(null, EventArgs.Empty));
+        }
+
+        private void ShowPosterCache_SyncCompleted(object sender, EventArgs e)
+        {
+            this.InvokeIfRequired(() => eventLabel.Text = "Cache synced.");
         }
 
         private void settingButton_Click(object sender, EventArgs e)

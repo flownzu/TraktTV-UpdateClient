@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
@@ -19,6 +21,8 @@ namespace TraktTVUpdateClient.Cache
 
         public bool IsReadyForImageCaching = false;
         public string ImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
+
+        public event EventHandler SyncCompleted;
 
 
         public ImageCache()
@@ -124,18 +128,27 @@ namespace TraktTVUpdateClient.Cache
             return bestPosterSize;
         }
 
-        public void Sync(TraktCache traktCache)
+        public async void Sync(TraktCache traktCache)
         {
             Directory.CreateDirectory(ImagePath);
+            List<Task> taskList = new List<Task>();
             foreach (TraktWatchedShow show in traktCache.watchedList)
             {
                 var dirInfo = new DirectoryInfo(ImagePath);
                 var fileInfo = dirInfo.GetFiles(show.Show.Ids.Trakt + ".*");
                 if(fileInfo.Length == 0)
                 {
-                    Task.Run(() => SaveShowPoster(show.Show.Ids)).Forget();
+                    taskList.Add(Task.Run(() => SaveShowPoster(show.Show.Ids)));
                 }
+                Thread.Sleep(10);
             }
+            await Task.WhenAll(taskList);
+            OnSyncCompleted();
+        }
+
+        protected virtual void OnSyncCompleted()
+        {
+            SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
 }
