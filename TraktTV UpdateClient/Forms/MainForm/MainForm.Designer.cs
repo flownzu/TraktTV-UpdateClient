@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.showPosterBox = new System.Windows.Forms.PictureBox();
             this.showNameLabel = new System.Windows.Forms.Label();
             this.episodeLabel = new System.Windows.Forms.Label();
@@ -319,6 +320,7 @@
             this.Controls.Add(this.episodeLabel);
             this.Controls.Add(this.showNameLabel);
             this.Controls.Add(this.showPosterBox);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(710, 426);
             this.Name = "MainForm";

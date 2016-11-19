@@ -30,6 +30,7 @@ namespace TraktTVUpdateClient.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             this.vlcPortLbl = new System.Windows.Forms.Label();
             this.vlcPortTxtBox = new System.Windows.Forms.TextBox();
             this.markEpisodeLbl = new System.Windows.Forms.Label();
@@ -118,6 +119,7 @@ namespace TraktTVUpdateClient.Forms
             this.Controls.Add(this.markEpisodeLbl);
             this.Controls.Add(this.vlcPortTxtBox);
             this.Controls.Add(this.vlcPortLbl);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(387, 162);
             this.MinimumSize = new System.Drawing.Size(387, 162);
