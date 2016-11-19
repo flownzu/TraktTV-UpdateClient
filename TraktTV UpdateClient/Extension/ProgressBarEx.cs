@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 
 namespace TraktTVUpdateClient.Extension
 {
@@ -13,6 +11,11 @@ namespace TraktTVUpdateClient.Extension
         [DllImportAttribute("uxtheme.dll")]
         private static extern int SetWindowTheme(IntPtr hWnd, string appname, string idlist);
 
+        /// <summary>
+        /// Gets or sets the display style of the progress bar.
+        /// <para><see cref="ProgressBarDisplayText.Percentage"/> shows the current progress bar value as percent on the control</para>
+        /// <para><seealso cref="ProgressBarDisplayText.CustomText"/> shows a custom text on the control</para>
+        /// </summary>
         public ProgressBarDisplayText DisplayStyle { get; set; }
         public String CustomText { get; set; }
 
@@ -54,7 +57,13 @@ namespace TraktTVUpdateClient.Extension
 
     public enum ProgressBarDisplayText
     {
+        /// <summary>
+        /// Shows the current progress bar value as percent on the control
+        /// </summary>
         Percentage,
+        /// <summary>
+        /// Shows a custom text on the control
+        /// </summary>
         CustomText
     }
 }
