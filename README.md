@@ -26,4 +26,6 @@
 
 ####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
 
-####**Credits to the show posters goes to the TMDb API. Visit their site [here](https://www.themoviedb.org/).**
+####**Credits to the show posters goes to the [TMDb](https://www.themoviedb.org/) API and the [Fanart.TV](https://fanart.tv/) API.**
+
+####**The program icons are by [Anastasya Bolshakova](https://www.iconfinder.com/nastu_bol) in the icon set [Simple Files](https://www.iconfinder.com/iconsets/simple-files-1) available under [Creative Commons (Attribution 3.0 Unported)](http://creativecommons.org/licenses/by/3.0/).**
