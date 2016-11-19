@@ -432,7 +432,7 @@ namespace TraktTVUpdateClient
                             {
                                 await TraktCache.UpdateRatingsList();
                                 watchedListView.SelectedItems[0].SubItems[2].Text = scoreComboBox.SelectedItem.ToString();
-                                eventLabel.Text = "Removed rating from " + watchedListView.SelectedItems[0].Text;
+                                eventLabel.Text = String.Format("Removed rating from {0}.", watchedListView.SelectedItems[0].Text);
                             }
                         }
                         else
@@ -441,9 +441,9 @@ namespace TraktTVUpdateClient
                             var ratingResponse = await Client.Sync.AddRatingsAsync(ratingsPostBuilder.Build());
                             if (ratingResponse.Added.Shows.HasValue && ratingResponse.Added.Shows.Value >= 1)
                             {
+                                eventLabel.Text = String.Format("Changed {0} rating from {1} to {2}.", watchedListView.SelectedItems[0].Text, traktRating.Rating, showRating);
                                 traktRating.Rating = int.Parse(scoreComboBox.SelectedItem.ToString());
                                 watchedListView.SelectedItems[0].SubItems[2].Text = traktRating.Rating.ToString();
-                                eventLabel.Text = "Changed rating from " + watchedListView.SelectedItems[0].Text;
                             }
                         }
                     }
@@ -460,7 +460,7 @@ namespace TraktTVUpdateClient
                         {
                             await TraktCache.UpdateRatingsList();
                             watchedListView.SelectedItems[0].SubItems[2].Text = scoreComboBox.SelectedItem.ToString();
-                            eventLabel.Text = "Added rating to " + watchedListView.SelectedItems[0].Text;
+                            eventLabel.Text = String.Format("Rated {0} {1}/10.", watchedListView.SelectedItems[0].Text, scoreComboBox.SelectedItem.ToString());
                         }
                     }
                 }
