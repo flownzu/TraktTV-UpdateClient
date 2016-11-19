@@ -485,6 +485,8 @@ namespace TraktTVUpdateClient
                         ProgressBarEx progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBarEx>();
                         this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
                         this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
+                        this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
+                        this.InvokeIfRequired(() => progressBar.Refresh());
                     }
                     else
                     {
