@@ -130,7 +130,7 @@ namespace TraktTVUpdateClient.Forms
                 this.foundShowsListView.Items.Clear();
                 int maxResults = 5;
                 if (this.searchLimitTxtBox.Text != String.Empty) Int32.TryParse(this.searchLimitTxtBox.Text, out maxResults);
-                lastSearch = await SearchShows(this.searchShowNameTxtBox.Text, maxResults + 1);
+                lastSearch = await SearchShows(this.searchShowNameTxtBox.Text, maxResults);
                 List<Task> taskList = new List<Task>();
                 foreach(TraktShow show in lastSearch)
                 {
