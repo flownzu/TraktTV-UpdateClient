@@ -35,7 +35,6 @@ namespace TraktTVUpdateClient
         public VLCConnection vlcClient;
         public TraktShow CurrentShow;
         public TraktEpisode CurrentEpisode;
-        public bool NoCache = true;
 
         private SettingsForm settingsForm;
         private SearchShowForm searchForm;
@@ -51,7 +50,6 @@ namespace TraktTVUpdateClient
             if(TraktCache.TraktClient == null)
             {
                 TraktCache.TraktClient = Client;
-                NoCache = false;
             }
             TraktCache.SyncStarted += TraktCache_SyncStarted;
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
@@ -255,8 +253,7 @@ namespace TraktTVUpdateClient
                 catch (Exception) { this.InvokeIfRequired(() => eventLabel.Text = "Problems logging in, try again in a few minutes."); return; }
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
-            Task.Run(() => TraktCache.Sync(NoCache)).Forget();
-            NoCache = !NoCache;
+            Task.Run(() => TraktCache.Sync()).Forget();
         }
 
         public static Task StartSTATask(Action action)

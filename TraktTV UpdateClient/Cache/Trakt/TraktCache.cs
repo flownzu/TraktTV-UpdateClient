@@ -46,10 +46,9 @@ namespace TraktTVUpdateClient.Cache
             progressList = new Dictionary<string, TraktShowWatchedProgress>();
         }
 
-        public async Task Sync(bool NoCache = false)
+        public async Task Sync()
         {
             OnSyncStarted(SyncStartedEventArgs.CompleteSync);
-            if (!NoCache) { await this.Update(); return; }
             await UpdateProgressList();
             var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
             if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != lastRating)
@@ -81,17 +80,6 @@ namespace TraktTVUpdateClient.Cache
         public void Save()
         {
             using (StreamWriter sw = File.CreateText("cache.json")) { new JsonSerializer().Serialize(sw, this); }
-        }
-
-        public async Task Update()
-        {
-            await UpdateWatchedShowList();
-            await UpdateProgressList();
-            await UpdateRatingsList();
-            var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
-            lastRating = lastActivites.Shows.RatedAt.Value;
-            lastWatched = lastActivites.Episodes.WatchedAt.Value;
-            OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
         }
 
         public async Task<IEnumerable<TraktHistoryItem>> GetWatchedHistory()
@@ -151,7 +139,7 @@ namespace TraktTVUpdateClient.Cache
         public async Task SyncShowProgress(TraktShow show)
         {
             OnSyncStarted(SyncStartedEventArgs.PartialSync);
-            TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(show.Ids.Slug, false, false, false);
+            var progress = await TraktClient.Shows.GetShowWatchedProgressAsync(show.Ids.Slug, false, false, false);
             if (progressList.ContainsKey(show.Ids.Slug)) { progressList.Remove(show.Ids.Slug); }
             progressList.Add(show.Ids.Slug, progress);
             OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
@@ -160,7 +148,7 @@ namespace TraktTVUpdateClient.Cache
         public async Task SyncShowProgress(string showSlug)
         {
             OnSyncStarted(SyncStartedEventArgs.PartialSync);
-            TraktShowWatchedProgress progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
+            var progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
             if (progressList.ContainsKey(showSlug)) { progressList.Remove(showSlug); }
             progressList.Add(showSlug, progress);
             OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
