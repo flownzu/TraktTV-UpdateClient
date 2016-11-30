@@ -31,12 +31,10 @@ namespace TraktTVUpdateClient.Forms
 
         private void addEpisodesContextMenu_Opening(object sender, CancelEventArgs e)
         {
-            if (this.foundShowsListView.SelectedItems.Count == 0)
+            if (foundShowsListView.SelectedItems.Count == 0)
             {
-                foreach (ToolStripMenuItem item in this.addEpisodesContextMenu.Items)
-                {
+                foreach (ToolStripMenuItem item in addEpisodesContextMenu.Items)
                     item.Enabled = false;
-                }
             }
             else
             {
@@ -125,12 +123,12 @@ namespace TraktTVUpdateClient.Forms
 
         private async void searchBtn_Click(object sender, EventArgs e)
         {
-            if (this.searchShowNameTxtBox.Text != String.Empty)
+            if (searchShowNameTxtBox.Text != String.Empty)
             {
-                this.foundShowsListView.Items.Clear();
+                foundShowsListView.Items.Clear();
                 int maxResults = 5;
-                if (this.searchLimitTxtBox.Text != String.Empty) Int32.TryParse(this.searchLimitTxtBox.Text, out maxResults);
-                lastSearch = await SearchShows(this.searchShowNameTxtBox.Text, maxResults);
+                if (searchLimitTxtBox.Text != String.Empty) Int32.TryParse(searchLimitTxtBox.Text, out maxResults);
+                lastSearch = await SearchShows(searchShowNameTxtBox.Text, maxResults);
                 List<Task> taskList = new List<Task>();
                 foreach(TraktShow show in lastSearch)
                 {
@@ -168,9 +166,7 @@ namespace TraktTVUpdateClient.Forms
             if (searchResult != null)
             {
                 foreach(TraktSearchResult searchItem in searchResult.Items)
-                {
                     showList.Add(searchItem.Show);
-                }
             }
             return showList;
         }
@@ -179,7 +175,7 @@ namespace TraktTVUpdateClient.Forms
         {
             if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
-                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(this.foundShowsListView.SelectedItems[0].SubItems[0].Text));
+                TraktShow selectedShow = lastSearch.Find(x => x.Title.Equals(foundShowsListView.SelectedItems[0].SubItems[0].Text));
                 TraktSeason firstSeason = selectedShow.Seasons.Where(x => x.Number.Value.Equals(1)).First();
                 TraktEpisode firstEpisode = firstSeason.Episodes.Where(x => x.Number.Value.Equals(1)).First();
                 TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
@@ -230,9 +226,7 @@ namespace TraktTVUpdateClient.Forms
                 {
                     var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
                     foreach(TraktEpisode episode in season.Episodes)
-                    {
                         seasonNode.Nodes.Add("Episode " + episode.Number);
-                    }
                 }                    
             }
             else
