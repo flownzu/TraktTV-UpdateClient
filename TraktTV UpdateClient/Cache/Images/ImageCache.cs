@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -88,7 +89,7 @@ namespace TraktTVUpdateClient.Cache
             {
                 TmdbRateLimiter.CheckLimiter();
                 var imgList = await GetTmdbImages(ids.Tmdb.ToString());
-                if (imgList.posters != null && imgList.posters.Length > 0)
+                if (imgList != null && imgList.posters != null && imgList.posters.Length > 0)
                 {
                     await imgList.posters[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
                 }
@@ -96,7 +97,7 @@ namespace TraktTVUpdateClient.Cache
             else if (ids.Tvdb.HasValue)
             {
                 var imgList = await GetFanartImages(ids.Tvdb.ToString());
-                if(imgList.tvposter != null && imgList.tvposter.Length > 0)
+                if(imgList != null && imgList.tvposter != null && imgList.tvposter.Length > 0)
                 {
                     await imgList.tvposter[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()));
                 }
