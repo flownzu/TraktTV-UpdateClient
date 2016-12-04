@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -9,20 +8,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
-using TraktTVUpdateClient.Extension;
 using TraktTVUpdateClient.Properties;
 
 namespace TraktTVUpdateClient.Cache
 {
     public class ImageCache
     {
-        internal Uri tmdbBaseAddress = new Uri("https://api.themoviedb.org/3/");
-        internal Uri fanartBaseAddress = new Uri("http://webservice.fanart.tv/v3/");
-        internal TmdbConfiguration configuration;
+        private readonly Uri tmdbBaseAddress = new Uri("https://api.themoviedb.org/3/");
+        private readonly Uri fanartBaseAddress = new Uri("http://webservice.fanart.tv/v3/");
+        private bool IsReadyForImageCaching = false;
+        private TmdbConfiguration configuration;
 
-        public bool IsReadyForImageCaching = false;
-        public string ImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
-
+        public readonly string ImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
         public event EventHandler SyncCompleted;
 
 
@@ -89,7 +86,7 @@ namespace TraktTVUpdateClient.Cache
             {
                 TmdbRateLimiter.CheckLimiter();
                 var imgList = await GetTmdbImages(ids.Tmdb.ToString());
-                if (imgList != null && imgList.posters != null && imgList.posters.Length > 0)
+                if (imgList != null && imgList.posters != null && imgList.posters.Length > 0 && IsReadyForImageCaching)
                 {
                     await imgList.posters[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
                 }
