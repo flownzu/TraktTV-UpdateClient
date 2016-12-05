@@ -149,6 +149,21 @@ namespace TraktTVUpdateClient
                             }
                         }
                     }
+                    else
+                    {
+                        List<Task> taskList = new List<Task>();
+                        foreach (TraktSeason season in show.Seasons.Where(x => x.Number > 0))
+                            taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
+                        await Task.WhenAll(taskList);
+
+                        m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
+                        if(m.Success)
+                        {
+                            int[] seasonAndEpisodeNumber = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
+                            CurrentShow = show;
+                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonAndEpisodeNumber[0], seasonAndEpisodeNumber[1]);
+                        }
+                    }
                 }
                 else
                 {

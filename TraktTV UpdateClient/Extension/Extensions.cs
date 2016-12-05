@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp.Authentication;
+using TraktApiSharp.Objects.Get.Shows.Episodes;
+using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Services;
 using static System.Windows.Forms.ListView;
 
@@ -39,6 +42,24 @@ namespace TraktTVUpdateClient.Extension
                 returnString += genre.UpperCase() + ", ";
             }
             return !String.IsNullOrEmpty(returnString) ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
+        }
+
+        public static int[] GetEpisodeAndSeasonNumberFromAbsoluteNumber(this IEnumerable<TraktSeason> seasons, int absoluteEpisodeNumber)
+        {
+            int episodeNumber = 0;
+            int seasonNumber = 0;
+            foreach(TraktSeason season in seasons.Where(x => x.Number > 0))
+            {
+                if (absoluteEpisodeNumber - season.Episodes.Count() > 0)
+                {
+                    absoluteEpisodeNumber -= season.Episodes.Count();
+                    continue;
+                }
+                seasonNumber = season.Number.Value;
+                episodeNumber = absoluteEpisodeNumber;
+                break;
+            }
+            return new int[] { seasonNumber, episodeNumber };
         }
 
         public static string UpperCase(this string s)
