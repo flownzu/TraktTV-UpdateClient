@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
-using MoreLinq;
+﻿using MoreLinq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
+using TraktApiSharp.Exceptions;
 using TraktApiSharp.Objects.Basic;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Shows.Episodes;
@@ -19,11 +21,10 @@ using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Objects.Post.Syncs.History;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
 using TraktTVUpdateClient.Cache;
-using TraktTVUpdateClient.Forms;
 using TraktTVUpdateClient.Extension;
+using TraktTVUpdateClient.Forms;
 using TraktTVUpdateClient.Properties;
 using TraktTVUpdateClient.VLC;
-using System.Globalization;
 
 namespace TraktTVUpdateClient
 {
@@ -47,13 +48,11 @@ namespace TraktTVUpdateClient
             Client.Authentication.RedirectUri = "app://authorized";
             Client.Configuration.ForceAuthorization = true;
             TraktCache = LoadCache();
-            if(TraktCache.TraktClient == null)
-            {
-                TraktCache.TraktClient = Client;
-            }
+            if(TraktCache.TraktClient == null) TraktCache.TraktClient = Client;
             TraktCache.SyncStarted += TraktCache_SyncStarted;
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
-            if (Settings.Default.VLCEnabled) { Task.Run(() => WaitForVlcConnection()).Forget(); }
+            TraktCache.ResetRequests();
+            if (Settings.Default.VLCEnabled) Task.Run(() => WaitForVlcConnection()).Forget();
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
@@ -210,14 +209,7 @@ namespace TraktTVUpdateClient
         {
             if (CurrentEpisode != null && CurrentShow != null)
             {
-                TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
-                historyPostBuilder.AddEpisode(CurrentEpisode);
-                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
-                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
-                {
-                    await TraktCache.SyncShowProgress(CurrentShow);
-                    Task.Run(() => TraktCache.Sync()).Forget();
-                }
+                await MarkEpisodeWatched(CurrentShow, CurrentEpisode);
             }
         }
 
@@ -316,14 +308,7 @@ namespace TraktTVUpdateClient
                 TraktShowWatchedProgress progress;
                 if(TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress) && show != null)
                 {
-                    TraktSyncHistoryPostBuilder historyPostBuilder = new TraktSyncHistoryPostBuilder();
-                    historyPostBuilder.AddEpisode(progress.NextEpisode);
-                    var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
-                    if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
-                    {
-                        eventLabel.Text = "Added episode to watched list.";
-                        await TraktCache.SyncShowProgress(show.Show);
-                    }
+                    await MarkEpisodeWatched(show.Show, progress.NextEpisode);
                 }
             }
         }
@@ -338,14 +323,7 @@ namespace TraktTVUpdateClient
                 {
                     int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
                     int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value;
-                    TraktSyncHistoryRemovePostBuilder historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
-                    historyRemoveBuilder.AddEpisode(await Client.Episodes.GetEpisodeAsync(show.Show.Ids.Slug, seasonNumber, episodeNumber));
-                    var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
-                    if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
-                    {
-                        eventLabel.Text = "Removed episode from watched list.";
-                        await TraktCache.SyncShowProgress(show.Show);
-                    }
+                    await RemoveEpisodeWatched(show.Show, seasonNumber, episodeNumber);
                 }
             }
         }
@@ -594,6 +572,100 @@ namespace TraktTVUpdateClient
         private void relogButton_Click(object sender, EventArgs e)
         {
             StartSTATask(() => LoginThread());
+        }
+
+        private async Task MarkEpisodeWatched(TraktShow show, TraktEpisode episode)
+        {
+            try
+            {
+                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                historyPostBuilder.AddEpisode(episode);
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    this.InvokeIfRequired(() => eventLabel.Text = "Added episode to watched list.");
+                    await TraktCache.SyncShowProgress(show.Ids.Slug);
+                }
+            }
+            catch(Exception ex)
+            {
+                if(ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.AddEpisode, RequestEpisode = episode, RequestShow = show });
+                    this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                }
+            }
+        }
+
+        private async Task MarkEpisodeWatched(TraktShow show, int seasonNumber, int episodeNumber)
+        {
+            try
+            {
+                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                historyPostBuilder.AddEpisode(episode);
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    this.InvokeIfRequired(() => eventLabel.Text = "Added episode to watched list.");
+                    await TraktCache.SyncShowProgress(show.Ids.Slug);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.AddEpisode, RequestShow = show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
+                    this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                }
+            }
+        }
+
+        private async Task RemoveEpisodeWatched(TraktShow show, TraktEpisode episode)
+        {
+            try
+            {
+                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
+                historyRemoveBuilder.AddEpisode(episode);
+                var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
+                if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
+                {
+                    this.InvokeIfRequired(() => eventLabel.Text = "Removed episode from watched list.");
+                    await TraktCache.SyncShowProgress(show.Ids.Slug);
+                }
+            }
+            catch(Exception ex)
+            {
+                if(ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.RemoveEpisode, RequestEpisode = episode, RequestShow = show });
+                    this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                }
+            }
+        }
+
+        private async Task RemoveEpisodeWatched(TraktShow show, int seasonNumber, int episodeNumber)
+        {
+            try
+            {
+                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
+                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                historyRemoveBuilder.AddEpisode(episode);
+                var removeHistoryResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
+                if(removeHistoryResponse.Deleted.Episodes.HasValue && removeHistoryResponse.Deleted.Episodes.Value >= 1)
+                {
+                    this.InvokeIfRequired(() => eventLabel.Text = "Removed episode from watched list.");
+                    await TraktCache.SyncShowProgress(show.Ids.Slug);
+                }
+            }
+            catch(Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.RemoveEpisode, RequestShow = show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
+                    this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                }
+            }
         }
     }
 }

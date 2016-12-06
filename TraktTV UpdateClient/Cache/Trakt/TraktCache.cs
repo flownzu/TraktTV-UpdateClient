@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
@@ -12,6 +13,7 @@ using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Requests.Params;
+using TraktTVUpdateClient.Extension;
 
 namespace TraktTVUpdateClient.Cache
 {
@@ -25,6 +27,9 @@ namespace TraktTVUpdateClient.Cache
 
         [JsonProperty(PropertyName = "ProgressList")]
         internal Dictionary<string, TraktShowWatchedProgress> progressList { get; private set; }
+
+        [JsonProperty(PropertyName = "RequestCache")]
+        internal List<TraktRequest> requestCache { get; private set; }
 
         [JsonIgnore]
         internal TraktClient TraktClient { get; set; }
@@ -41,6 +46,7 @@ namespace TraktTVUpdateClient.Cache
         public TraktCache(TraktClient Client)
         {
             TraktClient = Client;
+            requestCache = new List<TraktRequest>();
             watchedList = Enumerable.Empty<TraktWatchedShow>();
             ratingList = Enumerable.Empty<TraktRatingsItem>();
             progressList = new Dictionary<string, TraktShowWatchedProgress>();
@@ -64,6 +70,67 @@ namespace TraktTVUpdateClient.Cache
                 lastWatched = lastActivites.Episodes.WatchedAt.Value;
             }
             OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
+        }
+
+        public void AddRequestToCache(TraktRequest rq)
+        {
+            if (rq.action == TraktRequestAction.RateShow)
+            {
+                var previousRequest = requestCache.Where(x => x.action.Equals(TraktRequestAction.RateShow) && x.RequestShow.Equals(rq.RequestShow)).FirstOrDefault();
+                if (previousRequest != null)
+                {
+                    previousRequest.RequestValue = rq.RequestValue;
+                }
+                else requestCache.Add(rq);
+            }
+            else if (rq.action == TraktRequestAction.RemoveEpisode || rq.action == TraktRequestAction.AddEpisode)
+            {
+                if (rq.RequestEpisode != null)
+                {
+                    var previousRequest = requestCache.Where(x => x.action.Equals(rq.action) && 
+                                          ((x.RequestEpisode != null && x.RequestEpisode.Equals(rq.RequestEpisode))) ||
+                                          ((x.RequestShow != null && x.RequestShow.Equals(rq.RequestShow)) &&
+                                          x.RequestValue.Equals("S" + rq.RequestEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + rq.RequestEpisode.Number.ToString().PadLeft(2, '0'))))
+                                          .FirstOrDefault();
+                    if (previousRequest != null) return;
+                    previousRequest = requestCache.Where(x => x.action.Equals(rq.action.Invert()) &&
+                                      ((x.RequestEpisode != null && x.RequestEpisode.Equals(rq.RequestEpisode))) ||
+                                      ((x.RequestShow != null && x.RequestShow.Equals(rq.RequestShow)) &&
+                                      x.RequestValue.Equals("S" + rq.RequestEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + rq.RequestEpisode.Number.ToString().PadLeft(2, '0'))))
+                                      .FirstOrDefault();
+                    if (previousRequest != null)
+                    {
+                        requestCache.Remove(previousRequest);
+                        return;
+                    }
+                }
+                else
+                {
+                    Match m = Regex.Match(rq.RequestValue, @"S(\d+)E(\d+)");
+                    int seasonNumber = int.Parse(m.Groups[1].Value);
+                    int episodeNumber = int.Parse(m.Groups[2].Value);
+                    var previousRequest = requestCache.Where(x => x.action.Equals(rq.action) && 
+                                          ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue.Equals(rq.RequestValue)) || 
+                                          (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
+                                          .FirstOrDefault();
+                    if (previousRequest != null) return;
+                    previousRequest = requestCache.Where(x => x.action.Equals(rq.action.Invert()) && 
+                                      ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue.Equals(rq.RequestValue)) || 
+                                      (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
+                                      .FirstOrDefault();
+                    if (previousRequest != null)
+                    {
+                        requestCache.Remove(previousRequest);
+                        return;
+                    }
+                }
+                requestCache.Add(rq);
+            }
+        }
+
+        public void ResetRequests()
+        {
+            requestCache.Clear();
         }
 
         protected virtual void OnSyncStarted(SyncStartedEventArgs e)

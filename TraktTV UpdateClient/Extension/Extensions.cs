@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp.Authentication;
-using TraktApiSharp.Objects.Get.Shows.Episodes;
 using TraktApiSharp.Objects.Get.Shows.Seasons;
 using TraktApiSharp.Services;
+using TraktTVUpdateClient.Cache;
 using static System.Windows.Forms.ListView;
 
 namespace TraktTVUpdateClient.Extension
@@ -97,6 +97,13 @@ namespace TraktTVUpdateClient.Extension
         public static TimeSpan ToTimeSpan(this float timeStamp)
         {
             return new TimeSpan(ticks: (long)timeStamp);
+        }
+
+        public static TraktRequestAction Invert(this TraktRequestAction action)
+        {
+            if (action == TraktRequestAction.AddEpisode) return TraktRequestAction.RemoveEpisode;
+            else if (action == TraktRequestAction.RemoveEpisode) return TraktRequestAction.AddEpisode;
+            else return default(TraktRequestAction);
         }
 
         public static TResult InvokeIfRequired<T, TResult>(this T source, Func<TResult> func)
