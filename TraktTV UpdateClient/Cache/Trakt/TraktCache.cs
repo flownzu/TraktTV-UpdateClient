@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
@@ -42,6 +43,7 @@ namespace TraktTVUpdateClient.Cache
 
         public event EventHandler<SyncStartedEventArgs> SyncStarted;
         public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
+        public event EventHandler<RequestCachedEventArgs> RequestCached;
 
         public TraktCache(TraktClient Client)
         {
@@ -50,6 +52,29 @@ namespace TraktTVUpdateClient.Cache
             watchedList = Enumerable.Empty<TraktWatchedShow>();
             ratingList = Enumerable.Empty<TraktRatingsItem>();
             progressList = new Dictionary<string, TraktShowWatchedProgress>();
+        }
+
+        public async Task RequestCacheThread()
+        {
+            while(true)
+            {
+                if (requestCache.Count > 0)
+                {
+                    OnSyncStarted(SyncStartedEventArgs.PartialSync);
+                    List<TraktRequest> removeRequestList = new List<TraktRequest>();
+                    foreach (TraktRequest request in requestCache)
+                    {
+                        if (await request.Send(TraktClient))
+                        {
+                            removeRequestList.Add(request);
+                        }
+                    }
+                    OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
+                    foreach (TraktRequest request in removeRequestList)
+                        requestCache.Remove(request);
+                }
+                await Task.Delay(TimeSpan.FromMinutes(5));
+            }
         }
 
         public async Task Sync()
@@ -81,7 +106,11 @@ namespace TraktTVUpdateClient.Cache
                 {
                     previousRequest.RequestValue = rq.RequestValue;
                 }
-                else requestCache.Add(rq);
+                else
+                {
+                    requestCache.Add(rq);
+                    OnRequestCached(new RequestCachedEventArgs(rq));
+                }
             }
             else if (rq.action == TraktRequestAction.RemoveEpisode || rq.action == TraktRequestAction.AddEpisode)
             {
@@ -101,6 +130,7 @@ namespace TraktTVUpdateClient.Cache
                     if (previousRequest != null)
                     {
                         requestCache.Remove(previousRequest);
+                        OnRequestCached(new RequestCachedEventArgs(rq));
                         return;
                     }
                 }
@@ -121,16 +151,13 @@ namespace TraktTVUpdateClient.Cache
                     if (previousRequest != null)
                     {
                         requestCache.Remove(previousRequest);
+                        OnRequestCached(new RequestCachedEventArgs(rq));
                         return;
                     }
                 }
                 requestCache.Add(rq);
+                OnRequestCached(new RequestCachedEventArgs(rq));
             }
-        }
-
-        public void ResetRequests()
-        {
-            requestCache.Clear();
         }
 
         protected virtual void OnSyncStarted(SyncStartedEventArgs e)
@@ -142,6 +169,11 @@ namespace TraktTVUpdateClient.Cache
         {
             Save();
             SyncCompleted?.Invoke(this, e);
+        }
+
+        protected virtual void OnRequestCached(RequestCachedEventArgs e)
+        {
+            RequestCached?.Invoke(this, e);
         }
 
         public void Save()
@@ -193,7 +225,7 @@ namespace TraktTVUpdateClient.Cache
                     List<Task> taskList = new List<Task>();
                     foreach (TraktWatchedShow show in watchedList)
                     {
-                        taskList.Add(Task.Run(() => SyncShowProgress(show.Show)));
+                        taskList.Add(Task.Run(() => SyncShowProgress(show.Show.Ids.Slug)));
                     }
                     await Task.WhenAll(taskList);
                     return true;
@@ -201,15 +233,6 @@ namespace TraktTVUpdateClient.Cache
                 return false;
             }
             catch (Exception) { return false; }
-        }
-
-        public async Task SyncShowProgress(TraktShow show)
-        {
-            OnSyncStarted(SyncStartedEventArgs.PartialSync);
-            var progress = await TraktClient.Shows.GetShowWatchedProgressAsync(show.Ids.Slug, false, false, false);
-            if (progressList.ContainsKey(show.Ids.Slug)) { progressList.Remove(show.Ids.Slug); }
-            progressList.Add(show.Ids.Slug, progress);
-            OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
         }
 
         public async Task SyncShowProgress(string showSlug)

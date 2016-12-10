@@ -5,8 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TraktApiSharp;
 using TraktApiSharp.Authentication;
+using TraktApiSharp.Exceptions;
+using TraktApiSharp.Objects.Get.Shows;
+using TraktApiSharp.Objects.Get.Shows.Episodes;
 using TraktApiSharp.Objects.Get.Shows.Seasons;
+using TraktApiSharp.Objects.Post.Syncs.History;
+using TraktApiSharp.Objects.Post.Syncs.Ratings;
 using TraktApiSharp.Services;
 using TraktTVUpdateClient.Cache;
 using static System.Windows.Forms.ListView;
@@ -286,6 +292,130 @@ namespace TraktTVUpdateClient.Extension
                 }
             }
             return d[n, m];
+        }
+
+        public static async Task<bool> MarkEpisodeWatched(this TraktClient Client, TraktShow show, TraktEpisode episode)
+        {
+            try
+            {
+                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                historyPostBuilder.AddEpisode(episode);
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> MarkEpisodeWatched(this TraktClient Client, TraktShow show, int seasonNumber, int episodeNumber)
+        {
+            try
+            {
+                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                historyPostBuilder.AddEpisode(episode);
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> RemoveWatchedEpisode(this TraktClient Client, TraktShow show, TraktEpisode episode)
+        {
+            try
+            {
+                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
+                historyRemoveBuilder.AddEpisode(episode);
+                var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
+                if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> RemoveWatchedEpisode(this TraktClient Client, TraktShow show, int seasonNumber, int episodeNumber)
+        {
+            try
+            {
+                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
+                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                historyRemoveBuilder.AddEpisode(episode);
+                var removeHistoryResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
+                if (removeHistoryResponse.Deleted.Episodes.HasValue && removeHistoryResponse.Deleted.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> RateShow(this TraktClient Client, TraktShow show, int rating)
+        {
+            try
+            {
+                TraktSyncRatingsPostBuilder ratingsPostBuilder = new TraktSyncRatingsPostBuilder();
+                if (rating == 0)
+                {
+                    ratingsPostBuilder.AddShow(show);
+                    var ratingResponse = await Client.Sync.RemoveRatingsAsync(ratingsPostBuilder.Build());
+                    if (ratingResponse.Deleted.Shows.HasValue && ratingResponse.Deleted.Shows.Value >= 1)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    ratingsPostBuilder.AddShowWithRating(show, rating);
+                    var ratingResponse = await Client.Sync.AddRatingsAsync(ratingsPostBuilder.Build());
+                    if (ratingResponse.Added.Shows.HasValue && ratingResponse.Added.Shows.Value >= 1)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
         }
     }
 }

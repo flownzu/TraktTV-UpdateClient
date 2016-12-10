@@ -171,6 +171,7 @@
     <Compile Include="Cache\Images\TMDb\Configuration\TmdbConfiguration.cs" />
     <Compile Include="Cache\Images\TMDb\TmdbGetImagesResponse.cs" />
     <Compile Include="Cache\Images\TMDb\TmdbImage.cs" />
+    <Compile Include="Cache\Trakt\RequestCachedEventArgs.cs" />
     <Compile Include="Cache\Trakt\SyncCompletedEventArgs.cs" />
     <Compile Include="Cache\Trakt\SyncStartedEventArgs.cs" />
     <Compile Include="Cache\Trakt\TraktCache.cs" />
