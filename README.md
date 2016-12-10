@@ -22,7 +22,7 @@
 
 - [ ] General code clean-up and optimizations
 
-- [ ] Probably a lot of other stuff that I cannot think of at the moment
+- [ ] Offline Mode and request caching
 
 ####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
 
