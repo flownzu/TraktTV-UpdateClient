@@ -12,7 +12,7 @@
 
 - You can even manage your watched list when you are offline!
 
-- VLC Media Player connectivity
+- VLC Media Player support
 
   - Connecting and re-connecting to VLC. 
 
