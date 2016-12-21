@@ -112,6 +112,20 @@ namespace TraktTVUpdateClient.Extension
             else return default(TraktRequestAction);
         }
 
+        public static bool ToBool(this TraktRequestAction action)
+        {
+            if (action == TraktRequestAction.AddEpisode)
+                return true;
+            else return false;
+        }
+
+        public static int ToInt(this TraktRequestAction action)
+        {
+            if (action == TraktRequestAction.AddEpisode)
+                return 1;
+            else return -1;
+        }
+
         public static TResult InvokeIfRequired<T, TResult>(this T source, Func<TResult> func)
             where T : Control
         {

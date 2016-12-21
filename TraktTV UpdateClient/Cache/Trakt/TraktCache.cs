@@ -56,6 +56,7 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task RequestCacheThread()
         {
+            await Task.Delay(TimeSpan.FromSeconds(10));
             while(true)
             {
                 if (requestCache.Count > 0)
@@ -79,22 +80,26 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task Sync()
         {
-            OnSyncStarted(SyncStartedEventArgs.CompleteSync);
-            await UpdateProgressList();
-            var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
-            if(lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != lastRating)
+            try
             {
-                await UpdateRatingsList();
-                lastRating = lastActivites.Shows.RatedAt.Value;
-            }
-            if(lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != lastWatched)
-            {
-                var oldWatchedList = watchedList;
-                await UpdateWatchedShowList();
+                OnSyncStarted(SyncStartedEventArgs.CompleteSync);
                 await UpdateProgressList();
-                lastWatched = lastActivites.Episodes.WatchedAt.Value;
+                var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
+                if (lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != lastRating)
+                {
+                    await UpdateRatingsList();
+                    lastRating = lastActivites.Shows.RatedAt.Value;
+                }
+                if (lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != lastWatched)
+                {
+                    var oldWatchedList = watchedList;
+                    await UpdateWatchedShowList();
+                    await UpdateProgressList();
+                    lastWatched = lastActivites.Episodes.WatchedAt.Value;
+                }
+                OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
             }
-            OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
+            catch (Exception) { OnSyncCompleted(SyncCompletedEventArgs.CompleteSync); }
         }
 
         public void AddRequestToCache(TraktRequest rq)
@@ -140,12 +145,12 @@ namespace TraktTVUpdateClient.Cache
                     int seasonNumber = int.Parse(m.Groups[1].Value);
                     int episodeNumber = int.Parse(m.Groups[2].Value);
                     var previousRequest = requestCache.Where(x => x.action.Equals(rq.action) && 
-                                          ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue.Equals(rq.RequestValue)) || 
+                                          ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue != null && x.RequestValue.Equals(rq.RequestValue)) || 
                                           (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
                                           .FirstOrDefault();
                     if (previousRequest != null) return;
                     previousRequest = requestCache.Where(x => x.action.Equals(rq.action.Invert()) && 
-                                      ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue.Equals(rq.RequestValue)) || 
+                                      ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue != null && x.RequestValue.Equals(rq.RequestValue)) || 
                                       (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
                                       .FirstOrDefault();
                     if (previousRequest != null)
@@ -173,6 +178,7 @@ namespace TraktTVUpdateClient.Cache
 
         protected virtual void OnRequestCached(RequestCachedEventArgs e)
         {
+            Save();
             RequestCached?.Invoke(this, e);
         }
 

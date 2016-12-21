@@ -56,12 +56,61 @@ namespace TraktTVUpdateClient
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
         }
 
+        private void SyncWatchedListViewWithRequestCache()
+        {
+            if(TraktCache.requestCache != null && TraktCache.requestCache.Count > 0)
+            {
+                foreach(TraktRequest request in TraktCache.requestCache)
+                {
+                    this.InvokeIfRequired(() => TraktCache_RequestCached(this, new RequestCachedEventArgs(request)));
+                }
+            }
+        }
+
         private void TraktCache_RequestCached(object sender, RequestCachedEventArgs e)
         {
             if (e.Request.action == TraktRequestAction.RateShow)
             {
                 var listViewItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(e.Request.RequestShow.Title));
                 this.InvokeIfRequired(() => listViewItem.SubItems[2].Text = e.Request.RequestValue);
+            }
+            else if (e.Request.action == TraktRequestAction.AddEpisode || e.Request.action == TraktRequestAction.RemoveEpisode)
+            {
+                var listViewItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(e.Request.RequestShow.Title));
+                var progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(listViewItem)).ConvertTo<ProgressBarEx>();
+                TraktShowWatchedProgress showProgress;
+                if (TraktCache.progressList.TryGetValue(e.Request.RequestShow.Ids.Slug, out showProgress))
+                {
+                    if (e.Request.RequestEpisode != null)
+                    {
+                        var episode = showProgress.Seasons.Where(x => x.Number.Equals(e.Request.RequestEpisode.SeasonNumber)).FirstOrDefault().Episodes.Where(x => x.Number.Equals(e.Request.RequestEpisode.Number)).FirstOrDefault();
+                        if (episode != null)
+                        {
+                            episode.Completed = e.Request.action.ToBool();
+                            showProgress.Completed += e.Request.action.ToInt();
+                            this.InvokeIfRequired(() => progressBar.Value += e.Request.action.ToInt());
+                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
+                            this.InvokeIfRequired(() => progressBar.Refresh());
+                        }
+                    }
+                    else
+                    {
+                        Match m = Regex.Match(e.Request.RequestValue, @"S(\d+)E(\d+)");
+                        int seasonNumber = int.Parse(m.Groups[1].Value);
+                        int episodeNumber = int.Parse(m.Groups[2].Value);
+                        var episode = showProgress.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault().Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault();
+                        if(episode != null)
+                        {
+                            episode.Completed = e.Request.action.ToBool();
+                            showProgress.Completed += e.Request.action.ToInt();
+                            this.InvokeIfRequired(() => progressBar.Value += e.Request.action.ToInt());
+                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
+                            this.InvokeIfRequired(() => progressBar.Refresh());
+                        }
+                    }
+                    showProgress.NextEpisode = null;
+                    this.InvokeIfRequired(() => watchedListView_SelectedIndexChanged(null, EventArgs.Empty));
+                }
             }
         }
 
@@ -325,19 +374,51 @@ namespace TraktTVUpdateClient
             {
                 TraktWatchedShow show = TraktCache.watchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
                 TraktShowWatchedProgress progress;
+                int seasonNumber = 0;
+                int episodeNumber = 0;
                 if(TraktCache.progressList.TryGetValue(show.Show.Ids.Slug, out progress) && show != null)
                 {
                     try
                     {
-                        if (await Client.MarkEpisodeWatched(show.Show, progress.NextEpisode))
+                        if (progress.NextEpisode != null)
                         {
-                            Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
-                            this.InvokeIfRequired(() => eventLabel.Text = "Watched " + show.Show.Title + " S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0'));
+                            if (await Client.MarkEpisodeWatched(show.Show, progress.NextEpisode))
+                            {
+                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                this.InvokeIfRequired(() => eventLabel.Text = "Watched " + show.Show.Title + " S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0'));
+                            }
+                        }
+                        else
+                        {
+                            seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
+                            var season = progress.Seasons.Where(x => x.Number.Equals(seasonNumber)).First();
+                            episodeNumber = 0;
+                            if (season.Completed == season.Aired)
+                            {
+                                var nextSeason = progress.Seasons.Where(x => x.Number.Equals(seasonNumber + 1)).First();
+                                if (nextSeason != null && nextSeason.Aired > 0)
+                                {
+                                    seasonNumber++;
+                                    episodeNumber = 1;
+                                }
+                            }
+                            else
+                            {
+                                episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value + 1;
+                            }
+                            if (await Client.MarkEpisodeWatched(show.Show, seasonNumber, episodeNumber))
+                            {
+                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                this.InvokeIfRequired(() => eventLabel.Text = "Watched " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
+                            }                            
                         }
                     }
                     catch(Exception)
                     {
-                        TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.AddEpisode, RequestEpisode = progress.NextEpisode, RequestShow = show.Show });
+                        if (progress.NextEpisode != null)
+                            TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.AddEpisode, RequestEpisode = progress.NextEpisode, RequestShow = show.Show });
+                        else
+                            TraktCache.AddRequestToCache(new TraktRequest() { action = TraktRequestAction.AddEpisode, RequestShow = show.Show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
                         this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
                     }
                 }
