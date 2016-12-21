@@ -10,6 +10,8 @@
 
 - Search for new shows to add to your watched list.
 
+- You can even manage your watched list when you are offline!
+
 - VLC Media Player connectivity
 
   - Connecting and re-connecting to VLC. 
@@ -20,9 +22,9 @@
   
 ###To Do List:
 
-- [ ] General code clean-up and optimizations
+- [ ] Add media library to settings so the user can set up folders the program should check for episodes
 
-- [ ] Offline Mode and request caching
+- [ ] In addition to this add buttons to directly watch an episode that the program found in your media library
 
 ####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
 
