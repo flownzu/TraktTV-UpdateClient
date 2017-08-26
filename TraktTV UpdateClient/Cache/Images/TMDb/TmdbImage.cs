@@ -16,19 +16,19 @@ namespace TraktTVUpdateClient.Cache
         /// Gets or sets the aspect ratio of the image
         /// </summary>
         [JsonProperty(PropertyName = "aspect_ratio")]
-        public decimal aspectRatio { get; set; }
+        public decimal AspectRatio { get; set; }
 
         /// <summary>
         /// Gets or sets the file path of the image needed to build the image url
         /// </summary>
         [JsonProperty(PropertyName = "file_path")]
-        public string filePath { get; set; }
+        public string FilePath { get; set; }
 
         /// <summary>
         /// Gets or sets the original image height
         /// </summary>
         [JsonProperty(PropertyName = "height")]
-        public int height { get; set; }
+        public int Height { get; set; }
 
         /// <summary>
         /// Gets or sets the image language
@@ -36,29 +36,29 @@ namespace TraktTVUpdateClient.Cache
         /// </summary>
         [Nullable]
         [JsonProperty(PropertyName = "iso_639_1")]
-        public string language { get; set; }
+        public string Language { get; set; }
 
         /// <summary>
         /// Gets or sets the average vote for the image
         /// </summary>
         [JsonProperty(PropertyName = "vote_average")]
-        public decimal voteAverage { get; set; }
+        public decimal VoteAverage { get; set; }
 
         /// <summary>
         /// Gets or sets the vote count of the image
         /// </summary>
         [JsonProperty(PropertyName = "vote_count")]
-        public int voteCount { get; set; }
+        public int VoteCount { get; set; }
 
         /// <summary>
         /// Gets or sets the original image width
         /// </summary>
         [JsonProperty(PropertyName = "width")]
-        public int width { get; set; }
+        public int Width { get; set; }
 
         public string GetFileExtension()
         {
-            return Path.GetExtension(filePath);
+            return Path.GetExtension(FilePath);
         }
 
         public async Task Save(string imagePath, string imageBaseURL, string size)
@@ -67,7 +67,7 @@ namespace TraktTVUpdateClient.Cache
             {
                 using (var httpClient = new HttpClient() { BaseAddress = new Uri(imageBaseURL) })
                 {
-                    using (var response = await httpClient.GetAsync(size + "/" + filePath))
+                    using (var response = await httpClient.GetAsync(size + "/" + FilePath))
                     {
                         var image = await response.Content.ReadAsByteArrayAsync();
                         using (FileStream fs = new FileStream(imagePath + GetFileExtension(), FileMode.Create))

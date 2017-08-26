@@ -11,7 +11,7 @@ namespace TraktTVUpdateClient.VLC
     public class VLCConnection
     {
         public VLCMediaItem CurrentMediaItem = new VLCMediaItem();
-        public bool Connected { get { return client.Connected; } }
+        public bool Connected { get { return Client.Connected; } }
 
         public EventHandler ConnectionLost;
         public EventHandler<MediaItemChangedEventArgs> MediaItemChanged;
@@ -20,17 +20,17 @@ namespace TraktTVUpdateClient.VLC
         public EventHandler PlaybackStopped;
         public EventHandler WatchedPercentReached;
 
-        private int port { get; set; }
-        private StreamWriter writeStream { get; set; }
-        private TcpClient client { get; set; }
+        private int Port { get; set; }
+        private StreamWriter WriteStream { get; set; }
+        private TcpClient Client { get; set; }
 
         public VLCConnection(int _port)
         {
-            client = new TcpClient();
-            port = _port;
+            Client = new TcpClient();
+            Port = _port;
 
-            client.Connect("localhost", port);
-            writeStream = new StreamWriter(client.GetStream());
+            Client.Connect("localhost", Port);
+            WriteStream = new StreamWriter(Client.GetStream());
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             Read();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -73,15 +73,15 @@ namespace TraktTVUpdateClient.VLC
 
         public async Task Write(String msg)
         {
-            await writeStream.WriteLineAsync(msg);
-            await writeStream.FlushAsync();
+            await WriteStream.WriteLineAsync(msg);
+            await WriteStream.FlushAsync();
         }
 
         public async Task<string> Read()
         {
-            if (client.Connected)
+            if (Client.Connected)
             {
-                NetworkStream stream = client.GetStream();
+                NetworkStream stream = Client.GetStream();
                 {
                     byte[] data = new byte[1024];
                     StringBuilder completeMessage = new StringBuilder();
@@ -113,7 +113,7 @@ namespace TraktTVUpdateClient.VLC
 
         public async void ConnectionThread()
         {
-            while (client.Connected)
+            while (Client.Connected)
             {
                 try
                 {

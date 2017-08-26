@@ -76,7 +76,7 @@ namespace TraktTVUpdateClient.Forms
             this.watchedPercentTrackBar.Size = new System.Drawing.Size(127, 45);
             this.watchedPercentTrackBar.TabIndex = 3;
             this.watchedPercentTrackBar.Value = 50;
-            this.watchedPercentTrackBar.ValueChanged += new System.EventHandler(this.watchedPercentTrackBar_ValueChanged);
+            this.watchedPercentTrackBar.ValueChanged += new System.EventHandler(this.WatchedPercentTrackBar_ValueChanged);
             // 
             // watchedPercentLbl
             // 
@@ -95,7 +95,7 @@ namespace TraktTVUpdateClient.Forms
             this.saveSettingsBtn.TabIndex = 5;
             this.saveSettingsBtn.Text = "Save";
             this.saveSettingsBtn.UseVisualStyleBackColor = true;
-            this.saveSettingsBtn.Click += new System.EventHandler(this.saveSettingsBtn_Click);
+            this.saveSettingsBtn.Click += new System.EventHandler(this.SaveSettingsBtn_Click);
             // 
             // enableVLCCheckBox
             // 

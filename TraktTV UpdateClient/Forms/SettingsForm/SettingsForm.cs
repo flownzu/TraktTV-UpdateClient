@@ -19,7 +19,7 @@ namespace TraktTVUpdateClient.Forms
             mainForm = parent;
         }
 
-        private void watchedPercentTrackBar_ValueChanged(object sender, EventArgs e)
+        private void WatchedPercentTrackBar_ValueChanged(object sender, EventArgs e)
         {
             watchedPercent = (float)watchedPercentTrackBar.Value / 100;
             watchedPercentLbl.Text = watchedPercentTrackBar.Value + "% of the title.";
@@ -50,7 +50,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private void saveSettingsBtn_Click(object sender, EventArgs e)
+        private void SaveSettingsBtn_Click(object sender, EventArgs e)
         {
             int vlcPort = Properties.Settings.Default.VLCPort;
             int.TryParse(vlcPortTxtBox.Text, out vlcPort);

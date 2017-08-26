@@ -11,18 +11,18 @@ namespace TraktTVUpdateClient.Cache
         /// Gets or sets a list of backdrop images
         /// </summary>
         [JsonProperty(PropertyName = "backdrops")]
-        public TmdbImage[] backdrops { get; set; }
+        public TmdbImage[] Backdrops { get; set; }
 
         /// <summary>
         /// Gets or sets the tv show id
         /// </summary>
         [JsonProperty(PropertyName = "id")]
-        public int id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets a list of poster images
         /// </summary>
         [JsonProperty(PropertyName = "posters")]
-        public TmdbImage[] posters { get; set; }
+        public TmdbImage[] Posters { get; set; }
     }
 }

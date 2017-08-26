@@ -11,7 +11,7 @@ namespace TraktTVUpdateClient.Cache
         /// Contains the base url and valid sizes needed to build the image url
         /// </summary>
         [JsonProperty(PropertyName = "images")]
-        public TmbdImageConfiguration imageConfiguration { get; set; }
+        public TmbdImageConfiguration ImageConfiguration { get; set; }
 
         /// <summary>
         /// Contains a list of change keys that can be used when consuming data from the change feed

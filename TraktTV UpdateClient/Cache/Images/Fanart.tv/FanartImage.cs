@@ -16,25 +16,25 @@ namespace TraktTVUpdateClient.Cache
         /// Gets or sets the image id.
         /// </summary>
         [JsonProperty(PropertyName = "id")]
-        public string id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the image url.
         /// </summary>
         [JsonProperty(PropertyName = "url")]
-        public string url { get; set; }
+        public string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the image language.
         /// </summary>
         [JsonProperty(PropertyName = "lang")]
-        public string lang { get; set; }
+        public string Lang { get; set; }
 
         /// <summary>
         /// Gets or sets the image likes.
         /// </summary>
         [JsonProperty(PropertyName = "likes")]
-        public string likes { get; set; }
+        public string Likes { get; set; }
 
         /// <summary>
         /// Gets or sets the season the image is associated with.
@@ -42,11 +42,11 @@ namespace TraktTVUpdateClient.Cache
         /// </summary>
         [JsonProperty(PropertyName = "season")]
         [Nullable]
-        public string season { get; set; }
+        public string Season { get; set; }
 
         public string GetFileExtension()
         {
-            return Path.GetExtension(url);
+            return Path.GetExtension(Url);
         }
 
         public async Task Save(string imagePath)
@@ -55,7 +55,7 @@ namespace TraktTVUpdateClient.Cache
             {
                 using (var httpClient = new HttpClient())
                 {
-                    using (var response = await httpClient.GetAsync(url))
+                    using (var response = await httpClient.GetAsync(Url))
                     {
                         var image = await response.Content.ReadAsByteArrayAsync();
                         using (FileStream fs = new FileStream(imagePath + GetFileExtension(), FileMode.Create))

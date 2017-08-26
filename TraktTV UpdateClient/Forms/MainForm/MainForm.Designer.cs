@@ -108,7 +108,7 @@
             this.removeEpisodeButton.TabIndex = 5;
             this.removeEpisodeButton.Text = "-";
             this.removeEpisodeButton.UseVisualStyleBackColor = true;
-            this.removeEpisodeButton.Click += new System.EventHandler(this.removeEpisodeButton_Click);
+            this.removeEpisodeButton.Click += new System.EventHandler(this.RemoveEpisodeButton_Click);
             // 
             // addEpisodeButton
             // 
@@ -118,7 +118,7 @@
             this.addEpisodeButton.TabIndex = 6;
             this.addEpisodeButton.Text = "+";
             this.addEpisodeButton.UseVisualStyleBackColor = true;
-            this.addEpisodeButton.Click += new System.EventHandler(this.addEpisodeButton_Click);
+            this.addEpisodeButton.Click += new System.EventHandler(this.AddEpisodeButton_Click);
             // 
             // yearLabel
             // 
@@ -166,7 +166,7 @@
             this.scoreComboBox.Name = "scoreComboBox";
             this.scoreComboBox.Size = new System.Drawing.Size(46, 21);
             this.scoreComboBox.TabIndex = 12;
-            this.scoreComboBox.SelectedIndexChanged += new System.EventHandler(this.scoreComboBox_SelectedIndexChanged);
+            this.scoreComboBox.SelectedIndexChanged += new System.EventHandler(this.ScoreComboBox_SelectedIndexChanged);
             // 
             // syncButton
             // 
@@ -177,7 +177,7 @@
             this.syncButton.Size = new System.Drawing.Size(32, 32);
             this.syncButton.TabIndex = 13;
             this.syncButton.UseVisualStyleBackColor = true;
-            this.syncButton.Click += new System.EventHandler(this.syncButton_Click);
+            this.syncButton.Click += new System.EventHandler(this.SyncButton_Click);
             // 
             // traktConnectStatusLabel
             // 
@@ -197,7 +197,7 @@
             this.addShowButton.Size = new System.Drawing.Size(32, 32);
             this.addShowButton.TabIndex = 16;
             this.addShowButton.UseVisualStyleBackColor = true;
-            this.addShowButton.Click += new System.EventHandler(this.addShowButton_Click);
+            this.addShowButton.Click += new System.EventHandler(this.AddShowButton_Click);
             // 
             // settingButton
             // 
@@ -208,7 +208,7 @@
             this.settingButton.Size = new System.Drawing.Size(32, 32);
             this.settingButton.TabIndex = 17;
             this.settingButton.UseVisualStyleBackColor = true;
-            this.settingButton.Click += new System.EventHandler(this.settingButton_Click);
+            this.settingButton.Click += new System.EventHandler(this.SettingButton_Click);
             // 
             // vlcConnectStatusLabel
             // 
@@ -238,8 +238,8 @@
             this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
             this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 373);
             this.seasonOverviewTreeView.TabIndex = 19;
-            this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.seasonOverviewTreeView_BeforeCheck);
-            this.seasonOverviewTreeView.DoubleClick += new System.EventHandler(this.seasonOverviewTreeView_DoubleClick);
+            this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.SeasonOverviewTreeView_BeforeCheck);
+            this.seasonOverviewTreeView.DoubleClick += new System.EventHandler(this.SeasonOverviewTreeView_DoubleClick);
             // 
             // watchedListView
             // 
@@ -257,8 +257,8 @@
             this.watchedListView.TabIndex = 10;
             this.watchedListView.UseCompatibleStateImageBehavior = false;
             this.watchedListView.View = System.Windows.Forms.View.Details;
-            this.watchedListView.SelectedIndexChanged += new System.EventHandler(this.watchedListView_SelectedIndexChanged);
-            this.watchedListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.watchedListView_MouseDoubleClick);
+            this.watchedListView.SelectedIndexChanged += new System.EventHandler(this.WatchedListView_SelectedIndexChanged);
+            this.watchedListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.WatchedListView_MouseDoubleClick);
             // 
             // nameColumnHeader
             // 
@@ -292,7 +292,7 @@
             this.relogButton.Size = new System.Drawing.Size(32, 32);
             this.relogButton.TabIndex = 22;
             this.relogButton.UseVisualStyleBackColor = true;
-            this.relogButton.Click += new System.EventHandler(this.relogButton_Click);
+            this.relogButton.Click += new System.EventHandler(this.RelogButton_Click);
             // 
             // MainForm
             // 

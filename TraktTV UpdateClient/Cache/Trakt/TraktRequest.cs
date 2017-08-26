@@ -9,7 +9,7 @@ namespace TraktTVUpdateClient.Cache
 {
     public class TraktRequest
     {
-        public TraktRequestAction action { get; set; }
+        public TraktRequestAction Action { get; set; }
         public TraktShow RequestShow { get; set; }
         public TraktEpisode RequestEpisode { get; set; }
         public string RequestValue { get; set; }
@@ -18,18 +18,18 @@ namespace TraktTVUpdateClient.Cache
         {
             try
             {
-                if (action == TraktRequestAction.RateShow)
+                if (Action == TraktRequestAction.RateShow)
                 {
                     await traktClient.RateShow(RequestShow, int.Parse(RequestValue));
                 }
-                else if (action == TraktRequestAction.AddEpisode)
+                else if (Action == TraktRequestAction.AddEpisode)
                 {
                     if (RequestEpisode != null)
                     {
                         await traktClient.MarkEpisodeWatched(RequestShow, RequestEpisode);
                     }
                 }
-                else if (action == TraktRequestAction.RemoveEpisode)
+                else if (Action == TraktRequestAction.RemoveEpisode)
                 {
                     if (RequestEpisode != null)
                     {

@@ -60,7 +60,7 @@
             this.searchShowNameTxtBox.Name = "searchShowNameTxtBox";
             this.searchShowNameTxtBox.Size = new System.Drawing.Size(241, 20);
             this.searchShowNameTxtBox.TabIndex = 0;
-            this.searchShowNameTxtBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.searchShowNameTxtBox_KeyDown);
+            this.searchShowNameTxtBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SearchShowNameTxtBox_KeyDown);
             // 
             // searchBtn
             // 
@@ -70,7 +70,7 @@
             this.searchBtn.TabIndex = 1;
             this.searchBtn.Text = "Search!";
             this.searchBtn.UseVisualStyleBackColor = true;
-            this.searchBtn.Click += new System.EventHandler(this.searchBtn_Click);
+            this.searchBtn.Click += new System.EventHandler(this.SearchBtn_Click);
             // 
             // searchLimitLbl
             // 
@@ -106,7 +106,7 @@
             this.foundShowsListView.TabIndex = 4;
             this.foundShowsListView.UseCompatibleStateImageBehavior = false;
             this.foundShowsListView.View = System.Windows.Forms.View.Details;
-            this.foundShowsListView.SelectedIndexChanged += new System.EventHandler(this.foundShowsListView_SelectedIndexChanged);
+            this.foundShowsListView.SelectedIndexChanged += new System.EventHandler(this.FoundShowsListView_SelectedIndexChanged);
             // 
             // nameColumnHeader
             // 
@@ -127,21 +127,21 @@
             this.addSpecificSeasonToolStripMenuItem});
             this.addEpisodesContextMenu.Name = "contextMenuStrip1";
             this.addEpisodesContextMenu.Size = new System.Drawing.Size(184, 92);
-            this.addEpisodesContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.addEpisodesContextMenu_Opening);
+            this.addEpisodesContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.AddEpisodesContextMenu_Opening);
             // 
             // add1stEpisodeToolStripMenuItem
             // 
             this.add1stEpisodeToolStripMenuItem.Name = "add1stEpisodeToolStripMenuItem";
             this.add1stEpisodeToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.add1stEpisodeToolStripMenuItem.Text = "Add 1st episode";
-            this.add1stEpisodeToolStripMenuItem.Click += new System.EventHandler(this.add1stEpisodeToolStripMenuItem_Click);
+            this.add1stEpisodeToolStripMenuItem.Click += new System.EventHandler(this.Add1stEpisodeToolStripMenuItem_Click);
             // 
             // addAllEpisodesToolStripMenuItem
             // 
             this.addAllEpisodesToolStripMenuItem.Name = "addAllEpisodesToolStripMenuItem";
             this.addAllEpisodesToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.addAllEpisodesToolStripMenuItem.Text = "Add all episodes";
-            this.addAllEpisodesToolStripMenuItem.Click += new System.EventHandler(this.addAllEpisodesToolStripMenuItem_Click);
+            this.addAllEpisodesToolStripMenuItem.Click += new System.EventHandler(this.AddAllEpisodesToolStripMenuItem_Click);
             // 
             // addSpecificEpisodeToolStripMenuItem
             // 
@@ -192,7 +192,7 @@
             this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
             this.seasonOverviewTreeView.Size = new System.Drawing.Size(135, 204);
             this.seasonOverviewTreeView.TabIndex = 0;
-            this.seasonOverviewTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.seasonOverviewTreeView_AfterCheck);
+            this.seasonOverviewTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.SeasonOverviewTreeView_AfterCheck);
             // 
             // addCompleteShowBtn
             // 
@@ -203,7 +203,7 @@
             this.addCompleteShowBtn.TabIndex = 6;
             this.addCompleteShowBtn.Text = "Add complete show";
             this.addCompleteShowBtn.UseVisualStyleBackColor = true;
-            this.addCompleteShowBtn.Click += new System.EventHandler(this.addCompleteShowBtn_Click);
+            this.addCompleteShowBtn.Click += new System.EventHandler(this.AddCompleteShowBtn_Click);
             // 
             // addSelectedEpisodes
             // 
@@ -214,7 +214,7 @@
             this.addSelectedEpisodes.TabIndex = 7;
             this.addSelectedEpisodes.Text = "Add selected Episodes";
             this.addSelectedEpisodes.UseVisualStyleBackColor = true;
-            this.addSelectedEpisodes.Click += new System.EventHandler(this.addSelectedEpisodes_Click);
+            this.addSelectedEpisodes.Click += new System.EventHandler(this.AddSelectedEpisodes_Click);
             // 
             // SearchShowForm
             // 

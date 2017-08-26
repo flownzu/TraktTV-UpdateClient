@@ -86,17 +86,17 @@ namespace TraktTVUpdateClient.Cache
             {
                 TmdbRateLimiter.CheckLimiter();
                 var imgList = await GetTmdbImages(ids.Tmdb.ToString());
-                if (imgList != null && imgList.posters != null && imgList.posters.Length > 0 && IsReadyForImageCaching)
+                if (imgList != null && imgList.Posters != null && imgList.Posters.Length > 0 && IsReadyForImageCaching)
                 {
-                    await imgList.posters[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()), configuration.imageConfiguration.baseUrl, GetBestPosterSize(100));
+                    await imgList.Posters[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()), configuration.ImageConfiguration.BaseUrl, GetBestPosterSize(100));
                 }
             }
             else if (ids.Tvdb.HasValue)
             {
                 var imgList = await GetFanartImages(ids.Tvdb.ToString());
-                if(imgList != null && imgList.tvposter != null && imgList.tvposter.Length > 0)
+                if(imgList != null && imgList.TvPoster != null && imgList.TvPoster.Length > 0)
                 {
-                    await imgList.tvposter[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()));
+                    await imgList.TvPoster[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()));
                 }
             }
         }
@@ -105,7 +105,7 @@ namespace TraktTVUpdateClient.Cache
         {
             string bestPosterSize = "original";
             int smallestDifference = int.MaxValue;
-            foreach (string posterSize in configuration.imageConfiguration.posterSizes)
+            foreach (string posterSize in configuration.ImageConfiguration.PosterSizes)
             {
                 if (posterSize.StartsWith("w", StringComparison.CurrentCulture))
                 {
@@ -130,7 +130,7 @@ namespace TraktTVUpdateClient.Cache
         {
             Directory.CreateDirectory(ImagePath);
             List<Task> taskList = new List<Task>();
-            foreach (TraktWatchedShow show in traktCache.watchedList)
+            foreach (TraktWatchedShow show in traktCache.WatchedList)
             {
                 var dirInfo = new DirectoryInfo(ImagePath);
                 var fileInfo = dirInfo.GetFiles(show.Show.Ids.Trakt + ".*");

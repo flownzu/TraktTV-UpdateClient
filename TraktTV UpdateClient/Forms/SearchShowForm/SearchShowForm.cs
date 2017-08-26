@@ -29,7 +29,7 @@ namespace TraktTVUpdateClient.Forms
             traktCache = cache;
         }
 
-        private void addEpisodesContextMenu_Opening(object sender, CancelEventArgs e)
+        private void AddEpisodesContextMenu_Opening(object sender, CancelEventArgs e)
         {
             if (foundShowsListView.SelectedItems.Count == 0)
             {
@@ -52,21 +52,27 @@ namespace TraktTVUpdateClient.Forms
                         int airedEpisodes = selectedShow.AiredEpisodes.Value;
                         foreach (TraktSeason season in seasons)
                         {
-                            episodeMenu[index] = new ToolStripMenuItem();
-                            episodeMenu[index].Text = "Season " + season.Number.Value;
-                            episodeMenu[index].Name = "s" + season.Number.Value;
+                            episodeMenu[index] = new ToolStripMenuItem
+                            {
+                                Text = "Season " + season.Number.Value,
+                                Name = "s" + season.Number.Value
+                            };
                             episodeMenu[index].Click += new EventHandler(MenuItemClickHandler);
-                            seasonMenu[index] = new ToolStripMenuItem();
-                            seasonMenu[index].Text = "Season " + season.Number.Value;
-                            seasonMenu[index].Name = "s" + season.Number.Value;
+                            seasonMenu[index] = new ToolStripMenuItem
+                            {
+                                Text = "Season " + season.Number.Value,
+                                Name = "s" + season.Number.Value,
+                                Tag = "season" + season.Number.Value
+                        };
                             seasonMenu[index].Click += new EventHandler(MenuItemClickHandler);
-                            seasonMenu[index].Tag = "season" + season.Number.Value;
                             ToolStripMenuItem[] episodeList = new ToolStripMenuItem[season.Episodes.Count()];
                             for (int a = 0; a < season.Episodes.Count() && airedEpisodes > 0; a++)
                             {
-                                episodeList[a] = new ToolStripMenuItem();
-                                episodeList[a].Text = "Episode " + (a + 1);
-                                episodeList[a].Tag = "s" + season.Number.Value + "e" + (a + 1);
+                                episodeList[a] = new ToolStripMenuItem
+                                {
+                                    Text = "Episode " + (a + 1),
+                                    Tag = "s" + season.Number.Value + "e" + (a + 1)
+                                };
                                 episodeList[a].Click += new EventHandler(MenuItemClickHandler);
                                 airedEpisodes--;
                             }
@@ -121,7 +127,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private async void searchBtn_Click(object sender, EventArgs e)
+        private async void SearchBtn_Click(object sender, EventArgs e)
         {
             if (searchShowNameTxtBox.Text != String.Empty)
             {
@@ -171,7 +177,7 @@ namespace TraktTVUpdateClient.Forms
             return showList;
         }
 
-        private async void add1stEpisodeToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void Add1stEpisodeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
@@ -189,7 +195,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private async void addAllEpisodesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void AddAllEpisodesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (traktCache.TraktClient.IsValidForUseWithAuthorization)
             {
@@ -205,12 +211,12 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private void searchShowNameTxtBox_KeyDown(object sender, KeyEventArgs e)
+        private void SearchShowNameTxtBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Enter) { searchBtn_Click(this, EventArgs.Empty); }
+            if(e.KeyCode == Keys.Enter) { SearchBtn_Click(this, EventArgs.Empty); }
         }
 
-        private void foundShowsListView_SelectedIndexChanged(object sender, EventArgs e)
+        private void FoundShowsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             if(foundShowsListView.SelectedItems.Count == 1)
             {
@@ -236,7 +242,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private void seasonOverviewTreeView_AfterCheck(object sender, TreeViewEventArgs e)
+        private void SeasonOverviewTreeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
             if (e.Node.Text.Contains("Season"))
             {
@@ -245,7 +251,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private async void addCompleteShowBtn_Click(object sender, EventArgs e)
+        private async void AddCompleteShowBtn_Click(object sender, EventArgs e)
         {
             if (traktCache.TraktClient.IsValidForUseWithAuthorization && foundShowsListView.SelectedItems.Count == 1)
             {
@@ -261,7 +267,7 @@ namespace TraktTVUpdateClient.Forms
             }
         }
 
-        private async void addSelectedEpisodes_Click(object sender, EventArgs e)
+        private async void AddSelectedEpisodes_Click(object sender, EventArgs e)
         {
             if(traktCache.TraktClient.IsValidForUseWithAuthorization && foundShowsListView.SelectedItems.Count == 1)
             {
