@@ -542,6 +542,7 @@ namespace TraktTVUpdateClient
                         {
                             if(await Client.RateShow(traktRating.Show, showRating))
                             {
+                                this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
                                 this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
                                 this.InvokeIfRequired(() => eventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
                             }
@@ -563,6 +564,7 @@ namespace TraktTVUpdateClient
                         {
                             if(await Client.RateShow(show.Show, showRating))
                             {
+                                this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
                                 this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
                                 this.InvokeIfRequired(() => eventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
                             }
