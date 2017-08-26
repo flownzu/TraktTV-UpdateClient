@@ -280,14 +280,17 @@ namespace TraktTVUpdateClient.Forms
                 foreach(TreeNode seasonNode in seasonOverviewTreeView.Nodes)
                 {
                     int seasonNumber = int.Parse(seasonNode.Text.Replace("Season ", ""));
-                    if (seasonNode.Checked) historyPostBuilder.AddShow(selectedShow, seasonNumber);
+                    if (seasonNode.Checked && GetAllEpisodesChecked(seasonNode)) historyPostBuilder.AddShow(selectedShow, seasonNumber);
                     else
                     {
-                        foreach(TreeNode episodeNode in seasonNode.Nodes)
+                        foreach (TreeNode episodeNode in seasonNode.Nodes)
                         {
-                            int episodeNumber = int.Parse(episodeNode.Text.Replace("Episode ", ""));
-                            TraktEpisode episode = selectedShow.Seasons.Where(x => x.Number.Equals(seasonNumber)).First().Episodes.Where(x => x.Number.Equals(episodeNumber)).First();
-                            if (episodeNode.Checked) historyPostBuilder.AddEpisode(episode);
+                            if (episodeNode.Checked)
+                            {
+                                int episodeNumber = int.Parse(episodeNode.Text.Replace("Episode ", ""));
+                                TraktEpisode episode = selectedShow.Seasons.Where(x => x.Number.Equals(seasonNumber)).First().Episodes.Where(x => x.Number.Equals(episodeNumber)).First();
+                                historyPostBuilder.AddEpisode(episode);
+                            }
                         }
                     }
                 }
@@ -302,6 +305,15 @@ namespace TraktTVUpdateClient.Forms
                 }
                 catch (Exception) { }
             }
+        }
+
+        private bool GetAllEpisodesChecked(TreeNode seasonNode)
+        {
+            foreach(TreeNode episodeNode in seasonNode.Nodes)
+            {
+                if (!episodeNode.Checked) return false;
+            }
+            return true;
         }
     }
 }
