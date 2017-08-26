@@ -267,13 +267,13 @@ namespace TraktTVUpdateClient
                     if(await Client.MarkEpisodeWatched(CurrentShow, CurrentEpisode))
                     {
                         Task.Run(() => TraktCache.SyncShowProgress(CurrentShow.Ids.Slug)).Forget();
-                        this.InvokeIfRequired(() => eventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                        this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                     }
                 }
                 catch (Exception)
                 {
                     TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = CurrentEpisode, RequestShow = CurrentShow });
-                    this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                 }
             }
         }
@@ -312,7 +312,7 @@ namespace TraktTVUpdateClient
 
         private async void LoginThread()
         {
-            this.InvokeIfRequired(() => eventLabel.Text = "Logging in...");
+            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Logging in...");
             if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
             if (!Client.Authorization.IsValid || Client.Authorization.IsExpired)
             {
@@ -324,7 +324,7 @@ namespace TraktTVUpdateClient
                     } while (Client.Authentication.IsAuthorized == false);
                     Client.Authorization.Serialize();
                 }
-                catch (Exception) { this.InvokeIfRequired(() => eventLabel.Text = "Problems logging in, try again in a few minutes."); return; }
+                catch (Exception) { this.InvokeIfRequired(() => toolStripEventLabel.Text = "Problems logging in, try again in a few minutes."); return; }
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync()).Forget();
@@ -382,7 +382,7 @@ namespace TraktTVUpdateClient
                             if (await Client.MarkEpisodeWatched(show.Show, progress.NextEpisode))
                             {
                                 Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
-                                this.InvokeIfRequired(() => eventLabel.Text = "Watched " + show.Show.Title + " S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0'));
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0'));
                             }
                         }
                         else
@@ -406,7 +406,7 @@ namespace TraktTVUpdateClient
                             if (await Client.MarkEpisodeWatched(show.Show, seasonNumber, episodeNumber))
                             {
                                 Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
-                                this.InvokeIfRequired(() => eventLabel.Text = "Watched " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
                             }                            
                         }
                     }
@@ -416,7 +416,7 @@ namespace TraktTVUpdateClient
                             TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = progress.NextEpisode, RequestShow = show.Show });
                         else
                             TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestShow = show.Show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
-                        this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                        this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                     }
                 }
             }
@@ -436,14 +436,14 @@ namespace TraktTVUpdateClient
                         if (await Client.RemoveWatchedEpisode(show.Show, seasonNumber, episodeNumber))
                         {
                             Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
-                            this.InvokeIfRequired(() => eventLabel.Text = "Removed " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
                         }
 
                     }
                     catch (Exception)
                     {
                         TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RemoveEpisode, RequestShow = show.Show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
-                        this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                        this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                     }
                 }
             }
@@ -541,13 +541,13 @@ namespace TraktTVUpdateClient
                             {
                                 this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
                                 this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
-                                this.InvokeIfRequired(() => eventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
                             }
                         }
                         catch(Exception)
                         {
                             TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RateShow, RequestShow = traktRating.Show, RequestValue = showRating.ToString() });
-                            this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                         }
                     }
                 }
@@ -563,13 +563,13 @@ namespace TraktTVUpdateClient
                             {
                                 this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
                                 this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
-                                this.InvokeIfRequired(() => eventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
                             }
                         }
                         catch(Exception)
                         {
                             TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RateShow, RequestShow = traktRating.Show, RequestValue = showRating.ToString() });
-                            this.InvokeIfRequired(() => eventLabel.Text = "Cached request because it failed!");
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                         }
                     }
                 }
@@ -583,14 +583,14 @@ namespace TraktTVUpdateClient
 
         private void TraktCache_SyncStarted(object sender, SyncStartedEventArgs e)
         {
-            if(e != SyncStartedEventArgs.PartialSync) this.InvokeIfRequired(() => eventLabel.Text = "Syncing with trakt.tv started...");
+            if(e != SyncStartedEventArgs.PartialSync) this.InvokeIfRequired(() => toolStripEventLabel.Text = "Syncing with trakt.tv started...");
         }
 
         private void TraktCache_SyncCompleted(object sender, SyncCompletedEventArgs e)
         {
             if (e != SyncCompletedEventArgs.PartialSync)
             {
-                this.InvokeIfRequired(() => eventLabel.Text = "Syncing show poster started...");
+                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Syncing show poster started...");
                 Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
             }
             foreach (TraktWatchedShow watchedShow in TraktCache.WatchedList)
@@ -639,7 +639,7 @@ namespace TraktTVUpdateClient
 
         private void ShowPosterCache_SyncCompleted(object sender, EventArgs e)
         {
-            this.InvokeIfRequired(() => eventLabel.Text = "Cache synced.");
+            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cache synced.");
         }
 
         private void SettingButton_Click(object sender, EventArgs e)

@@ -228,12 +228,16 @@ namespace TraktTVUpdateClient.Forms
                     "Genres: " + selectedShow.Genres.ToGenreString() + Environment.NewLine + Environment.NewLine +
                     "Synopsis: " + selectedShow.Overview;
                 seasonOverviewTreeView.Nodes.Clear();
-                foreach(TraktSeason season in selectedShow.Seasons.Where(x => x.Number > 0))
+                if (selectedShow.Seasons != null)
                 {
-                    var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
-                    foreach(TraktEpisode episode in season.Episodes)
-                        seasonNode.Nodes.Add("Episode " + episode.Number);
-                }                    
+                    foreach (TraktSeason season in selectedShow.Seasons.Where(x => x.Number > 0))
+                    {
+                        var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
+                        foreach (TraktEpisode episode in season.Episodes)
+                            seasonNode.Nodes.Add("Episode " + episode.Number);
+                    }
+                }
+                else seasonOverviewTreeView.Nodes.Add("Still Loading...");
             }
             else
             {

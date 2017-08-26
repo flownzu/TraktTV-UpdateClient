@@ -46,14 +46,16 @@
             this.settingButton = new System.Windows.Forms.Button();
             this.vlcConnectStatusLabel = new System.Windows.Forms.Label();
             this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
+            this.relogButton = new System.Windows.Forms.Button();
+            this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.eventLabel = new System.Windows.Forms.Label();
-            this.relogButton = new System.Windows.Forms.Button();
+            this.toolStripEventLabel = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
+            this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // showPosterBox
@@ -70,10 +72,11 @@
             this.showNameLabel.AutoSize = true;
             this.showNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.showNameLabel.Location = new System.Drawing.Point(118, 12);
+            this.showNameLabel.MaximumSize = new System.Drawing.Size(350, 24);
             this.showNameLabel.Name = "showNameLabel";
-            this.showNameLabel.Size = new System.Drawing.Size(180, 24);
+            this.showNameLabel.Size = new System.Drawing.Size(260, 24);
             this.showNameLabel.TabIndex = 1;
-            this.showNameLabel.Text = "                                  ";
+            this.showNameLabel.Text = "_________________________";
             // 
             // episodeLabel
             // 
@@ -172,7 +175,7 @@
             // 
             this.syncButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Update;
             this.syncButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.syncButton.Location = new System.Drawing.Point(423, 3);
+            this.syncButton.Location = new System.Drawing.Point(499, 98);
             this.syncButton.Name = "syncButton";
             this.syncButton.Size = new System.Drawing.Size(32, 32);
             this.syncButton.TabIndex = 13;
@@ -192,7 +195,7 @@
             // 
             this.addShowButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Search;
             this.addShowButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.addShowButton.Location = new System.Drawing.Point(461, 3);
+            this.addShowButton.Location = new System.Drawing.Point(499, 34);
             this.addShowButton.Name = "addShowButton";
             this.addShowButton.Size = new System.Drawing.Size(32, 32);
             this.addShowButton.TabIndex = 16;
@@ -227,6 +230,27 @@
             this.nextUnwatchedEpisodeLbl.Size = new System.Drawing.Size(76, 13);
             this.nextUnwatchedEpisodeLbl.TabIndex = 20;
             this.nextUnwatchedEpisodeLbl.Text = "Next Episode: ";
+            // 
+            // relogButton
+            // 
+            this.relogButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Lock;
+            this.relogButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.relogButton.Location = new System.Drawing.Point(499, 66);
+            this.relogButton.Name = "relogButton";
+            this.relogButton.Size = new System.Drawing.Size(32, 32);
+            this.relogButton.TabIndex = 22;
+            this.relogButton.UseVisualStyleBackColor = true;
+            this.relogButton.Click += new System.EventHandler(this.RelogButton_Click);
+            // 
+            // statusStrip
+            // 
+            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripEventLabel});
+            this.statusStrip.Location = new System.Drawing.Point(0, 377);
+            this.statusStrip.Name = "statusStrip";
+            this.statusStrip.Size = new System.Drawing.Size(702, 22);
+            this.statusStrip.TabIndex = 23;
+            this.statusStrip.Text = "statusStrip1";
             // 
             // seasonOverviewTreeView
             // 
@@ -275,32 +299,18 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
-            // eventLabel
+            // toolStripEventLabel
             // 
-            this.eventLabel.AutoSize = true;
-            this.eventLabel.Location = new System.Drawing.Point(308, 149);
-            this.eventLabel.Name = "eventLabel";
-            this.eventLabel.Size = new System.Drawing.Size(0, 13);
-            this.eventLabel.TabIndex = 21;
-            // 
-            // relogButton
-            // 
-            this.relogButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Lock;
-            this.relogButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.relogButton.Location = new System.Drawing.Point(385, 3);
-            this.relogButton.Name = "relogButton";
-            this.relogButton.Size = new System.Drawing.Size(32, 32);
-            this.relogButton.TabIndex = 22;
-            this.relogButton.UseVisualStyleBackColor = true;
-            this.relogButton.Click += new System.EventHandler(this.RelogButton_Click);
+            this.toolStripEventLabel.Name = "toolStripEventLabel";
+            this.toolStripEventLabel.Size = new System.Drawing.Size(0, 17);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(694, 388);
+            this.ClientSize = new System.Drawing.Size(702, 399);
+            this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.relogButton);
-            this.Controls.Add(this.eventLabel);
             this.Controls.Add(this.nextUnwatchedEpisodeLbl);
             this.Controls.Add(this.seasonOverviewTreeView);
             this.Controls.Add(this.vlcConnectStatusLabel);
@@ -328,6 +338,8 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).EndInit();
+            this.statusStrip.ResumeLayout(false);
+            this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -357,8 +369,9 @@
         private System.Windows.Forms.Label vlcConnectStatusLabel;
         private TreeViewEx seasonOverviewTreeView;
         private System.Windows.Forms.Label nextUnwatchedEpisodeLbl;
-        private System.Windows.Forms.Label eventLabel;
         private System.Windows.Forms.Button relogButton;
+        private System.Windows.Forms.StatusStrip statusStrip;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripEventLabel;
     }
 }
 
