@@ -1,8 +1,8 @@
 # TraktTV-UpdateClient
 
-##A simple trakt.tv Desktop Client that enables you to update your watched shows more efficiently.
+## A simple trakt.tv Desktop Client that enables you to update your watched shows more efficiently.
 
-###Working List:
+### Working List:
 
 - Add/Remove episodes from your watched list.
 
@@ -10,7 +10,9 @@
 
 - Search for new shows to add to your watched list.
 
-- VLC Media Player connectivity
+- You can even manage your watched list when you are offline!
+
+- VLC Media Player support
 
   - Connecting and re-connecting to VLC. 
 
@@ -18,14 +20,14 @@
 
   - **This is still in early development so your episodes might not get recognized - if this happens please [contact me](mailto:florian.jaeckel@gmx.net) with the path to the episode file**
   
-###To Do List:
+### To Do List:
 
-- [ ] General code clean-up and optimizations
+- [ ] Add media library to settings so the user can set up folders the program should check for episodes
 
-- [ ] Offline Mode and request caching
+- [ ] In addition to this add buttons to directly watch an episode that the program found in your media library
 
-####**NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
+#### **NOTE: This program will not help you obtain illegal copies of TV-Show episodes. I strongly recommend getting Netflix/Amazon Prime/whatever streaming platform is available in your country.**
 
-####**Credits to the show posters goes to the [TMDb](https://www.themoviedb.org/) API and the [Fanart.TV](https://fanart.tv/) API.**
+#### **Credits to the show posters goes to the [TMDb](https://www.themoviedb.org/) API and the [Fanart.TV](https://fanart.tv/) API.**
 
-####**The button icons are by [Anastasya Bolshakova](https://www.iconfinder.com/nastu_bol) in the icon set [Simple Files](https://www.iconfinder.com/iconsets/simple-files-1) available under [Creative Commons (Attribution 3.0 Unported)](http://creativecommons.org/licenses/by/3.0/) and the program icon is by [Dan Leech](http://simpleicons.org/) in the icon set [Simple Icons](https://www.iconfinder.com/iconsets/simple-icons) available under the [Free Art License](http://artlibre.org/licence/lal/en) modified by me.**
+#### **The button icons are by [Anastasya Bolshakova](https://www.iconfinder.com/nastu_bol) in the icon set [Simple Files](https://www.iconfinder.com/iconsets/simple-files-1) available under [Creative Commons (Attribution 3.0 Unported)](http://creativecommons.org/licenses/by/3.0/) and the program icon is by [Dan Leech](http://simpleicons.org/) in the icon set [Simple Icons](https://www.iconfinder.com/iconsets/simple-icons) available under the [Free Art License](http://artlibre.org/licence/lal/en) modified by me.**
