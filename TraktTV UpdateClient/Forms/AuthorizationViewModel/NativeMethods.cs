@@ -5,8 +5,8 @@ namespace TraktTVUpdateClient.Forms
 {
 
     internal static class NativeMethods {
-        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
-        public static extern bool InternetSetOption(int hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
+        [DllImport("wininet.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool InternetSetOption(int hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
 
 		[DllImport("urlmon.dll"), PreserveSig]
 		[return: MarshalAs(UnmanagedType.Error)]
