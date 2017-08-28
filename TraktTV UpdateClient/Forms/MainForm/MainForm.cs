@@ -691,6 +691,8 @@ namespace TraktTVUpdateClient
 
         private void RelogButton_Click(object sender, EventArgs e)
         {
+            Client.Authorization = null;
+            if(File.Exists("auth.json")) File.Delete("auth.json");
             StartSTATask(() => LoginThread());
         }        
     }

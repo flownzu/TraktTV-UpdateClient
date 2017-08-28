@@ -13,6 +13,7 @@ namespace TraktTVUpdateClient.Forms
 
 			// Teach the WebBrowser control some manners
 			NativeMethods.DisableInternetExplorerClickSounds();
+            NativeMethods.SupressWinInetBehaviour();
 
 			Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION",
 				string.Format("{0}.exe", Assembly.GetExecutingAssembly().GetName().Name), 0, RegistryValueKind.DWord);
