@@ -172,6 +172,7 @@ namespace TraktTVUpdateClient
                 {
                     CurrentShow = show;
                     CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                 }
             }
             string[] mediaPath = Regex.Split(mediaItem.Path.Replace(@"file:///", ""), @"\/");
@@ -191,6 +192,7 @@ namespace TraktTVUpdateClient
                             int episodeNumber = Int16.Parse(m.Groups[1].Value);
                             CurrentShow = show;
                             CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                         }
                         else
                         {
@@ -200,6 +202,7 @@ namespace TraktTVUpdateClient
                                 int episodeNumber = Int16.Parse(m.Groups[1].Value);
                                 CurrentShow = show;
                                 CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                             }
                         }
                     }
@@ -216,6 +219,7 @@ namespace TraktTVUpdateClient
                             int[] seasonAndEpisodeNumber = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
                             CurrentShow = show;
                             CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonAndEpisodeNumber[0], seasonAndEpisodeNumber[1]);
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                         }
                     }
                 }
@@ -235,6 +239,7 @@ namespace TraktTVUpdateClient
                                 int episodeNumber = Int16.Parse(m.Groups[1].Value);
                                 CurrentShow = show;
                                 CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                             }
                         }
                     }
