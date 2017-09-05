@@ -567,8 +567,8 @@ namespace TraktTVUpdateClient
                             if(await Client.RateShow(show.Show, showRating))
                             {
                                 this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
-                                this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
-                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
+                                this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(show.Show.Title).SubItems[2].Text = showRating.ToString());
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + show.Show.Title + " " + showRating + "/10");
                             }
                         }
                         catch(Exception)
