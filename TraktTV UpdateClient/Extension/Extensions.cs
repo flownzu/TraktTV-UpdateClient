@@ -37,7 +37,7 @@ namespace TraktTVUpdateClient.Extension
             {
                 using (StreamReader sr = File.OpenText(file)) { return TraktSerializationService.DeserializeAuthorization(sr.ReadToEnd()); }
             }
-            catch (Exception) { return default(TraktAuthorization); }
+            catch (Exception) { return default; }
         }
 
         public static string ToGenreString(this IEnumerable<string> genres)
@@ -97,7 +97,7 @@ namespace TraktTVUpdateClient.Extension
             {
                 return (T)Convert.ChangeType(c, typeof(T), CultureInfo.CurrentCulture);
             }
-            catch (Exception) { return default(T); }
+            catch (Exception) { return default; }
         }
 
         public static TimeSpan ToTimeSpan(this float timeStamp)
@@ -109,34 +109,32 @@ namespace TraktTVUpdateClient.Extension
         {
             if (action == TraktRequestAction.AddEpisode) return TraktRequestAction.RemoveEpisode;
             else if (action == TraktRequestAction.RemoveEpisode) return TraktRequestAction.AddEpisode;
-            else return default(TraktRequestAction);
+            else return default;
         }
 
         public static bool ToBool(this TraktRequestAction action)
         {
-            if (action == TraktRequestAction.AddEpisode)
-                return true;
+            if (action == TraktRequestAction.AddEpisode) return true;
             else return false;
         }
 
         public static int ToInt(this TraktRequestAction action)
         {
-            if (action == TraktRequestAction.AddEpisode)
-                return 1;
+            if (action == TraktRequestAction.AddEpisode) return 1;
             else return -1;
         }
 
         public static TResult InvokeIfRequired<T, TResult>(this T source, Func<TResult> func)
             where T : Control
         {
-            TResult returnValue = default(TResult);
+            TResult returnValue = default;
             try
             {
                 if (!source.InvokeRequired)
                     returnValue = func();
                 else
                 {
-                    TResult temp = default(TResult);
+                    TResult temp = default;
                     source.Invoke(new Action(() => temp = func()));
                     returnValue = temp;
                 }

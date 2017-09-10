@@ -52,7 +52,7 @@ namespace TraktTVUpdateClient
             if (Settings.Default.VLCEnabled) Task.Run(() => WaitForVlcConnection()).Forget();
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
-            Task.Run(() => TraktCache.RequestCacheThread());
+            Task.Run(() => TraktCache.RequestCacheThread()).Forget();
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
         }
 
@@ -309,13 +309,13 @@ namespace TraktTVUpdateClient
             return Client.Authentication.IsAuthorized;
         }
 
-        private void MainForm_Shown(object sender, EventArgs e)
+        private async void MainForm_Shown(object sender, EventArgs e)
         {
-            StartSTATask(() => LoginThread());
+            await LoginThread();
             UpdateListView();
         }
 
-        private async void LoginThread()
+        private async Task LoginThread()
         {
             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Logging in...");
             if (File.Exists("auth.json")) { Client.Authorization = Extensions.LoadAuthorization(); }
@@ -333,26 +333,6 @@ namespace TraktTVUpdateClient
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync()).Forget();
-        }
-
-        public static Task StartSTATask(Action action)
-        {
-            var tcs = new TaskCompletionSource<object>();
-            Thread thread = new Thread(() =>
-            {
-                try
-                {
-                    action();
-                    tcs.SetResult(new object());
-                }
-                catch (Exception e)
-                {
-                    tcs.SetException(e);
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            return tcs.Task;
         }
 
         private void UpdateListView()
@@ -694,11 +674,11 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private void RelogButton_Click(object sender, EventArgs e)
+        private async void RelogButton_Click(object sender, EventArgs e)
         {
             Client.Authorization = null;
             if(File.Exists("auth.json")) File.Delete("auth.json");
-            StartSTATask(() => LoginThread());
+            await LoginThread();
         }        
     }
 }

@@ -165,8 +165,7 @@ namespace TraktTVUpdateClient.VLC
 
                     if(!String.IsNullOrWhiteSpace(getTimeResponse) && CurrentMediaItem.Length > 0)
                     {
-                        uint currentTime = 0;
-                        UInt32.TryParse(getTimeResponse.Trim(), out currentTime);
+                        UInt32.TryParse(getTimeResponse.Trim(), out uint currentTime);
                         float watchedPercent = (float)currentTime / (float)CurrentMediaItem.Length;
                         if(!CurrentMediaItem.WatchedPercentReached && watchedPercent >= Properties.Settings.Default.WatchedPercent)
                         {
