@@ -48,12 +48,12 @@
             this.nextUnwatchedEpisodeLbl = new System.Windows.Forms.Label();
             this.relogButton = new System.Windows.Forms.Button();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.toolStripEventLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
             this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.toolStripEventLabel = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -252,6 +252,11 @@
             this.statusStrip.TabIndex = 23;
             this.statusStrip.Text = "statusStrip1";
             // 
+            // toolStripEventLabel
+            // 
+            this.toolStripEventLabel.Name = "toolStripEventLabel";
+            this.toolStripEventLabel.Size = new System.Drawing.Size(0, 17);
+            // 
             // seasonOverviewTreeView
             // 
             this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -281,6 +286,7 @@
             this.watchedListView.TabIndex = 10;
             this.watchedListView.UseCompatibleStateImageBehavior = false;
             this.watchedListView.View = System.Windows.Forms.View.Details;
+            this.watchedListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.WatchedListView_ColumnClick);
             this.watchedListView.SelectedIndexChanged += new System.EventHandler(this.WatchedListView_SelectedIndexChanged);
             this.watchedListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.WatchedListView_MouseDoubleClick);
             // 
@@ -298,11 +304,6 @@
             // 
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
-            // 
-            // toolStripEventLabel
-            // 
-            this.toolStripEventLabel.Name = "toolStripEventLabel";
-            this.toolStripEventLabel.Size = new System.Drawing.Size(0, 17);
             // 
             // MainForm
             // 

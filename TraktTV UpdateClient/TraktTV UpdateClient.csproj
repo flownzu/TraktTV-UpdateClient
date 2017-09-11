@@ -185,6 +185,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extension\Extensions.cs" />
+    <Compile Include="Extension\ListViewItemComparer.cs" />
     <Compile Include="Extension\ProgressBarEx.cs">
       <SubType>Component</SubType>
     </Compile>

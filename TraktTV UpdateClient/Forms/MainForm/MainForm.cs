@@ -590,10 +590,13 @@ namespace TraktTVUpdateClient
                     {
                         this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString(CultureInfo.CurrentCulture));
                         ProgressBarEx progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBarEx>();
-                        this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
-                        this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
-                        this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
-                        this.InvokeIfRequired(() => progressBar.Refresh());
+                        if (progressBar != null)
+                        {
+                            this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
+                            this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
+                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
+                            this.InvokeIfRequired(() => progressBar.Refresh());
+                        }
                     }
                     else
                     {
@@ -679,6 +682,32 @@ namespace TraktTVUpdateClient
             Client.Authorization = null;
             if(File.Exists("auth.json")) File.Delete("auth.json");
             await LoginThread();
-        }        
+        }
+
+        private void WatchedListView_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (watchedListView.ListViewItemSorter != null)
+            {
+                var comparer = (watchedListView.ListViewItemSorter as ListViewItemComparer);
+                if (e.Column != comparer.Column)
+                {
+                    comparer.Column = e.Column;
+                    watchedListView.Sorting = SortOrder.Ascending;
+                }
+                else
+                {
+                    if (watchedListView.Sorting == SortOrder.Ascending) watchedListView.Sorting = SortOrder.Descending;
+                    else watchedListView.Sorting = SortOrder.Ascending;
+                }
+                watchedListView.Sort();
+                watchedListView.ListViewItemSorter = new ListViewItemComparer(e.Column, watchedListView.Sorting);
+            }
+            else
+            {
+                watchedListView.ListViewItemSorter = new ListViewItemComparer(e.Column, SortOrder.Ascending);
+                watchedListView.Sort();
+                watchedListView.Sorting = SortOrder.Ascending;
+            }
+        }
     }
 }
