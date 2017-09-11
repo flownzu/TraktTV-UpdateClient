@@ -26,7 +26,11 @@ namespace TraktTVUpdateClient.Forms
 		internal TraktClient Client { get; private set; }
 
 		internal void Navigating(AuthorizeView sender, NavigatingCancelEventArgs e) {
-			if (!e.Uri.AbsoluteUri.StartsWith(Client.Authentication.RedirectUri, StringComparison.CurrentCultureIgnoreCase)) {
+            dynamic activeX = sender.AuthorizeBrowser.GetType().InvokeMember("ActiveXInstance",
+                BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic,
+                null, sender.AuthorizeBrowser, new object[] { });
+            activeX.Silent = true;
+            if (!e.Uri.AbsoluteUri.StartsWith(Client.Authentication.RedirectUri, StringComparison.CurrentCultureIgnoreCase)) {
 				return;
 			}
             Client.Authentication.OAuthAuthorizationCode = e.Uri.ToString().Replace("app://authorized/?code=", "");
