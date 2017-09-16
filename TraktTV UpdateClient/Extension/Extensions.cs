@@ -50,7 +50,7 @@ namespace TraktTVUpdateClient.Extension
             return !String.IsNullOrEmpty(returnString) ? returnString.Substring(0, returnString.Length - 2) : "unspecified";
         }
 
-        public static int[] GetEpisodeAndSeasonNumberFromAbsoluteNumber(this IEnumerable<TraktSeason> seasons, int absoluteEpisodeNumber)
+        public static (int season, int episode) GetEpisodeAndSeasonNumberFromAbsoluteNumber(this IEnumerable<TraktSeason> seasons, int absoluteEpisodeNumber)
         {
             int episodeNumber = 0;
             int seasonNumber = 0;
@@ -65,7 +65,25 @@ namespace TraktTVUpdateClient.Extension
                 episodeNumber = absoluteEpisodeNumber;
                 break;
             }
-            return new int[] { seasonNumber, episodeNumber };
+            return (seasonNumber, episodeNumber);
+        }
+
+        public static (int season, int episode) GetEpisodeAndSeasonNumberFromAbsoluteNumber(this IEnumerable<TraktSeasonWatchedProgress> seasons, int absoluteEpisodeNumber)
+        {
+            int episodeNumber = 0;
+            int seasonNumber = 0;
+            foreach(TraktSeasonWatchedProgress season in seasons.Where(x => x.Number > 0))
+            {
+                if(absoluteEpisodeNumber - season.Episodes.Count() > 0)
+                {
+                    absoluteEpisodeNumber -= season.Episodes.Count();
+                    continue;
+                }
+                seasonNumber = season.Number.Value;
+                episodeNumber = absoluteEpisodeNumber;
+                break;
+            }
+            return (seasonNumber, episodeNumber);
         }
 
         public static string UpperCase(this string s)
@@ -351,6 +369,33 @@ namespace TraktTVUpdateClient.Extension
             return false;
         }
 
+        public static async Task<bool> MarkEpisodesWatched(this TraktClient Client, TraktShow show, List<(int season, int episode)> episodeList)
+        {
+            try
+            {
+                await show.SyncShowOverview(Client);
+                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
+                foreach (var entry in episodeList)
+                {
+                    var episode = show.Seasons.Where(x => x.Number.Equals(entry.season)).First().Episodes.Where(x => x.Number.Equals(entry.episode)).First();
+                    historyPostBuilder.AddEpisode(episode);
+                }
+                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
+                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
         public static async Task<bool> RemoveWatchedEpisode(this TraktClient Client, TraktShow show, TraktEpisode episode)
         {
             try
@@ -396,6 +441,33 @@ namespace TraktTVUpdateClient.Extension
             return false;
         }
 
+        public static async Task<bool> RemoveWatchedEpisodes(this TraktClient Client, TraktShow show, List<(int season, int episode)> episodeList)
+        {
+            try
+            {
+                await show.SyncShowOverview(Client);
+                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
+                foreach(var entry in episodeList)
+                {
+                    var episode = show.Seasons.Where(x => x.Number.Equals(entry.season)).First().Episodes.Where(x => x.Number.Equals(entry.episode)).First();
+                    historyRemoveBuilder.AddEpisode(episode);
+                }
+                var removeHistoryResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
+                if(removeHistoryResponse.Deleted.Episodes.HasValue && removeHistoryResponse.Deleted.Episodes.Value >= 1)
+                {
+                    return true;
+                }
+            }
+            catch(Exception ex)
+            {
+                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
+                {
+                    throw ex;
+                }
+            }
+            return false;
+        }
+
         public static async Task<bool> RateShow(this TraktClient Client, TraktShow show, int rating)
         {
             try
@@ -428,6 +500,25 @@ namespace TraktTVUpdateClient.Extension
                 }
             }
             return false;
+        }
+
+        public static async Task SyncShowOverview(this TraktShow show, TraktClient Client)
+        {
+            show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+            List<Task> taskList = new List<Task>();
+            foreach (TraktSeason season in show.Seasons)
+            {
+                if (season.Number > 0)
+                {
+                    taskList.Add(Task.Run(() => SyncSeasonEpisodes(Client, show.Ids.Slug, season)));
+                }
+            }
+            await Task.WhenAll(taskList);
+        }
+
+        private static async Task SyncSeasonEpisodes(TraktClient Client, string showIdOrSlug, TraktSeason season)
+        {
+            season.Episodes = await Client.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
         }
     }
 }

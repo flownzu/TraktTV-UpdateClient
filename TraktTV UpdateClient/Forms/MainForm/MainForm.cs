@@ -216,9 +216,9 @@ namespace TraktTVUpdateClient
                         m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
                         if(m.Success)
                         {
-                            int[] seasonAndEpisodeNumber = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
+                            var tuple = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
                             CurrentShow = show;
-                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonAndEpisodeNumber[0], seasonAndEpisodeNumber[1]);
+                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, tuple.season, tuple.episode);
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                         }
                     }
@@ -707,6 +707,67 @@ namespace TraktTVUpdateClient
                 watchedListView.ListViewItemSorter = new ListViewItemComparer(e.Column, SortOrder.Ascending);
                 watchedListView.Sort();
                 watchedListView.Sorting = SortOrder.Ascending;
+            }
+        }
+
+        private async void CurrentEpisodeTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter)
+            {
+                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                if (int.TryParse(currentEpisodeTextBox.Text, out int watchedEpisodes) && show != null)
+                {
+                    if(TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
+                    {
+                        if(showProgress.Completed != watchedEpisodes)
+                        {
+                            var tuple = showProgress.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(watchedEpisodes);
+                            List<(int season, int episode)> episodeList = new List<(int season, int episode)>();
+                            int season;
+                            if (watchedEpisodes < showProgress.Completed)
+                            {
+                                foreach(TraktSeasonWatchedProgress seasonProgress in showProgress.Seasons)
+                                {
+                                    season = seasonProgress.Number.Value;
+                                    foreach(TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
+                                    {
+                                        if (episodeProgress.Completed.HasValue && episodeProgress.Completed.Value && (episodeProgress.Number > tuple.episode || season > tuple.season)) episodeList.Add((season, episodeProgress.Number.Value));
+                                    }
+                                }
+                                if(await Client.RemoveWatchedEpisodes(show.Show, episodeList))
+                                {
+                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " from S" +
+                                                                                           episodeList.First().season.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.First().episode.ToString().PadLeft(2, '0') + " to S" +
+                                                                                           episodeList.Last().season.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.Last().episode.ToString().PadLeft(2, '0'));
+                                }
+                            }
+                            else
+                            {
+                                foreach (TraktSeasonWatchedProgress seasonProgress in showProgress.Seasons)
+                                {
+                                    season = seasonProgress.Number.Value;
+                                    if (season > tuple.season) break;
+                                    foreach (TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
+                                    {
+                                        if (episodeProgress.Completed.HasValue && !episodeProgress.Completed.Value && (episodeProgress.Number <= tuple.episode || season < tuple.season)) episodeList.Add((season, episodeProgress.Number.Value));
+                                    }
+                                }
+                                if(await Client.MarkEpisodesWatched(show.Show, episodeList))
+                                {
+                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " from S" + 
+                                                                                           episodeList.First().season.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.First().episode.ToString().PadLeft(2, '0') + " to S" +
+                                                                                           episodeList.Last().season.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.Last().episode.ToString().PadLeft(2, '0'));
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -138,32 +138,13 @@ namespace TraktTVUpdateClient.Forms
                 List<Task> taskList = new List<Task>();
                 foreach(TraktShow show in lastSearch)
                 {
-                    taskList.Add(Task.Run(() => SyncSeasonOverview(show)));
+                    taskList.Add(Task.Run(() => show.SyncShowOverview(traktCache.TraktClient)));
                     ListViewItem lvi = foundShowsListView.Items.Add(new ListViewItem(new string[] { show.Title, "" }));
                     if (show.Year.HasValue) lvi.SubItems[1].Text = show.Year.ToString();
                 }
                 await Task.WhenAll(taskList);
             }
-        }
-
-        private async Task SyncSeasonOverview(TraktShow show)
-        {
-            show.Seasons = await traktCache.TraktClient.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
-            List<Task> taskList = new List<Task>();
-            foreach(TraktSeason season in show.Seasons)
-            {
-               if(season.Number > 0)
-                {
-                    taskList.Add(Task.Run(() => SyncSeasonEpisodes(show.Ids.Slug, season)));
-                }
-            }
-            await Task.WhenAll(taskList);
-        }
-
-        private async Task SyncSeasonEpisodes(string showIdOrSlug, TraktSeason season)
-        {
-            season.Episodes = await traktCache.TraktClient.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
-        }
+        }        
 
         private async Task<List<TraktShow>> SearchShows(String title, int maxSearchResults = 5)
         {

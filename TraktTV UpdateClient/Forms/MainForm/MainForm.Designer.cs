@@ -93,6 +93,7 @@
             this.currentEpisodeTextBox.Name = "currentEpisodeTextBox";
             this.currentEpisodeTextBox.Size = new System.Drawing.Size(31, 20);
             this.currentEpisodeTextBox.TabIndex = 3;
+            this.currentEpisodeTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CurrentEpisodeTextBox_KeyDown);
             // 
             // episodeCountLabel
             // 
