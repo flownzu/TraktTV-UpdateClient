@@ -184,7 +184,7 @@ namespace TraktTVUpdateClient
         {
             CurrentShow = null;
             CurrentEpisodes = new List<TraktEpisode>();
-            string fileName = Regex.Match(mediaItem.Path, @".*\/(.*)").Groups[1].Value;
+            string fileName = Path.GetFileNameWithoutExtension(Regex.Match(mediaItem.Path, @".*\/(.*)").Groups[1].Value);
             Match m = FilenameParser.Parse(fileName);
             if (m != null && m.Success)
             {
