@@ -350,21 +350,21 @@ namespace TraktTVUpdateClient
         {
             if (CurrentEpisodes != null && CurrentShow != null)
             {
-                try
+                foreach (TraktEpisode CurrentEpisode in CurrentEpisodes)
                 {
-                    foreach (TraktEpisode CurrentEpisode in CurrentEpisodes)
+                    if (await Client.MarkEpisodeWatched(CurrentShow, CurrentEpisode))
                     {
-                        if (await Client.MarkEpisodeWatched(CurrentShow, CurrentEpisode))
+                        try
                         {
                             Task.Run(() => TraktCache.SyncShowProgress(CurrentShow.Ids.Slug)).Forget();
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                         }
+                        catch (Exception)
+                        {
+                            TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = CurrentEpisode, RequestShow = CurrentShow });
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    //TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = CurrentEpisodes, RequestShow = CurrentShow });
-                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                 }
             }
         }
