@@ -94,6 +94,20 @@ namespace TraktTVUpdateClient.Cache
                     var oldWatchedList = WatchedList;
                     await UpdateWatchedShowList();
                     await UpdateProgressList();
+                    List<Task> taskList = new List<Task>();
+                    foreach(TraktWatchedShow show in WatchedList)
+                    {
+                        if(show.Show.Seasons == null)
+                        {
+                            var oldShow = oldWatchedList.Where(x => x.Show.Title.Equals(show.Show.Title)).FirstOrDefault();
+                            if (oldShow != null && oldShow.Show.Seasons != null)
+                            {
+                                show.Show.Seasons = oldShow.Show.Seasons;
+                            }
+                            else taskList.Add(Task.Run(() => show.Show.SyncShowOverview(TraktClient)));
+                        }
+                    }
+                    await Task.WhenAll(taskList);
                     LastWatched = lastActivites.Episodes.WatchedAt.Value;
                 }
                 OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
