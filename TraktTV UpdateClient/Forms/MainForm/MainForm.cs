@@ -731,7 +731,7 @@ namespace TraktTVUpdateClient
                                     season = seasonProgress.Number.Value;
                                     foreach(TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
                                     {
-                                        if (episodeProgress.Completed.HasValue && episodeProgress.Completed.Value && (episodeProgress.Number > tuple.episode || season > tuple.season)) episodeList.Add((season, episodeProgress.Number.Value));
+                                        if (episodeProgress.Completed.HasValue && episodeProgress.Completed.Value && (season > tuple.season || (season == tuple.season && episodeProgress.Number > tuple.episode))) episodeList.Add((season, episodeProgress.Number.Value));
                                     }
                                 }
                                 if(await Client.RemoveWatchedEpisodes(show.Show, episodeList))
@@ -752,7 +752,7 @@ namespace TraktTVUpdateClient
                                     if (season > tuple.season) break;
                                     foreach (TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
                                     {
-                                        if (episodeProgress.Completed.HasValue && !episodeProgress.Completed.Value && (episodeProgress.Number <= tuple.episode || season < tuple.season)) episodeList.Add((season, episodeProgress.Number.Value));
+                                        if (episodeProgress.Completed.HasValue && !episodeProgress.Completed.Value && (season < tuple.season || (season == tuple.season && episodeProgress.Number <= tuple.episode))) episodeList.Add((season, episodeProgress.Number.Value));
                                     }
                                 }
                                 if(await Client.MarkEpisodesWatched(show.Show, episodeList))
