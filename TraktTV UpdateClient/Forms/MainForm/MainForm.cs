@@ -49,11 +49,45 @@ namespace TraktTVUpdateClient
             TraktCache.SyncStarted += TraktCache_SyncStarted;
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
             TraktCache.RequestCached += TraktCache_RequestCached;
+            TraktCache.RequestCacheSynced += TraktCache_RequestCacheSynced;
             if (Settings.Default.VLCEnabled) Task.Run(() => WaitForVlcConnection()).Forget();
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
-            Task.Run(() => TraktCache.RequestCacheThread()).Forget();
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
+            SyncWatchedListViewWithRequestCache();
+        }
+
+        private void TraktCache_RequestCacheSynced(object sender, RequestCacheSyncedEventArgs e)
+        {
+            bool syncRatings = false;
+            List<TraktShow> syncShowRating = new List<TraktShow>();
+            List<TraktShow> syncShowProgress = new List<TraktShow>();
+            foreach(TraktRequest request in e.RequestList)
+            {
+                if (request.Action == TraktRequestAction.RateShow)
+                {
+                    syncRatings = true;
+                    syncShowRating.Add(request.RequestShow);
+                }
+                else
+                {
+                    if (syncShowProgress.Find(x => x.Ids.Slug.Equals(request.RequestShow.Ids.Slug)) == null) syncShowProgress.Add(request.RequestShow);
+                }
+            }
+            if (syncRatings)
+            {
+                this.InvokeIfRequired(async () => await TraktCache.UpdateRatingsList()).Wait();
+                foreach(TraktShow show in syncShowRating)
+                {
+                    var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(show.Title)).FirstOrDefault();
+                    int showRating = traktRating.Rating ?? 0;
+                    this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(show.Title).SubItems[2].Text = showRating.ToString());
+                }
+            }
+            if(syncShowProgress.Count > 0)
+            {
+                foreach(TraktShow show in syncShowProgress) Task.Run(() => TraktCache.SyncShowProgress(show.Ids.Slug)).Forget();
+            }
         }
 
         private void SyncWatchedListViewWithRequestCache()
@@ -85,11 +119,14 @@ namespace TraktTVUpdateClient
                         var episode = showProgress.Seasons.Where(x => x.Number.Equals(e.Request.RequestEpisode.SeasonNumber)).FirstOrDefault().Episodes.Where(x => x.Number.Equals(e.Request.RequestEpisode.Number)).FirstOrDefault();
                         if (episode != null)
                         {
-                            episode.Completed = e.Request.Action.ToBool();
-                            showProgress.Completed += e.Request.Action.ToInt();
-                            this.InvokeIfRequired(() => progressBar.Value += e.Request.Action.ToInt());
-                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
-                            this.InvokeIfRequired(() => progressBar.Refresh());
+                            if (episode.Completed != e.Request.Action.ToBool())
+                            {
+                                episode.Completed = e.Request.Action.ToBool();
+                                showProgress.Completed += e.Request.Action.ToInt();
+                                this.InvokeIfRequired(() => progressBar.Value += e.Request.Action.ToInt());
+                                this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
+                                this.InvokeIfRequired(() => progressBar.Refresh());
+                            }
                         }
                     }
                     showProgress.NextEpisode = null;
@@ -338,12 +375,13 @@ namespace TraktTVUpdateClient
 
         private async void AddEpisodeButton_Click(object sender, EventArgs e)
         {
-            if(watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
+            await TraktCache.SyncRequestCache();
+            if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
                 int seasonNumber = 0;
                 int episodeNumber = 0;
-                if(TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress) && show != null)
+                if(show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
                 {
                     try
                     {
@@ -394,6 +432,7 @@ namespace TraktTVUpdateClient
 
         private async void RemoveEpisodeButton_Click(object sender, EventArgs e)
         {
+            await TraktCache.SyncRequestCache();
             if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
@@ -497,7 +536,8 @@ namespace TraktTVUpdateClient
 
         private async void ScoreComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
+            await TraktCache.SyncRequestCache();
+            if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
                 var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
                 if(traktRating != null)
@@ -538,7 +578,7 @@ namespace TraktTVUpdateClient
                         }
                         catch(Exception)
                         {
-                            TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RateShow, RequestShow = traktRating.Show, RequestValue = showRating.ToString() });
+                            TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RateShow, RequestShow = show.Show, RequestValue = showRating.ToString() });
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                         }
                     }
@@ -560,6 +600,7 @@ namespace TraktTVUpdateClient
         {
             if (e != SyncCompletedEventArgs.PartialSync)
             {
+                Task.Run(() => TraktCache.RequestCacheThread()).Forget();
                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Syncing show poster started...");
                 Task.Run(() => ShowPosterCache.Sync(TraktCache)).Forget();
             }

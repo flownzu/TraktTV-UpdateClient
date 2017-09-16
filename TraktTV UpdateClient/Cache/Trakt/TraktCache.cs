@@ -43,6 +43,7 @@ namespace TraktTVUpdateClient.Cache
         public event EventHandler<SyncStartedEventArgs> SyncStarted;
         public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
         public event EventHandler<RequestCachedEventArgs> RequestCached;
+        public event EventHandler<RequestCacheSyncedEventArgs> RequestCacheSynced;
 
         public TraktCache(TraktClient Client)
         {
@@ -55,25 +56,29 @@ namespace TraktTVUpdateClient.Cache
 
         public async Task RequestCacheThread()
         {
-            await Task.Delay(TimeSpan.FromSeconds(10));
             while(true)
             {
-                if (RequestCache.Count > 0)
-                {
-                    OnSyncStarted(SyncStartedEventArgs.PartialSync);
-                    List<TraktRequest> removeRequestList = new List<TraktRequest>();
-                    foreach (TraktRequest request in RequestCache)
-                    {
-                        if (await request.Send(TraktClient))
-                        {
-                            removeRequestList.Add(request);
-                        }
-                    }
-                    OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
-                    foreach (TraktRequest request in removeRequestList)
-                        RequestCache.Remove(request);
-                }
+                await SyncRequestCache();
                 await Task.Delay(TimeSpan.FromMinutes(5));
+            }
+        }
+
+        public async Task SyncRequestCache()
+        {
+            if(RequestCache.Count > 0)
+            {
+                List<TraktRequest> removeRequestList = new List<TraktRequest>();
+                foreach (TraktRequest request in RequestCache)
+                {
+                    if (await request.Send(TraktClient))
+                    {
+                        removeRequestList.Add(request);
+                    }
+                }
+                if (removeRequestList.Count() > 0)
+                {
+                    OnRequestCacheSynced(new RequestCacheSyncedEventArgs(removeRequestList));
+                }
             }
         }
 
@@ -134,38 +139,9 @@ namespace TraktTVUpdateClient.Cache
             {
                 if (rq.RequestEpisode != null)
                 {
-                    var previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action) && 
-                                          ((x.RequestEpisode != null && x.RequestEpisode.Equals(rq.RequestEpisode))) ||
-                                          ((x.RequestShow != null && x.RequestShow.Equals(rq.RequestShow)) &&
-                                          x.RequestValue.Equals("S" + rq.RequestEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + rq.RequestEpisode.Number.ToString().PadLeft(2, '0'))))
-                                          .FirstOrDefault();
+                    var previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action) && x.RequestEpisode.Equals(rq.RequestEpisode)).FirstOrDefault();
                     if (previousRequest != null) return;
-                    previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action.Invert()) &&
-                                      ((x.RequestEpisode != null && x.RequestEpisode.Equals(rq.RequestEpisode))) ||
-                                      ((x.RequestShow != null && x.RequestShow.Equals(rq.RequestShow)) &&
-                                      x.RequestValue.Equals("S" + rq.RequestEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + rq.RequestEpisode.Number.ToString().PadLeft(2, '0'))))
-                                      .FirstOrDefault();
-                    if (previousRequest != null)
-                    {
-                        RequestCache.Remove(previousRequest);
-                        OnRequestCached(new RequestCachedEventArgs(rq));
-                        return;
-                    }
-                }
-                else
-                {
-                    Match m = Regex.Match(rq.RequestValue, @"S(\d+)E(\d+)");
-                    int seasonNumber = int.Parse(m.Groups[1].Value);
-                    int episodeNumber = int.Parse(m.Groups[2].Value);
-                    var previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action) && 
-                                          ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue != null && x.RequestValue.Equals(rq.RequestValue)) || 
-                                          (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
-                                          .FirstOrDefault();
-                    if (previousRequest != null) return;
-                    previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action.Invert()) && 
-                                      ((x.RequestShow != null && x.RequestShow.Ids.Slug.Equals(rq.RequestShow.Ids.Slug) && x.RequestValue != null && x.RequestValue.Equals(rq.RequestValue)) || 
-                                      (x.RequestEpisode != null && (x.RequestEpisode.Number.Equals(episodeNumber) && x.RequestEpisode.SeasonNumber.Equals(seasonNumber)))))
-                                      .FirstOrDefault();
+                    previousRequest = RequestCache.Where(x => x.Action.Equals(rq.Action.Invert()) && x.RequestEpisode.Equals(rq.RequestEpisode)).FirstOrDefault();
                     if (previousRequest != null)
                     {
                         RequestCache.Remove(previousRequest);
@@ -193,6 +169,13 @@ namespace TraktTVUpdateClient.Cache
         {
             Save();
             RequestCached?.Invoke(this, e);
+        }
+
+        protected virtual void OnRequestCacheSynced(RequestCacheSyncedEventArgs e)
+        {
+            foreach (TraktRequest request in e.RequestList) RequestCache.Remove(request);
+            Save();
+            RequestCacheSynced?.Invoke(this, e);
         }
 
         public void Save()
