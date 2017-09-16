@@ -92,21 +92,6 @@ namespace TraktTVUpdateClient
                             this.InvokeIfRequired(() => progressBar.Refresh());
                         }
                     }
-                    else
-                    {
-                        Match m = Regex.Match(e.Request.RequestValue, @"S(\d+)E(\d+)");
-                        int seasonNumber = int.Parse(m.Groups[1].Value);
-                        int episodeNumber = int.Parse(m.Groups[2].Value);
-                        var episode = showProgress.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault().Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault();
-                        if (episode != null)
-                        {
-                            episode.Completed = e.Request.Action.ToBool();
-                            showProgress.Completed += e.Request.Action.ToInt();
-                            this.InvokeIfRequired(() => progressBar.Value += e.Request.Action.ToInt());
-                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
-                            this.InvokeIfRequired(() => progressBar.Refresh());
-                        }
-                    }
                     showProgress.NextEpisode = null;
                     this.InvokeIfRequired(() => WatchedListView_SelectedIndexChanged(null, EventArgs.Empty));
                 }
