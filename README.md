@@ -18,7 +18,7 @@
 
   - Recognizing the episode that is played and marking it as watched when a certain play percent is reached.
 
-  - **This is still in early development so your episodes might not get recognized - if this happens please [contact me](mailto:florian.jaeckel@gmx.net) with the path to the episode file**
+  - **There will probably be episodes that will not get recognized - if this happens please [contact me](mailto:florian.jaeckel@gmx.net)  or open an issue with the filename**
   
 ### To Do List:
 
