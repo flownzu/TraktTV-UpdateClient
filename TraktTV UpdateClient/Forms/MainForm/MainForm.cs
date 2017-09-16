@@ -356,7 +356,6 @@ namespace TraktTVUpdateClient
                     {
                         try
                         {
-                            Task.Run(() => TraktCache.SyncShowProgress(CurrentShow.Ids.Slug)).Forget();
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
                         }
                         catch (Exception)
@@ -366,6 +365,7 @@ namespace TraktTVUpdateClient
                         }
                     }
                 }
+                this.InvokeIfRequired(() => SyncButton_Click(this, EventArgs.Empty));
             }
         }
 
