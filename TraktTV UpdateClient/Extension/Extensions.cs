@@ -369,17 +369,12 @@ namespace TraktTVUpdateClient.Extension
             return false;
         }
 
-        public static async Task<bool> MarkEpisodesWatched(this TraktClient Client, TraktShow show, List<(int season, int episode)> episodeList)
+        public static async Task<bool> MarkEpisodesWatched(this TraktClient Client, TraktShow show, List<TraktEpisode> episodeList)
         {
             try
             {
-                await show.SyncShowOverview(Client);
                 var historyPostBuilder = new TraktSyncHistoryPostBuilder();
-                foreach (var entry in episodeList)
-                {
-                    var episode = show.Seasons.Where(x => x.Number.Equals(entry.season)).First().Episodes.Where(x => x.Number.Equals(entry.episode)).First();
-                    historyPostBuilder.AddEpisode(episode);
-                }
+                foreach (var episode in episodeList) historyPostBuilder.AddEpisode(episode);
                 var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                 {
@@ -441,17 +436,12 @@ namespace TraktTVUpdateClient.Extension
             return false;
         }
 
-        public static async Task<bool> RemoveWatchedEpisodes(this TraktClient Client, TraktShow show, List<(int season, int episode)> episodeList)
+        public static async Task<bool> RemoveWatchedEpisodes(this TraktClient Client, TraktShow show, List<TraktEpisode> episodeList)
         {
             try
             {
-                await show.SyncShowOverview(Client);
                 var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
-                foreach(var entry in episodeList)
-                {
-                    var episode = show.Seasons.Where(x => x.Number.Equals(entry.season)).First().Episodes.Where(x => x.Number.Equals(entry.episode)).First();
-                    historyRemoveBuilder.AddEpisode(episode);
-                }
+                foreach(var episode in episodeList) historyRemoveBuilder.AddEpisode(episode);
                 var removeHistoryResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
                 if(removeHistoryResponse.Deleted.Episodes.HasValue && removeHistoryResponse.Deleted.Episodes.Value >= 1)
                 {

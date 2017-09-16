@@ -722,26 +722,27 @@ namespace TraktTVUpdateClient
                         if(showProgress.Completed != watchedEpisodes)
                         {
                             var tuple = showProgress.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(watchedEpisodes);
-                            List<(int season, int episode)> episodeList = new List<(int season, int episode)>();
+                            List<TraktEpisode> episodeList = new List<TraktEpisode>();
                             int season;
                             if (watchedEpisodes < showProgress.Completed)
                             {
                                 foreach(TraktSeasonWatchedProgress seasonProgress in showProgress.Seasons)
                                 {
                                     season = seasonProgress.Number.Value;
-                                    foreach(TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
+                                    foreach(TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes.Where(x => x.Completed == true))
                                     {
-                                        if (episodeProgress.Completed.HasValue && episodeProgress.Completed.Value && (season > tuple.season || (season == tuple.season && episodeProgress.Number > tuple.episode))) episodeList.Add((season, episodeProgress.Number.Value));
+                                        if (season > tuple.season || (season == tuple.season && episodeProgress.Number > tuple.episode))
+                                            episodeList.Add(show.Show.Seasons.Where(x => x.Number.Equals(season)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeProgress.Number)).FirstOrDefault());
                                     }
                                 }
                                 if(await Client.RemoveWatchedEpisodes(show.Show, episodeList))
                                 {
                                     Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
                                     this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " from S" +
-                                                                                           episodeList.First().season.ToString().PadLeft(2, '0') + "E" +
-                                                                                           episodeList.First().episode.ToString().PadLeft(2, '0') + " to S" +
-                                                                                           episodeList.Last().season.ToString().PadLeft(2, '0') + "E" +
-                                                                                           episodeList.Last().episode.ToString().PadLeft(2, '0'));
+                                                                                           episodeList.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.First().Number.ToString().PadLeft(2, '0') + " to S" +
+                                                                                           episodeList.Last().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.Last().Number.ToString().PadLeft(2, '0'));
                                 }
                             }
                             else
@@ -752,17 +753,18 @@ namespace TraktTVUpdateClient
                                     if (season > tuple.season) break;
                                     foreach (TraktEpisodeWatchedProgress episodeProgress in seasonProgress.Episodes)
                                     {
-                                        if (episodeProgress.Completed.HasValue && !episodeProgress.Completed.Value && (season < tuple.season || (season == tuple.season && episodeProgress.Number <= tuple.episode))) episodeList.Add((season, episodeProgress.Number.Value));
+                                        if (episodeProgress.Completed.HasValue && !episodeProgress.Completed.Value && (season < tuple.season || (season == tuple.season && episodeProgress.Number <= tuple.episode)))
+                                            episodeList.Add(show.Show.Seasons.Where(x => x.Number.Equals(season)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeProgress.Number)).FirstOrDefault());
                                     }
                                 }
                                 if(await Client.MarkEpisodesWatched(show.Show, episodeList))
                                 {
                                     Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
                                     this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " from S" + 
-                                                                                           episodeList.First().season.ToString().PadLeft(2, '0') + "E" +
-                                                                                           episodeList.First().episode.ToString().PadLeft(2, '0') + " to S" +
-                                                                                           episodeList.Last().season.ToString().PadLeft(2, '0') + "E" +
-                                                                                           episodeList.Last().episode.ToString().PadLeft(2, '0'));
+                                                                                           episodeList.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.First().Number.ToString().PadLeft(2, '0') + " to S" +
+                                                                                           episodeList.Last().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
+                                                                                           episodeList.Last().Number.ToString().PadLeft(2, '0'));
                                 }
                             }
                         }
