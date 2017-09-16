@@ -185,6 +185,7 @@
     <Compile Include="Cache\Trakt\SyncStartedEventArgs.cs" />
     <Compile Include="Cache\Trakt\TraktCache.cs" />
     <Compile Include="Cache\Trakt\TraktRequest.cs" />
+    <Compile Include="Extension\FilenameParser.cs" />
     <Compile Include="Extension\ListViewEx.cs">
       <SubType>Component</SubType>
     </Compile>

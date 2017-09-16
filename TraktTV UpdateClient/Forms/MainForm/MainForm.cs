@@ -32,7 +32,7 @@ namespace TraktTVUpdateClient
         public ImageCache ShowPosterCache;
         public VLCConnection vlcClient;
         public TraktShow CurrentShow;
-        public TraktEpisode CurrentEpisode;
+        public List<TraktEpisode> CurrentEpisodes;
 
         private SettingsForm settingsForm;
         private SearchShowForm searchForm;
@@ -182,92 +182,153 @@ namespace TraktTVUpdateClient
 
         private async Task GetShowAndEpisodeFromMediaItem(VLCMediaItem mediaItem)
         {
+            CurrentShow = null;
+            CurrentEpisodes = new List<TraktEpisode>();
             string fileName = Regex.Match(mediaItem.Path, @".*\/(.*)").Groups[1].Value;
-            Match m = Regex.Match(fileName, @"(.*)[sS](\d+)[eE](\d+)");
-            if (m.Success)
+            Match m = FilenameParser.Parse(fileName);
+            if (m != null && m.Success)
             {
-                string showName = m.Groups[1].Value.Replace('.', ' ').Trim();
-                int seasonNumber = Int16.Parse(m.Groups[2].Value);
-                int episodeNumber = Int16.Parse(m.Groups[3].Value);
+                string showName = m.Groups["seriesname"].Value.CleanString();
+                int seasonNumber = m.Groups["seasonnumber"].Success ? int.Parse(m.Groups["seasonnumber"].Value) : 0;
+                int episodeNumberStart = m.Groups["episodenumberstart"].Success ? int.Parse(m.Groups["episodenumberstart"].Value) : m.Groups["episodenumber"].Success ? int.Parse(m.Groups["episodenumber"].Value) : 0;
+                int episodeNumberEnd = m.Groups["episodenumberend"].Success ? int.Parse(m.Groups["episodenumberend"].Value) : 0;
                 TraktShow show = await GetClosestMatch(showName, 80);
-                if(show != null)
+                if (show != null)
                 {
                     CurrentShow = show;
-                    CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
-                }
-            }
-            string[] mediaPath = Regex.Split(mediaItem.Path.Replace(@"file:///", ""), @"\/");
-            try
-            {
-                string parentFolderName = mediaPath[mediaPath.Length - 2];
-                TraktShow show = await GetClosestMatch(parentFolderName, 80);
-                if(show != null)
-                {
-                    show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
-                    if (show.Seasons.Count() == 1)
+                    if (episodeNumberEnd == 0)
                     {
-                        int seasonNumber = 1;
-                        m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
-                        if (m.Success)
+                        if (seasonNumber == 0)
                         {
-                            int episodeNumber = Int16.Parse(m.Groups[1].Value);
-                            CurrentShow = show;
-                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
-                        }
-                        else
-                        {
-                            m = Regex.Match(fileName, @".*?(\d+)");
-                            if(m.Success)
+                            show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+                            if (show.Seasons.Count() == 1) seasonNumber = 1;
+                            else
                             {
-                                int episodeNumber = Int16.Parse(m.Groups[1].Value);
-                                CurrentShow = show;
-                                CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                                List<Task> taskList = new List<Task>();
+                                foreach (TraktSeason season in show.Seasons.Where(x => x.Number > 0))
+                                    taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
+                                await Task.WhenAll(taskList);
+                                var t = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(episodeNumberStart);
+                                seasonNumber = t.season;
+                                episodeNumberStart = t.episode;
                             }
                         }
+                        CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumberStart));
+                        this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
+                        return;
                     }
                     else
                     {
-                        List<Task> taskList = new List<Task>();
-                        foreach (TraktSeason season in show.Seasons.Where(x => x.Number > 0))
-                            taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
-                        await Task.WhenAll(taskList);
-
-                        m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
-                        if(m.Success)
+                        if(seasonNumber == 0)
                         {
-                            var tuple = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
-                            CurrentShow = show;
-                            CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, tuple.season, tuple.episode);
-                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                            show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+                            int seasonNumberEnd = 1;
+                            if (show.Seasons.Count() == 1) seasonNumber = 1;
+                            else
+                            {
+                                List<Task> taskList = new List<Task>();
+                                foreach (TraktSeason season in show.Seasons.Where(x => x.Number > 0))
+                                    taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
+                                await Task.WhenAll(taskList);
+                                var t1 = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(episodeNumberStart);
+                                var t2 = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(episodeNumberEnd);
+                                seasonNumber = t1.season;
+                                episodeNumberStart = t1.episode;
+                                seasonNumberEnd = t2.season;
+                                episodeNumberEnd = t2.episode;
+                            }
+                            foreach(TraktSeason season in show.Seasons.Where(x => x.Number.Equals(seasonNumber) || x.Number.Equals(seasonNumberEnd)))
+                            {
+                                foreach(TraktEpisode episode in season.Episodes)
+                                {
+                                    if((episode.SeasonNumber == seasonNumber && seasonNumber == seasonNumberEnd && episode.Number <= episodeNumberEnd && episode.Number >= episodeNumberStart) ||
+                                       (episode.SeasonNumber == seasonNumber && seasonNumberEnd > seasonNumber && episode.Number >= episodeNumberStart) ||
+                                       (seasonNumber != seasonNumberEnd && episode.SeasonNumber == seasonNumberEnd && episode.Number <= episodeNumberEnd))
+                                    {
+                                        CurrentEpisodes.Add(episode);
+                                    }
+                                }
+                            }
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0') + " to S" + CurrentEpisodes.Last().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.Last().Number.ToString().PadLeft(2, '0'));
                         }
                     }
                 }
-                else
+                else this.InvokeIfRequired(() => toolStripEventLabel.Text = "Show '" + showName + "' was not found on trakt.");
+            }
+            else
+            {
+                string[] mediaPath = Regex.Split(mediaItem.Path.Replace(@"file:///", ""), @"\/");
+                try
                 {
-                    string parentsParentFolderName = mediaPath[mediaPath.Length - 3];
-                    show = await GetClosestMatch(parentsParentFolderName, 80);
-                    if(show != null)
+                    string parentFolderName = mediaPath[mediaPath.Length - 2];
+                    TraktShow show = await GetClosestMatch(parentFolderName, 80);
+                    if (show != null)
                     {
-                        m = Regex.Match(parentFolderName, @"(\d+)");
-                        if(m.Success)
+                        show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
+                        if (show.Seasons.Count() == 1)
                         {
-                            int seasonNumber = Int16.Parse(m.Groups[1].Value);
+                            int seasonNumber = 1;
                             m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
                             if (m.Success)
                             {
                                 int episodeNumber = Int16.Parse(m.Groups[1].Value);
                                 CurrentShow = show;
-                                CurrentEpisode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                                CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber));
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
+                            }
+                            else
+                            {
+                                m = Regex.Match(fileName, @".*?(\d+)");
+                                if (m.Success)
+                                {
+                                    int episodeNumber = Int16.Parse(m.Groups[1].Value);
+                                    CurrentShow = show;
+                                    CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber));
+                                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            List<Task> taskList = new List<Task>();
+                            foreach (TraktSeason season in show.Seasons.Where(x => x.Number > 0))
+                                taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
+                            await Task.WhenAll(taskList);
+
+                            m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
+                            if (m.Success)
+                            {
+                                var tuple = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
+                                CurrentShow = show;
+                                CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, tuple.season, tuple.episode));
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        string parentsParentFolderName = mediaPath[mediaPath.Length - 3];
+                        show = await GetClosestMatch(parentsParentFolderName, 80);
+                        if (show != null)
+                        {
+                            m = Regex.Match(parentFolderName, @"(\d+)");
+                            if (m.Success)
+                            {
+                                int seasonNumber = Int16.Parse(m.Groups[1].Value);
+                                m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
+                                if (m.Success)
+                                {
+                                    int episodeNumber = Int16.Parse(m.Groups[1].Value);
+                                    CurrentShow = show;
+                                    CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber));
+                                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
+                                }
                             }
                         }
                     }
                 }
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
 
         private async Task<TraktShow> GetClosestMatch(string showName, double minSimilarity = 0)
@@ -287,19 +348,22 @@ namespace TraktTVUpdateClient
 
         private async void VlcClient_WatchedPercentReached(object sender, EventArgs e)
         {
-            if (CurrentEpisode != null && CurrentShow != null)
+            if (CurrentEpisodes != null && CurrentShow != null)
             {
                 try
                 {
-                    if(await Client.MarkEpisodeWatched(CurrentShow, CurrentEpisode))
+                    foreach (TraktEpisode CurrentEpisode in CurrentEpisodes)
                     {
-                        Task.Run(() => TraktCache.SyncShowProgress(CurrentShow.Ids.Slug)).Forget();
-                        this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                        if (await Client.MarkEpisodeWatched(CurrentShow, CurrentEpisode))
+                        {
+                            Task.Run(() => TraktCache.SyncShowProgress(CurrentShow.Ids.Slug)).Forget();
+                            this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + CurrentShow.Title + " S" + CurrentEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisode.Number.ToString().PadLeft(2, '0'));
+                        }
                     }
                 }
                 catch (Exception)
                 {
-                    TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = CurrentEpisode, RequestShow = CurrentShow });
+                    //TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = CurrentEpisodes, RequestShow = CurrentShow });
                     this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                 }
             }

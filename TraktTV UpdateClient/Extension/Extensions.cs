@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using TraktApiSharp;
@@ -84,6 +85,15 @@ namespace TraktTVUpdateClient.Extension
                 break;
             }
             return (seasonNumber, episodeNumber);
+        }
+
+        public static string CleanString(this string s)
+        {
+            s = Regex.Replace(s, "[.](?!.(?:[.]|$))", " ");
+            s = Regex.Replace(s, "(?<=[^. ]{2})[.]", " ");
+            s = s.Replace("_", " ");
+            s = s.Trim("- ".ToCharArray());
+            return s;
         }
 
         public static string UpperCase(this string s)
