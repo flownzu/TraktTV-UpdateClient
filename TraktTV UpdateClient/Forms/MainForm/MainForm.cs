@@ -388,7 +388,7 @@ namespace TraktTVUpdateClient
                             {
                                 episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value + 1;
                             }
-                            if (await Client.MarkEpisodeWatched(show.Show, seasonNumber, episodeNumber))
+                            if (await Client.MarkEpisodeWatched(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
                             {
                                 Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
@@ -400,7 +400,7 @@ namespace TraktTVUpdateClient
                         if (progress.NextEpisode != null)
                             TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestEpisode = progress.NextEpisode, RequestShow = show.Show });
                         else
-                            TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestShow = show.Show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
+                            TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.AddEpisode, RequestShow = show.Show, RequestEpisode = show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault() });
                         this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                     }
                 }
@@ -418,7 +418,7 @@ namespace TraktTVUpdateClient
                     int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value;
                     try
                     {
-                        if (await Client.RemoveWatchedEpisode(show.Show, seasonNumber, episodeNumber))
+                        if (await Client.RemoveWatchedEpisode(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
                         {
                             Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
@@ -427,7 +427,7 @@ namespace TraktTVUpdateClient
                     }
                     catch (Exception)
                     {
-                        TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RemoveEpisode, RequestShow = show.Show, RequestValue = "S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0') });
+                        TraktCache.AddRequestToCache(new TraktRequest() { Action = TraktRequestAction.RemoveEpisode, RequestShow = show.Show, RequestEpisode = show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault() });
                         this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cached request because it failed!");
                     }
                 }

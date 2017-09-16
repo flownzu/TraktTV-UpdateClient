@@ -346,29 +346,6 @@ namespace TraktTVUpdateClient.Extension
             return false;
         }
 
-        public static async Task<bool> MarkEpisodeWatched(this TraktClient Client, TraktShow show, int seasonNumber, int episodeNumber)
-        {
-            try
-            {
-                var historyPostBuilder = new TraktSyncHistoryPostBuilder();
-                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                historyPostBuilder.AddEpisode(episode);
-                var addEpisodeResponse = await Client.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
-                if (addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
-                {
-                    throw ex;
-                }
-            }
-            return false;
-        }
-
         public static async Task<bool> MarkEpisodesWatched(this TraktClient Client, TraktShow show, List<TraktEpisode> episodeList)
         {
             try
@@ -399,29 +376,6 @@ namespace TraktTVUpdateClient.Extension
                 historyRemoveBuilder.AddEpisode(episode);
                 var removeEpisodeResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
                 if (removeEpisodeResponse.Deleted.Episodes.HasValue && removeEpisodeResponse.Deleted.Episodes.Value >= 1)
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex.GetType() == typeof(System.Net.Http.HttpRequestException) || ex.GetType() == typeof(TraktServerException) || ex.GetType() == typeof(TraktServerUnavailableException))
-                {
-                    throw ex;
-                }
-            }
-            return false;
-        }
-
-        public static async Task<bool> RemoveWatchedEpisode(this TraktClient Client, TraktShow show, int seasonNumber, int episodeNumber)
-        {
-            try
-            {
-                var historyRemoveBuilder = new TraktSyncHistoryRemovePostBuilder();
-                var episode = await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, seasonNumber, episodeNumber);
-                historyRemoveBuilder.AddEpisode(episode);
-                var removeHistoryResponse = await Client.Sync.RemoveWatchedHistoryItemsAsync(historyRemoveBuilder.Build());
-                if (removeHistoryResponse.Deleted.Episodes.HasValue && removeHistoryResponse.Deleted.Episodes.Value >= 1)
                 {
                     return true;
                 }
