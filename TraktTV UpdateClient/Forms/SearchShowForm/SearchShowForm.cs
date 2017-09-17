@@ -213,9 +213,12 @@ namespace TraktTVUpdateClient.Forms
                 {
                     foreach (TraktSeason season in selectedShow.Seasons.Where(x => x.Number > 0))
                     {
-                        var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
-                        foreach (TraktEpisode episode in season.Episodes)
-                            seasonNode.Nodes.Add("Episode " + episode.Number);
+                        if (season != null && season.Episodes != null)
+                        {
+                            var seasonNode = seasonOverviewTreeView.Nodes.Add("Season " + season.Number);
+                            foreach (TraktEpisode episode in season.Episodes)
+                                seasonNode.Nodes.Add("Episode " + episode.Number);
+                        }
                     }
                 }
                 else seasonOverviewTreeView.Nodes.Add("Still Loading...");
