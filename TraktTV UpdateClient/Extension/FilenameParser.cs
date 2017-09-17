@@ -35,7 +35,9 @@ namespace TraktTVUpdateClient.Extension
             new Regex(@"^(?<seriesname>.*?)[ \._\-](?<seasonnumber>[0-9]{2})(?<episodenumber>[0-9]{2,3})"),
             new Regex(@"^(?<seriesname>.*?)[ \._\-][Ee](?<episodenumber>[0-9]+)"),
             new Regex(@"^(?<seriesname>.*?)[sS](?<seasonnumber>\d+)[eE](?<episodenumber>\d+)"),
-            new Regex(@"^(?<seriesname>.*?)[ \._\-](?<episodenumber>\d+)")
+            new Regex(@"^(?<seriesname>.*?)[ \._\-](?<episodenumber>\d+)"),
+            new Regex(@"^[\[\(](?<group>.+?)[\]\)][_\.\- ](?<seriesname>.*)[_\.\- ][Ee][Pp](?<episodenumber>\d+)"),
+            new Regex(@"(^[\[\(](?<group>.+?)[\]\)][_\.\- ])?(?<seriesname>.*)[_\.\- ][Ee][Pp](?<episodenumber>\d+)")
         };
 
         public static Match Parse(string fileName)
