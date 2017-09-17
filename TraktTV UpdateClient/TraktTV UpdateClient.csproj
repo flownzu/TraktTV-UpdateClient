@@ -303,6 +303,7 @@
       <MergeAssemblies Include="$(OutputPath)\MoreLinq.dll" />
       <MergeAssemblies Include="$(OutputPath)\Newtonsoft.Json.dll" />
       <MergeAssemblies Include="$(OutputPath)\TraktApiSharp.dll" />
+      <MergeAssemblies Include="$(OutputPath)\System.ValueTuple.dll" />
     </ItemGroup>
     <PropertyGroup>
       <OutputAssembly>$(SolutionDir)\out\$(AssemblyName).exe</OutputAssembly>
