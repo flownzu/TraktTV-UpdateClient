@@ -69,6 +69,8 @@
             // 
             // showNameLabel
             // 
+            this.showNameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.showNameLabel.AutoSize = true;
             this.showNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.showNameLabel.Location = new System.Drawing.Point(118, 12);
@@ -174,6 +176,7 @@
             // 
             // syncButton
             // 
+            this.syncButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.syncButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Update;
             this.syncButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.syncButton.Location = new System.Drawing.Point(499, 98);
@@ -194,6 +197,7 @@
             // 
             // addShowButton
             // 
+            this.addShowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.addShowButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Search;
             this.addShowButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.addShowButton.Location = new System.Drawing.Point(499, 34);
@@ -205,6 +209,7 @@
             // 
             // settingButton
             // 
+            this.settingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.settingButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Settings;
             this.settingButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.settingButton.Location = new System.Drawing.Point(499, 3);
@@ -234,6 +239,7 @@
             // 
             // relogButton
             // 
+            this.relogButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.relogButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Lock;
             this.relogButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.relogButton.Location = new System.Drawing.Point(499, 66);
@@ -247,9 +253,9 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripEventLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 377);
+            this.statusStrip.Location = new System.Drawing.Point(0, 366);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(702, 22);
+            this.statusStrip.Size = new System.Drawing.Size(694, 22);
             this.statusStrip.TabIndex = 23;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -260,21 +266,21 @@
             // 
             // seasonOverviewTreeView
             // 
-            this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.seasonOverviewTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.seasonOverviewTreeView.CheckBoxes = true;
-            this.seasonOverviewTreeView.Location = new System.Drawing.Point(537, 3);
+            this.seasonOverviewTreeView.Location = new System.Drawing.Point(533, 3);
             this.seasonOverviewTreeView.Name = "seasonOverviewTreeView";
-            this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 373);
+            this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 362);
             this.seasonOverviewTreeView.TabIndex = 19;
             this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.SeasonOverviewTreeView_BeforeCheck);
             this.seasonOverviewTreeView.DoubleClick += new System.EventHandler(this.SeasonOverviewTreeView_DoubleClick);
             // 
             // watchedListView
             // 
-            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.watchedListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.nameColumnHeader,
             this.progressColumnHeader,
@@ -283,7 +289,7 @@
             this.watchedListView.Location = new System.Drawing.Point(12, 168);
             this.watchedListView.MultiSelect = false;
             this.watchedListView.Name = "watchedListView";
-            this.watchedListView.Size = new System.Drawing.Size(519, 208);
+            this.watchedListView.Size = new System.Drawing.Size(519, 197);
             this.watchedListView.TabIndex = 10;
             this.watchedListView.UseCompatibleStateImageBehavior = false;
             this.watchedListView.View = System.Windows.Forms.View.Details;
@@ -310,7 +316,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(702, 399);
+            this.ClientSize = new System.Drawing.Size(694, 388);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.relogButton);
             this.Controls.Add(this.nextUnwatchedEpisodeLbl);
