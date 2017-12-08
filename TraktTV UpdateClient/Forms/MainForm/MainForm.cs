@@ -202,6 +202,11 @@ namespace TraktTVUpdateClient
                         {
                             show.Seasons = await Client.Seasons.GetAllSeasonsAsync(show.Ids.Slug);
                             if (show.Seasons.Count() == 1) seasonNumber = 1;
+                            else if (show.Seasons.Count() == 0)
+                            {
+                                this.InvokeIfRequired(() => toolStripEventLabel.Text = "Show '" + showName + "' has no episodes on trakt.tv!");
+                                return;
+                            }
                             else
                             {
                                 List<Task> taskList = new List<Task>();
@@ -209,6 +214,11 @@ namespace TraktTVUpdateClient
                                     taskList.Add(Task.Run(async () => season.Episodes = await Client.Seasons.GetSeasonAsync(show.Ids.Slug, season.Number.Value)));
                                 await Task.WhenAll(taskList);
                                 var t = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(episodeNumberStart);
+                                if(t.season == 0 && t.episode == 0)
+                                {
+                                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Cannot find Episode " + episodeNumberStart + " of '" + showName + "' on trakt.");
+                                    return;
+                                }
                                 seasonNumber = t.season;
                                 episodeNumberStart = t.episode;
                             }
