@@ -36,6 +36,7 @@ namespace TraktTVUpdateClient
 
         private SettingsForm settingsForm;
         private SearchShowForm searchForm;
+        private MissingEpisodeForm missingEpisodeForm;
         private bool vlcThreadStarted;
         private SortOrder sortOrder = SortOrder.Ascending;
 
@@ -46,7 +47,7 @@ namespace TraktTVUpdateClient
             Client.Authentication.RedirectUri = "app://authorized";
             Client.Configuration.ForceAuthorization = true;
             TraktCache = LoadCache();
-            if(TraktCache.TraktClient == null) TraktCache.TraktClient = Client;
+            if (TraktCache.TraktClient == null) TraktCache.TraktClient = Client;
             TraktCache.SyncStarted += TraktCache_SyncStarted;
             TraktCache.SyncCompleted += TraktCache_SyncCompleted;
             TraktCache.RequestCached += TraktCache_RequestCached;
@@ -542,8 +543,7 @@ namespace TraktTVUpdateClient
                 };
                 searchForm.Show();
             }
-            else
-                searchForm.Focus();
+            else searchForm.Focus();
         }
 
         private void SyncButton_Click(object sender, EventArgs e)
@@ -867,6 +867,20 @@ namespace TraktTVUpdateClient
                 else sortOrder = SortOrder.None;
             }
             else sortOrder = SortOrder.Ascending;
+        }
+
+        private void MissingEpisodesButton_Click(object sender, EventArgs e)
+        {
+            if (missingEpisodeForm == null || missingEpisodeForm.IsDisposed)
+            {
+                missingEpisodeForm = new MissingEpisodeForm(TraktCache)
+                {
+                    StartPosition = FormStartPosition.Manual,
+                    Location = MousePosition
+                };
+                missingEpisodeForm.Show();
+            }
+            else missingEpisodeForm.Focus();
         }
     }
 }

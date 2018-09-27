@@ -60,6 +60,7 @@ namespace TraktTVUpdateClient
             this.nameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.progressColumn = new TraktTVUpdateClient.Extension.DataGridViewProgressColumn();
             this.ratingColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.missingEpisodesButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWatched)).BeginInit();
@@ -350,11 +351,24 @@ namespace TraktTVUpdateClient
             this.ratingColumn.Name = "ratingColumn";
             this.ratingColumn.ReadOnly = true;
             // 
+            // missingEpisodesButton
+            // 
+            this.missingEpisodesButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.missingEpisodesButton.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.verified_list_interface_symbol;
+            this.missingEpisodesButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.missingEpisodesButton.Location = new System.Drawing.Point(499, 130);
+            this.missingEpisodesButton.Name = "missingEpisodesButton";
+            this.missingEpisodesButton.Size = new System.Drawing.Size(32, 32);
+            this.missingEpisodesButton.TabIndex = 25;
+            this.missingEpisodesButton.UseVisualStyleBackColor = true;
+            this.missingEpisodesButton.Click += new System.EventHandler(this.MissingEpisodesButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.missingEpisodesButton);
             this.Controls.Add(this.dataGridViewWatched);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.relogButton);
@@ -422,6 +436,7 @@ namespace TraktTVUpdateClient
         private System.Windows.Forms.DataGridViewTextBoxColumn nameColumn;
         private DataGridViewProgressColumn progressColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ratingColumn;
+        private System.Windows.Forms.Button missingEpisodesButton;
     }
 }
 

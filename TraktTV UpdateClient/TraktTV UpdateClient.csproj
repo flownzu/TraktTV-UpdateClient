@@ -198,6 +198,12 @@
     <Compile Include="Forms\MainForm\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\MissingEpisodesForm\MissingEpisodesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MissingEpisodesForm\MissingEpisodesForm.Designer.cs">
+      <DependentUpon>MissingEpisodesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\SearchShowForm\SearchShowForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -228,6 +234,9 @@
     <Compile Include="VLC\VLCMediaItem.cs" />
     <EmbeddedResource Include="Forms\MainForm\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MissingEpisodesForm\MissingEpisodesForm.resx">
+      <DependentUpon>MissingEpisodesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SearchShowForm\SearchShowForm.resx">
       <DependentUpon>SearchShowForm.cs</DependentUpon>
@@ -288,6 +297,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\verified-list-interface-symbol.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
