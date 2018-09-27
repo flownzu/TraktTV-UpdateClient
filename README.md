@@ -30,4 +30,5 @@
 
 #### **Credits to the show posters goes to the [TMDb](https://www.themoviedb.org/) API and the [Fanart.TV](https://fanart.tv/) API.**
 
-#### **The button icons are by [Anastasya Bolshakova](https://www.iconfinder.com/nastu_bol) in the icon set [Simple Files](https://www.iconfinder.com/iconsets/simple-files-1) available under [Creative Commons (Attribution 3.0 Unported)](http://creativecommons.org/licenses/by/3.0/) and the program icon is by [Dan Leech](http://simpleicons.org/) in the icon set [Simple Icons](https://www.iconfinder.com/iconsets/simple-icons) available under the [Free Art License](http://artlibre.org/licence/lal/en) modified by me.**
+#### **The button icons are by [Anastasya Bolshakova](https://www.iconfinder.com/nastu_bol) in the icon set [Simple Files](https://www.iconfinder.com/iconsets/simple-files-1) available under [Creative Commons (Attribution 3.0 Unported)](http://creativecommons.org/licenses/by/3.0/) and the [Verified list interface symbol](https://www.flaticon.com/free-icon/verified-list-interface-symbol_40386) is by [Freepik](https://www.flaticon.com/authors/freepik)**
+#### **The program icon is by [Dan Leech](http://simpleicons.org/) in the icon set [Simple Icons](https://www.iconfinder.com/iconsets/simple-icons) available under the [Free Art License](http://artlibre.org/licence/lal/en) modified by me.**
