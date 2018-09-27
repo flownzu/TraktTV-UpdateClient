@@ -37,6 +37,7 @@ namespace TraktTVUpdateClient
         private SettingsForm settingsForm;
         private SearchShowForm searchForm;
         private bool vlcThreadStarted;
+        private SortOrder sortOrder = SortOrder.Ascending;
 
         public MainForm()
         {
@@ -79,14 +80,13 @@ namespace TraktTVUpdateClient
                 this.InvokeIfRequired(async () => await TraktCache.UpdateRatingsList()).Wait();
                 foreach(TraktShow show in syncShowRating)
                 {
-                    var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(show.Title)).FirstOrDefault();
-                    int showRating = traktRating.Rating ?? 0;
-                    this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(show.Title).SubItems[2].Text = showRating.ToString());
+                    var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(show.Title)).FirstOrDefault()?.Rating ?? 0;
+                    this.InvokeIfRequired(() => dataGridViewWatched.Rows.OfType<DataGridViewRow>().Where(x => x.Cells[0].Value.ToString() == show.Title).FirstOrDefault().Cells[2].Value = traktRating);
                 }
             }
             if(syncShowProgress.Count > 0)
             {
-                foreach(TraktShow show in syncShowProgress) Task.Run(() => TraktCache.SyncShowProgress(show.Ids.Slug)).Forget();
+                foreach(TraktShow show in syncShowProgress) Task.Run(() => TraktCache.SyncShowProgress(show.Ids.Slug, true)).Forget();
             }
         }
 
@@ -103,15 +103,13 @@ namespace TraktTVUpdateClient
 
         private void TraktCache_RequestCached(object sender, RequestCachedEventArgs e)
         {
+            var row = this.InvokeIfRequired(() => dataGridViewWatched.FindRowWithSubtext(e.Request.RequestShow.Title));
             if (e.Request.Action == TraktRequestAction.RateShow)
             {
-                var listViewItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(e.Request.RequestShow.Title));
-                this.InvokeIfRequired(() => listViewItem.SubItems[2].Text = e.Request.RequestValue);
+                this.InvokeIfRequired(() => row.Cells["ratingColumn"].Value = e.Request.RequestValue);
             }
             else if (e.Request.Action == TraktRequestAction.AddEpisode || e.Request.Action == TraktRequestAction.RemoveEpisode)
             {
-                var listViewItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(e.Request.RequestShow.Title));
-                var progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(listViewItem)).ConvertTo<ProgressBarEx>();
                 if (TraktCache.ProgressList.TryGetValue(e.Request.RequestShow.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
                     if (e.Request.RequestEpisode != null)
@@ -123,14 +121,12 @@ namespace TraktTVUpdateClient
                             {
                                 episode.Completed = e.Request.Action.ToBool();
                                 showProgress.Completed += e.Request.Action.ToInt();
-                                this.InvokeIfRequired(() => progressBar.Value += e.Request.Action.ToInt());
-                                this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
-                                this.InvokeIfRequired(() => progressBar.Refresh());
+                                this.InvokeIfRequired(() => row.Cells[1].Value = new int[] { showProgress.Completed ?? 0, showProgress.Aired ?? 1 });
                             }
                         }
                     }
                     showProgress.NextEpisode = null;
-                    this.InvokeIfRequired(() => WatchedListView_SelectedIndexChanged(null, EventArgs.Empty));
+                    this.InvokeIfRequired(() => DataGridViewWatched_RowEnter(null, new DataGridViewCellEventArgs(0, dataGridViewWatched.SelectedRows.Count > 0 ? dataGridViewWatched.SelectedRows[0].Index : -1)));
                 }
             }
         }
@@ -141,7 +137,7 @@ namespace TraktTVUpdateClient
             {
                 if (File.Exists(cacheFile))
                 {
-                    using (StreamReader sr = File.OpenText(cacheFile)) { TraktCache = JsonConvert.DeserializeObject<TraktCache>(sr.ReadToEnd()); }
+                    TraktCache = JsonConvert.DeserializeObject<TraktCache>(File.ReadAllText(cacheFile));
                 }
                 return TraktCache ?? new TraktCache(Client);
             }
@@ -186,7 +182,7 @@ namespace TraktTVUpdateClient
             CurrentEpisodes = new List<TraktEpisode>();
             string fileName = Path.GetFileNameWithoutExtension(Regex.Match(mediaItem.Path, @".*\/(.*)").Groups[1].Value);
             Match m = FilenameParser.Parse(fileName);
-            if (m != null && m.Success)
+            if (m != null && m.Success && m.Groups["seriesname"].Success)
             {
                 string showName = m.Groups["seriesname"].Value.CleanString();
                 int seasonNumber = m.Groups["seasonnumber"].Success ? int.Parse(m.Groups["seasonnumber"].Value) : 0;
@@ -308,9 +304,9 @@ namespace TraktTVUpdateClient
                             m = Regex.Match(fileName, @".*-[_\s]?(\d+)");
                             if (m.Success)
                             {
-                                var tuple = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
+                                var (season, episode) = show.Seasons.GetEpisodeAndSeasonNumberFromAbsoluteNumber(Int16.Parse(m.Groups[1].Value));
                                 CurrentShow = show;
-                                CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, tuple.season, tuple.episode));
+                                CurrentEpisodes.Add(await Client.Episodes.GetEpisodeAsync(show.Ids.Slug, season, episode));
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Now watching: " + CurrentShow.Title + " S" + CurrentEpisodes.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" + CurrentEpisodes.First().Number.ToString().PadLeft(2, '0'));
                             }
                         }
@@ -408,7 +404,7 @@ namespace TraktTVUpdateClient
         private async void MainForm_Shown(object sender, EventArgs e)
         {
             await LoginThread();
-            UpdateListView();
+            UpdateWatchedList();
         }
 
         private async Task LoginThread()
@@ -422,37 +418,40 @@ namespace TraktTVUpdateClient
                     do
                     {
                         await Login();
-                    } while (Client.Authentication.IsAuthorized == false);
+                    }
+                    while (Client.Authentication.IsAuthorized == false);
                     Client.Authorization.Serialize();
                 }
-                catch (Exception) { this.InvokeIfRequired(() => toolStripEventLabel.Text = "Problems logging in, try again in a few minutes."); return; }
+                catch (Exception)
+                {
+                    this.InvokeIfRequired(() => toolStripEventLabel.Text = "Problems logging in, try again in a few minutes.");
+                    return;
+                }
             }
             traktConnectStatusLabel.Invoke(new MethodInvoker(() => traktConnectStatusLabel.Text = traktConnectStatusLabel.Text.Replace("not ", "")));
             Task.Run(() => TraktCache.Sync()).Forget();
         }
 
-        private void UpdateListView()
+        private void UpdateWatchedList()
         {
             foreach (TraktWatchedShow watchedShow in TraktCache.WatchedList)
             {
                 if (TraktCache.ProgressList.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
-                    ProgressBarEx pb = new ProgressBarEx() { Minimum = 0, Maximum = showProgress.Aired.Value, DisplayStyle = ProgressBarDisplayText.CustomText, CustomText = showProgress.Completed + "/" + showProgress.Aired };
-                    pb.Value = showProgress.Completed.Value;
                     var traktRating = TraktCache.RatingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                    var ListViewItem = watchedListView.Items.Add(new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString(CultureInfo.CurrentCulture) }));
-                    watchedListView.AddEmbeddedControl(pb, 1, ListViewItem.Index);
+                    dataGridViewWatched.Rows.Add(watchedShow.Show.Title, new int[] { showProgress.Completed ?? 0, showProgress.Aired ?? 1 }, showRating);
                 }
             }
+            this.InvokeIfRequired(() => DataGridViewWatched_RowEnter(null, new DataGridViewCellEventArgs(0, dataGridViewWatched.SelectedRows.Count > 0 ? dataGridViewWatched.SelectedRows[0].Index : -1)));
         }
 
         private async void AddEpisodeButton_Click(object sender, EventArgs e)
         {
             await TraktCache.SyncRequestCache();
-            if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
+            if (dataGridViewWatched.SelectedRows.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
-                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 int seasonNumber = 0;
                 int episodeNumber = 0;
                 if(show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
@@ -463,7 +462,7 @@ namespace TraktTVUpdateClient
                         {
                             if (await Client.MarkEpisodeWatched(show.Show, progress.NextEpisode))
                             {
-                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug, true)).Forget();
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0'));
                             }
                         }
@@ -487,7 +486,7 @@ namespace TraktTVUpdateClient
                             }
                             if (await Client.MarkEpisodeWatched(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
                             {
-                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug, true)).Forget();
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
                             }                            
                         }
@@ -507,9 +506,9 @@ namespace TraktTVUpdateClient
         private async void RemoveEpisodeButton_Click(object sender, EventArgs e)
         {
             await TraktCache.SyncRequestCache();
-            if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
+            if (dataGridViewWatched.SelectedRows.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
-                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 if (TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress) && show != null)
                 {
                     int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
@@ -518,7 +517,7 @@ namespace TraktTVUpdateClient
                     {
                         if (await Client.RemoveWatchedEpisode(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
                         {
-                            Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                            Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug, true)).Forget();
                             this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " S" + seasonNumber.ToString().PadLeft(2, '0') + "E" + episodeNumber.ToString().PadLeft(2, '0'));
                         }
 
@@ -555,65 +554,20 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private void WatchedListView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (watchedListView.SelectedItems.Count == 1)
-            {
-                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
-                if (show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
-                {
-                    showNameLabel.Text = show.Show.Title;
-                    episodeCountLabel.Text = "/ " + progress.Aired.ToString();
-                    currentEpisodeTextBox.Text = progress.Completed.ToString();
-                    yearLabel.Text = "Year: " + show.Show.Year.ToString();
-                    scoreComboBox.SelectedIndex = scoreComboBox.FindStringExact(watchedListView.SelectedItems[0].SubItems[2].Text);
-                    genreLabel.Text = "Genre: " + show.Show.Genres.ToGenreString();
-                    if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
-                    else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
-                    showPosterBox.ImageLocation = Path.Combine(ShowPosterCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
-
-                    if (sender != null)
-                    {
-                        seasonOverviewTreeView.Nodes.Clear();
-                        foreach (TraktSeasonWatchedProgress season in progress.Seasons)
-                        {
-                            int index = seasonOverviewTreeView.Nodes.Add(new TreeNode("Season " + season.Number) { Checked = (season.Completed == season.Aired), Tag = season.Number });
-                            foreach (TraktEpisodeWatchedProgress episode in season.Episodes)
-                            {
-                                seasonOverviewTreeView.Nodes[index].Nodes.Add(new TreeNode("Episode " + episode.Number) { Checked = episode.Completed.Value, Tag = episode.Number });
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (TreeNode seasonNode in seasonOverviewTreeView.Nodes)
-                        {
-                            var seasonProgress = progress.Seasons.Where(x => x.Number.Equals(seasonNode.Tag)).First();
-                            seasonNode.Checked = (seasonProgress.Completed == seasonProgress.Aired);
-                            foreach (TreeNode episodeNode in seasonNode.Nodes)
-                            {
-                                episodeNode.Checked = seasonProgress.Episodes.Where(x => x.Number.Equals(episodeNode.Tag)).First().Completed.Value;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         private void WatchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if(watchedListView.SelectedItems.Count == 1)
+            if(dataGridViewWatched.SelectedRows.Count == 1)
             {
-                Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug);
+                Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug);
             }
         }
 
         private async void ScoreComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             await TraktCache.SyncRequestCache();
-            if (watchedListView.SelectedItems.Count == 1 && Client.IsValidForUseWithAuthorization)
+            if (dataGridViewWatched.SelectedRows.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
-                var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                var traktRating = TraktCache.RatingList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 if(traktRating != null)
                 {
                     if (!scoreComboBox.SelectedItem.ToString().Equals(traktRating.Rating.ToString()))
@@ -624,7 +578,7 @@ namespace TraktTVUpdateClient
                             if(await Client.RateShow(traktRating.Show, showRating))
                             {
                                 this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
-                                this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(traktRating.Show.Title).SubItems[2].Text = showRating.ToString());
+                                this.InvokeIfRequired(() => dataGridViewWatched.FindRowWithSubtext(traktRating.Show.Title).Cells["ratingColumn"].Value = showRating);
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + traktRating.Show.Title + " " + showRating + "/10");
                             }
                         }
@@ -637,7 +591,7 @@ namespace TraktTVUpdateClient
                 }
                 else
                 {
-                    TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                    TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                     if (show != null && !scoreComboBox.SelectedItem.ToString().Equals("0"))
                     {
                         int showRating = int.Parse(scoreComboBox.SelectedItem.ToString());
@@ -646,7 +600,7 @@ namespace TraktTVUpdateClient
                             if(await Client.RateShow(show.Show, showRating))
                             {
                                 this.InvokeIfRequired(() => TraktCache.UpdateRatingsList()).Forget();
-                                this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(show.Show.Title).SubItems[2].Text = showRating.ToString());
+                                this.InvokeIfRequired(() => dataGridViewWatched.FindRowWithSubtext(show.Show.Title).Cells["ratingColumn"].Value = showRating);
                                 this.InvokeIfRequired(() => toolStripEventLabel.Text = "Rated " + show.Show.Title + " " + showRating + "/10");
                             }
                         }
@@ -682,47 +636,37 @@ namespace TraktTVUpdateClient
             {
                 if (TraktCache.ProgressList.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
-                    ListViewItem lvItem = new ListViewItem();
                     var traktRating = TraktCache.RatingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
-                    lvItem = this.InvokeIfRequired(() => watchedListView.FindItemWithTextExact(watchedShow.Show.Title));
-                    if (lvItem != null)
+                    var row = this.InvokeIfRequired(() => dataGridViewWatched.FindRowWithSubtext(watchedShow.Show.Title));
+                    if (row != null)
                     {
-                        this.InvokeIfRequired(() => lvItem.SubItems[2].Text = showRating.ToString(CultureInfo.CurrentCulture));
-                        ProgressBarEx progressBar = this.InvokeIfRequired(() => watchedListView.GetEmbeddedControl(lvItem)).ConvertTo<ProgressBarEx>();
-                        if (progressBar != null)
-                        {
-                            this.InvokeIfRequired(() => progressBar.Maximum = showProgress.Aired.Value);
-                            this.InvokeIfRequired(() => progressBar.Value = showProgress.Completed.Value);
-                            this.InvokeIfRequired(() => progressBar.CustomText = showProgress.Completed + "/" + showProgress.Aired);
-                            this.InvokeIfRequired(() => progressBar.Refresh());
-                        }
+                        this.InvokeIfRequired(() => row.Cells["ratingColumn"].Value = showRating);
+                        this.InvokeIfRequired(() => row.Cells["progressColumn"].Value = new int[] { showProgress.Completed ?? 0, showProgress.Aired ?? 1 });
                     }
                     else
                     {
-                        ProgressBarEx progressBar = new ProgressBarEx() { Maximum = showProgress.Aired.Value, Value = showProgress.Completed.Value, DisplayStyle = ProgressBarDisplayText.CustomText, CustomText = showProgress.Completed + "/" + showProgress.Aired };
-                        this.InvokeIfRequired(() => watchedListView.Items.Insert(0, new ListViewItem(new string[] { watchedShow.Show.Title, "", showRating.ToString(CultureInfo.CurrentCulture) })));
-                        this.InvokeIfRequired(() => watchedListView.AddEmbeddedControl(progressBar, 1, 0));
+                        this.InvokeIfRequired(() => dataGridViewWatched.Rows.Add(watchedShow.Show.Title, new int[] { showProgress.Completed ?? 0, showProgress.Aired ?? 1 }, showRating));
                     }
                 }
             }
-            List<ListViewItem> removeList = new List<ListViewItem>();
-            for (int i = 0; i < watchedListView.Items.Count; i++)
+            List<DataGridViewRow> removeList = new List<DataGridViewRow>();
+            for (int i = 0; i < dataGridViewWatched.Rows.Count; i++)
             {
                 TraktWatchedShow show = null;
                 string showTitle = string.Empty;
-                this.InvokeIfRequired(() => showTitle = watchedListView.Items[i].Text);
+                this.InvokeIfRequired(() => showTitle = dataGridViewWatched["nameColumn", i].Value.ToString());
                 this.InvokeIfRequired(() => show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(showTitle)).FirstOrDefault());
                 if(show == null)
                 {
-                    ListViewItem lvItem = new ListViewItem();
-                    this.InvokeIfRequired(() => lvItem = watchedListView.Items[i]);
-                    if (lvItem != default(ListViewItem)) removeList.Add(lvItem);
+                    DataGridViewRow row = new DataGridViewRow();
+                    this.InvokeIfRequired(() => row = dataGridViewWatched.Rows[i]);
+                    if (row != default(DataGridViewRow)) removeList.Add(row);
                 }
             }
-            foreach (ListViewItem lvItem in removeList)
-                this.InvokeIfRequired(() => watchedListView.Items.Remove(lvItem));
-            this.InvokeIfRequired(() => WatchedListView_SelectedIndexChanged(null, EventArgs.Empty));
+            foreach (DataGridViewRow row in removeList)
+                this.InvokeIfRequired(() => dataGridViewWatched.Rows.Remove(row));
+            this.InvokeIfRequired(() => DataGridViewWatched_RowEnter(null, new DataGridViewCellEventArgs(0, dataGridViewWatched.SelectedRows.Count > 0 ? dataGridViewWatched.SelectedRows[0].Index : -1)));
         }
 
         private void ShowPosterCache_SyncCompleted(object sender, EventArgs e)
@@ -760,18 +704,18 @@ namespace TraktTVUpdateClient
                 if (selectedNode.Text.Contains("Season"))
                 {
                     int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
-                    if (watchedListView.SelectedItems.Count == 1)
+                    if (dataGridViewWatched.SelectedRows.Count == 1)
                     {
-                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber);
+                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber);
                     }
                 }
                 else if (selectedNode.Text.Contains("Episode"))
                 {
                     int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
                     int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
-                    if (watchedListView.SelectedItems.Count == 1)
+                    if (dataGridViewWatched.SelectedRows.Count == 1)
                     {
-                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
+                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
                     }
                 }
             }
@@ -784,37 +728,11 @@ namespace TraktTVUpdateClient
             await LoginThread();
         }
 
-        private void WatchedListView_ColumnClick(object sender, ColumnClickEventArgs e)
-        {
-            if (watchedListView.ListViewItemSorter != null)
-            {
-                var comparer = (watchedListView.ListViewItemSorter as ListViewItemComparer);
-                if (e.Column != comparer.Column)
-                {
-                    comparer.Column = e.Column;
-                    watchedListView.Sorting = SortOrder.Ascending;
-                }
-                else
-                {
-                    if (watchedListView.Sorting == SortOrder.Ascending) watchedListView.Sorting = SortOrder.Descending;
-                    else watchedListView.Sorting = SortOrder.Ascending;
-                }
-                watchedListView.Sort();
-                watchedListView.ListViewItemSorter = new ListViewItemComparer(e.Column, watchedListView.Sorting);
-            }
-            else
-            {
-                watchedListView.ListViewItemSorter = new ListViewItemComparer(e.Column, SortOrder.Ascending);
-                watchedListView.Sort();
-                watchedListView.Sorting = SortOrder.Ascending;
-            }
-        }
-
         private async void CurrentEpisodeTextBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Enter)
+            if(e.KeyCode == Keys.Enter && dataGridViewWatched.SelectedRows.Count > 0)
             {
-                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(watchedListView.SelectedItems[0].Text)).FirstOrDefault();
+                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 if (int.TryParse(currentEpisodeTextBox.Text, out int watchedEpisodes) && show != null)
                 {
                     if(TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
@@ -837,7 +755,7 @@ namespace TraktTVUpdateClient
                                 }
                                 if(await Client.RemoveWatchedEpisodes(show.Show, episodeList))
                                 {
-                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug, true)).Forget();
                                     this.InvokeIfRequired(() => toolStripEventLabel.Text = "Removed " + show.Show.Title + " from S" +
                                                                                            episodeList.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
                                                                                            episodeList.First().Number.ToString().PadLeft(2, '0') + " to S" +
@@ -859,7 +777,7 @@ namespace TraktTVUpdateClient
                                 }
                                 if(await Client.MarkEpisodesWatched(show.Show, episodeList))
                                 {
-                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug)).Forget();
+                                    Task.Run(() => TraktCache.SyncShowProgress(show.Show.Ids.Slug, true)).Forget();
                                     this.InvokeIfRequired(() => toolStripEventLabel.Text = "Watched " + show.Show.Title + " from S" + 
                                                                                            episodeList.First().SeasonNumber.ToString().PadLeft(2, '0') + "E" +
                                                                                            episodeList.First().Number.ToString().PadLeft(2, '0') + " to S" +
@@ -871,6 +789,84 @@ namespace TraktTVUpdateClient
                     }
                 }
             }
+        }
+
+        private void DataGridViewWatched_RowEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dataGridViewWatched.SelectedRows.Count == 1 && e.RowIndex > -1)
+            {
+                TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched[e.ColumnIndex, e.RowIndex].Value.ToString())).FirstOrDefault();
+                if (show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
+                {
+                    showNameLabel.Text = show.Show.Title;
+                    episodeCountLabel.Text = "/ " + progress.Aired.ToString();
+                    currentEpisodeTextBox.Text = progress.Completed.ToString();
+                    yearLabel.Text = "Year: " + show.Show.Year.ToString();
+                    scoreComboBox.SelectedIndex = scoreComboBox.FindStringExact(dataGridViewWatched[2, e.RowIndex].Value.ToString());
+                    genreLabel.Text = "Genre: " + show.Show.Genres.ToGenreString();
+                    if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
+                    else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
+                    showPosterBox.ImageLocation = Path.Combine(ShowPosterCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
+
+                    if (sender != null)
+                    {
+                        seasonOverviewTreeView.Nodes.Clear();
+                        foreach (TraktSeasonWatchedProgress season in progress.Seasons)
+                        {
+                            int index = seasonOverviewTreeView.Nodes.Add(new TreeNode("Season " + season.Number) { Checked = (season.Completed == season.Aired), Tag = season.Number });
+                            foreach (TraktEpisodeWatchedProgress episode in season.Episodes)
+                            {
+                                seasonOverviewTreeView.Nodes[index].Nodes.Add(new TreeNode("Episode " + episode.Number) { Checked = episode.Completed.Value, Tag = episode.Number });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (TreeNode seasonNode in seasonOverviewTreeView.Nodes)
+                        {
+                            var seasonProgress = progress.Seasons.Where(x => x.Number.Equals(seasonNode.Tag)).First();
+                            seasonNode.Checked = (seasonProgress.Completed == seasonProgress.Aired);
+                            foreach (TreeNode episodeNode in seasonNode.Nodes)
+                            {
+                                episodeNode.Checked = seasonProgress.Episodes.Where(x => x.Number.Equals(episodeNode.Tag)).First().Completed.Value;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DataGridViewWatched_SortCompare(object sender, DataGridViewSortCompareEventArgs e)
+        {
+            if (e.Column.Name == "progressColumn" && e.CellValue1 is int[] cv1 && e.CellValue2 is int[] cv2)
+            {
+                e.SortResult = ((double)cv1[0] / cv1[1]).CompareTo((double)cv2[0] / cv2[1]);
+                if (e.SortResult == 0)
+                {
+                    e.SortResult = -1*string.Compare(dataGridViewWatched.Rows[e.RowIndex1].Cells["nameColumn"].Value.ToString(), dataGridViewWatched.Rows[e.RowIndex2].Cells["nameColumn"].Value.ToString());
+                }
+                e.Handled = true;
+            }
+            else if (e.Column.Name == "nameColumn" && sortOrder == SortOrder.None)
+            {
+                int index1 = TraktCache.WatchedList.Index().Where(x => x.Value.Show.Title == e.CellValue1.ToString()).FirstOrDefault().Key;
+                int index2 = TraktCache.WatchedList.Index().Where(x => x.Value.Show.Title == e.CellValue2.ToString()).FirstOrDefault().Key;
+                e.SortResult = index1.CompareTo(index2);
+                e.Handled = true;
+                e.Column.SortMode = DataGridViewColumnSortMode.NotSortable;
+                e.Column.SortMode = DataGridViewColumnSortMode.Automatic;
+            }
+        }
+
+        private void DataGridViewWatched_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.ColumnIndex == 0)
+            {
+                if (sortOrder == SortOrder.None) sortOrder = SortOrder.Ascending;
+                else if (sortOrder == SortOrder.Ascending) sortOrder = SortOrder.Descending;
+                else sortOrder = SortOrder.None;
+            }
+            else sortOrder = SortOrder.Ascending;
         }
     }
 }

@@ -185,15 +185,10 @@
     <Compile Include="Cache\Trakt\SyncStartedEventArgs.cs" />
     <Compile Include="Cache\Trakt\TraktCache.cs" />
     <Compile Include="Cache\Trakt\TraktRequest.cs" />
+    <Compile Include="Extension\DataGridViewProgressCell.cs" />
+    <Compile Include="Extension\DataGridViewProgressColumn.cs" />
     <Compile Include="Extension\FilenameParser.cs" />
-    <Compile Include="Extension\ListViewEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Extension\Extensions.cs" />
-    <Compile Include="Extension\ListViewItemComparer.cs" />
-    <Compile Include="Extension\ProgressBarEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Extension\TreeViewEx.cs">
       <SubType>Component</SubType>
     </Compile>

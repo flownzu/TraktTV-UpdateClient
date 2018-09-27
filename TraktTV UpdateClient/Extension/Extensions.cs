@@ -184,25 +184,23 @@ namespace TraktTVUpdateClient.Extension
             catch (Exception) { return; }
         }
 
-        public static ListViewItem FindItemWithTextExact(this ListView lv, string searchText)
+        public static DataGridViewRow FindRowWithSubtext(this DataGridView dgv, string subtext, int index = -1)
         {
-            ListViewItem[] items = lv.Items.Find(searchText);
-            if(items.Length > 1)
+            foreach (DataGridViewRow row in dgv.Rows)
             {
-                return null;
+                if (index != -1)
+                {
+                    if (row.Cells[index].Value.ToString() == subtext) return row;
+                }
+                else
+                {
+                    foreach (DataGridViewCell cell in row.Cells)
+                    {
+                        if (cell.Value.ToString() == subtext) return row;
+                    }
+                }
             }
-            else if(items.Length == 1) { return items[0]; }
             return null;
-        }
-
-        public static ListViewItem[] Find(this ListViewItemCollection Items, string searchText)
-        {
-            List<ListViewItem> foundItems = new List<ListViewItem>();
-            foreach(ListViewItem lvi in Items)
-            {
-                if (lvi.Text.Equals(searchText)) { foundItems.Add(lvi); }
-            }
-            return foundItems.ToArray();
         }
 
         public static void Forget(this Task t) { }
@@ -464,15 +462,16 @@ namespace TraktTVUpdateClient.Extension
             {
                 if (season.Number > 0)
                 {
-                    taskList.Add(Task.Run(() => SyncSeasonEpisodes(Client, show.Ids.Slug, season)));
+                    taskList.Add(Task.Run(() => season.SyncSeasonEpisodes(Client, show.Ids.Slug)));
                 }
             }
             await Task.WhenAll(taskList);
         }
 
-        private static async Task SyncSeasonEpisodes(TraktClient Client, string showIdOrSlug, TraktSeason season)
+        private static async Task SyncSeasonEpisodes(this TraktSeason season, TraktClient Client, string showIdOrSlug)
         {
             season.Episodes = await Client.Seasons.GetSeasonAsync(showIdOrSlug, season.Number.Value);
+            Console.WriteLine(showIdOrSlug + " S" + season.Number + ": " + season.Episodes.Count());
         }
     }
 }

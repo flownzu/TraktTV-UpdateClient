@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
@@ -87,22 +86,16 @@ namespace TraktTVUpdateClient.Cache
             try
             {
                 OnSyncStarted(SyncStartedEventArgs.CompleteSync);
-                await UpdateProgressList();
                 var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
-                if (lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != LastRating)
-                {
-                    await UpdateRatingsList();
-                    LastRating = lastActivites.Shows.RatedAt.Value;
-                }
                 if (lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != LastWatched)
                 {
                     var oldWatchedList = WatchedList;
                     await UpdateWatchedShowList();
                     await UpdateProgressList();
                     List<Task> taskList = new List<Task>();
-                    foreach(TraktWatchedShow show in WatchedList)
+                    foreach (TraktWatchedShow show in WatchedList)
                     {
-                        if(show.Show.Seasons == null)
+                        if (show.Show.Seasons == null || show.Show.Seasons.Any(x => x.Episodes == null))
                         {
                             var oldShow = oldWatchedList.Where(x => x.Show.Title.Equals(show.Show.Title)).FirstOrDefault();
                             if (oldShow != null && oldShow.Show.Seasons != null)
@@ -114,6 +107,12 @@ namespace TraktTVUpdateClient.Cache
                     }
                     await Task.WhenAll(taskList);
                     LastWatched = lastActivites.Episodes.WatchedAt.Value;
+                }
+                else await UpdateProgressList();
+                if (lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != LastRating)
+                {
+                    await UpdateRatingsList();
+                    LastRating = lastActivites.Shows.RatedAt.Value;
                 }
                 OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
             }
@@ -180,7 +179,11 @@ namespace TraktTVUpdateClient.Cache
 
         public void Save()
         {
-            using (StreamWriter sw = File.CreateText("cache.json")) { new JsonSerializer().Serialize(sw, this); }
+            using (FileStream fs = File.Open("cache.json", FileMode.Create, FileAccess.ReadWrite))
+            {
+                var cache = System.Text.Encoding.Default.GetBytes(JsonConvert.SerializeObject(this));
+                fs.Write(cache, 0, cache.Length);
+            }
         }
 
         public async Task<IEnumerable<TraktHistoryItem>> GetWatchedHistory()
@@ -237,13 +240,13 @@ namespace TraktTVUpdateClient.Cache
             catch (Exception) { return false; }
         }
 
-        public async Task SyncShowProgress(string showSlug)
+        public async Task SyncShowProgress(string showSlug, bool updateCache = false)
         {
-            OnSyncStarted(SyncStartedEventArgs.PartialSync);
+            if (updateCache) OnSyncStarted(SyncStartedEventArgs.PartialSync);
             var progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
             if (ProgressList.ContainsKey(showSlug)) { ProgressList.Remove(showSlug); }
             ProgressList.Add(showSlug, progress);
-            OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
+            if (updateCache) OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace TraktTVUpdateClient
+﻿using TraktTVUpdateClient.Extension;
+
+namespace TraktTVUpdateClient
 {
     partial class MainForm
     {
@@ -28,6 +30,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.showPosterBox = new System.Windows.Forms.PictureBox();
             this.showNameLabel = new System.Windows.Forms.Label();
@@ -50,12 +53,16 @@
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripEventLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.seasonOverviewTreeView = new TraktTVUpdateClient.TreeViewEx();
-            this.watchedListView = new TraktTVUpdateClient.ListViewEx();
             this.nameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.progressColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.scoreColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.dataGridViewWatched = new System.Windows.Forms.DataGridView();
+            this.nameColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.progressColumn = new TraktTVUpdateClient.Extension.DataGridViewProgressColumn();
+            this.ratingColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.statusStrip.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWatched)).BeginInit();
             this.SuspendLayout();
             // 
             // showPosterBox
@@ -276,27 +283,6 @@
             this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.SeasonOverviewTreeView_BeforeCheck);
             this.seasonOverviewTreeView.DoubleClick += new System.EventHandler(this.SeasonOverviewTreeView_DoubleClick);
             // 
-            // watchedListView
-            // 
-            this.watchedListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.watchedListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.nameColumnHeader,
-            this.progressColumnHeader,
-            this.scoreColumnHeader});
-            this.watchedListView.FullRowSelect = true;
-            this.watchedListView.Location = new System.Drawing.Point(12, 168);
-            this.watchedListView.MultiSelect = false;
-            this.watchedListView.Name = "watchedListView";
-            this.watchedListView.Size = new System.Drawing.Size(519, 197);
-            this.watchedListView.TabIndex = 10;
-            this.watchedListView.UseCompatibleStateImageBehavior = false;
-            this.watchedListView.View = System.Windows.Forms.View.Details;
-            this.watchedListView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.WatchedListView_ColumnClick);
-            this.watchedListView.SelectedIndexChanged += new System.EventHandler(this.WatchedListView_SelectedIndexChanged);
-            this.watchedListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.WatchedListView_MouseDoubleClick);
-            // 
             // nameColumnHeader
             // 
             this.nameColumnHeader.Text = "Name";
@@ -312,11 +298,64 @@
             this.scoreColumnHeader.Text = "Score";
             this.scoreColumnHeader.Width = 45;
             // 
+            // dataGridViewWatched
+            // 
+            this.dataGridViewWatched.AllowUserToAddRows = false;
+            this.dataGridViewWatched.AllowUserToDeleteRows = false;
+            this.dataGridViewWatched.AllowUserToResizeColumns = false;
+            this.dataGridViewWatched.AllowUserToResizeRows = false;
+            this.dataGridViewWatched.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewWatched.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridViewWatched.BackgroundColor = System.Drawing.Color.White;
+            this.dataGridViewWatched.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewWatched.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.nameColumn,
+            this.progressColumn,
+            this.ratingColumn});
+            this.dataGridViewWatched.Location = new System.Drawing.Point(12, 168);
+            this.dataGridViewWatched.MultiSelect = false;
+            this.dataGridViewWatched.Name = "dataGridViewWatched";
+            this.dataGridViewWatched.ReadOnly = true;
+            this.dataGridViewWatched.RowHeadersVisible = false;
+            this.dataGridViewWatched.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridViewWatched.Size = new System.Drawing.Size(515, 195);
+            this.dataGridViewWatched.TabIndex = 24;
+            this.dataGridViewWatched.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DataGridViewWatched_ColumnHeaderMouseClick);
+            this.dataGridViewWatched.RowEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewWatched_RowEnter);
+            this.dataGridViewWatched.SortCompare += new System.Windows.Forms.DataGridViewSortCompareEventHandler(this.DataGridViewWatched_SortCompare);
+            // 
+            // nameColumn
+            // 
+            this.nameColumn.HeaderText = "Name";
+            this.nameColumn.Name = "nameColumn";
+            this.nameColumn.ReadOnly = true;
+            // 
+            // progressColumn
+            // 
+            this.progressColumn.FillWeight = 50F;
+            this.progressColumn.HeaderText = "Progress";
+            this.progressColumn.Name = "progressColumn";
+            this.progressColumn.ProgressBarColor = System.Drawing.Color.FromArgb(((int)(((byte)(14)))), ((int)(((byte)(192)))), ((int)(((byte)(222)))));
+            this.progressColumn.ReadOnly = true;
+            this.progressColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // ratingColumn
+            // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.ratingColumn.DefaultCellStyle = dataGridViewCellStyle1;
+            this.ratingColumn.FillWeight = 20F;
+            this.ratingColumn.HeaderText = "Rating";
+            this.ratingColumn.Name = "ratingColumn";
+            this.ratingColumn.ReadOnly = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.dataGridViewWatched);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.relogButton);
             this.Controls.Add(this.nextUnwatchedEpisodeLbl);
@@ -328,7 +367,6 @@
             this.Controls.Add(this.syncButton);
             this.Controls.Add(this.scoreComboBox);
             this.Controls.Add(this.scoreLabel);
-            this.Controls.Add(this.watchedListView);
             this.Controls.Add(this.genreLabel);
             this.Controls.Add(this.yearLabel);
             this.Controls.Add(this.addEpisodeButton);
@@ -348,14 +386,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).EndInit();
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWatched)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private ListViewEx watchedListView;
+        
         private System.Windows.Forms.PictureBox showPosterBox;
         private System.Windows.Forms.Label showNameLabel;
         private System.Windows.Forms.Label episodeLabel;
@@ -380,6 +418,10 @@
         private System.Windows.Forms.Button relogButton;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripEventLabel;
+        private System.Windows.Forms.DataGridView dataGridViewWatched;
+        private System.Windows.Forms.DataGridViewTextBoxColumn nameColumn;
+        private DataGridViewProgressColumn progressColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ratingColumn;
     }
 }
 

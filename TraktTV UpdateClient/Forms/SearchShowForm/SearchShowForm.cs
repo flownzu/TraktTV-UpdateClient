@@ -105,7 +105,7 @@ namespace TraktTVUpdateClient.Forms
                     var addHistoryResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if((addHistoryResponse.Added.Seasons.HasValue && addHistoryResponse.Added.Seasons.Value >= 1) || (addHistoryResponse.Added.Episodes.HasValue && addHistoryResponse.Added.Episodes.Value >= 1))
                     {
-                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                         Task.Run(() => traktCache.Sync()).Forget();
                     }
                     MessageBox.Show("The selected season was added to the watched list.");
@@ -119,7 +119,7 @@ namespace TraktTVUpdateClient.Forms
                     var addHistoryResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if(addHistoryResponse.Added.Episodes.HasValue && addHistoryResponse.Added.Episodes.Value >= 1)
                     {
-                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                         Task.Run(() => traktCache.Sync()).Forget();
                     }
                     MessageBox.Show("The selected episode was added to the watched list.");
@@ -170,7 +170,7 @@ namespace TraktTVUpdateClient.Forms
                 var addEpisodeResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if(addEpisodeResponse.Added.Episodes.HasValue && addEpisodeResponse.Added.Episodes.Value >= 1)
                 {
-                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                     Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
@@ -186,7 +186,7 @@ namespace TraktTVUpdateClient.Forms
                 var addShowResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if((addShowResponse.Added.Shows.HasValue && addShowResponse.Added.Shows.Value >= 1) || (addShowResponse.Added.Seasons.HasValue && addShowResponse.Added.Seasons.Value >= 1) || (addShowResponse.Added.Episodes.HasValue && addShowResponse.Added.Episodes.Value >= 1))
                 {
-                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                     Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
@@ -249,7 +249,7 @@ namespace TraktTVUpdateClient.Forms
                 var addShowResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                 if ((addShowResponse.Added.Shows.HasValue && addShowResponse.Added.Shows.Value >= 1) || (addShowResponse.Added.Seasons.HasValue && addShowResponse.Added.Seasons.Value >= 1) || (addShowResponse.Added.Episodes.HasValue && addShowResponse.Added.Episodes.Value >= 1))
                 {
-                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                    await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                     Task.Run(() => traktCache.Sync()).Forget();
                 }
             }
@@ -283,7 +283,7 @@ namespace TraktTVUpdateClient.Forms
                     var addSelectedEpisodesResponse = await traktCache.TraktClient.Sync.AddWatchedHistoryItemsAsync(historyPostBuilder.Build());
                     if ((addSelectedEpisodesResponse.Added.Shows.HasValue && addSelectedEpisodesResponse.Added.Shows.Value >= 1) || (addSelectedEpisodesResponse.Added.Seasons.HasValue && addSelectedEpisodesResponse.Added.Seasons.Value >= 1) || (addSelectedEpisodesResponse.Added.Episodes.HasValue && addSelectedEpisodesResponse.Added.Episodes.Value >= 1))
                     {
-                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug);
+                        await traktCache.SyncShowProgress(selectedShow.Ids.Slug, true);
                         Task.Run(() => traktCache.Sync()).Forget();
                     }
                 }
