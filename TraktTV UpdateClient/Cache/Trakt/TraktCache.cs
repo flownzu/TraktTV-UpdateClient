@@ -11,6 +11,7 @@ using TraktApiSharp.Objects.Get.Collection;
 using TraktApiSharp.Objects.Get.History;
 using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
+using TraktApiSharp.Objects.Get.Syncs.Activities;
 using TraktApiSharp.Objects.Get.Watched;
 using TraktApiSharp.Requests.Params;
 using TraktTVUpdateClient.Extension;
@@ -98,48 +99,65 @@ namespace TraktTVUpdateClient.Cache
             try
             {
                 OnSyncStarted(SyncStartedEventArgs.CompleteSync);
-                var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
+                var lastActivities = await TraktClient.Sync.GetLastActivitiesAsync();
+                List<Task> taskList = new List<Task>();
 
-                if (lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != LastWatched)
+                if (lastActivities.Episodes.WatchedAt.HasValue && lastActivities.Episodes.WatchedAt != LastWatched)
                 {
-                    var oldWatchedList = WatchedList;
-                    await UpdateWatchedShowList();
-                    await UpdateWatchedProgress();
-                    List<Task> taskList = new List<Task>();
-                    foreach (TraktWatchedShow show in WatchedList)
-                    {
-                        if (show.Show.Seasons == null || show.Show.Seasons.Any(x => x.Episodes == null))
-                        {
-                            var oldShow = oldWatchedList.Where(x => x.Show.Title.Equals(show.Show.Title)).FirstOrDefault();
-                            if (oldShow != null && oldShow.Show.Seasons != null)
-                            {
-                                show.Show.Seasons = oldShow.Show.Seasons;
-                            }
-                            else taskList.Add(Task.Run(() => show.Show.SyncShowOverview(TraktClient)));
-                        }
-                    }
-                    await Task.WhenAll(taskList);
-                    LastWatched = lastActivites.Episodes.WatchedAt.Value;
+                    taskList.Add(Task.Run(() => SyncShowProgress(lastActivities)));
                 }
-                else await UpdateWatchedProgress();
+                else taskList.Add(Task.Run(() => UpdateWatchedProgress()));
 
-                if (lastActivites.Episodes.CollectedAt.HasValue && lastActivites.Episodes.CollectedAt != LastCollected)
+                if (lastActivities.Episodes.CollectedAt.HasValue && lastActivities.Episodes.CollectedAt != LastCollected)
                 {
-                    await UpdateCollectedShowList();
-                    await UpdateCollectionProgress();
-                    LastCollected = lastActivites.Episodes.CollectedAt.Value;
+                    taskList.Add(Task.Run(() => SyncShowCollection(lastActivities)));
                 }
-                else await UpdateCollectionProgress();
+                else taskList.Add(Task.Run(() => UpdateCollectionProgress()));
 
-                if (lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != LastRating)
+                if (lastActivities.Shows.RatedAt.HasValue && lastActivities.Shows.RatedAt != LastRating)
                 {
-                    await UpdateRatingsList();
-                    LastRating = lastActivites.Shows.RatedAt.Value;
+                    taskList.Add(Task.Run(() => SyncRatings(lastActivities)));
                 }
+                await Task.WhenAll(taskList);
 
                 OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
             }
             catch (Exception) { OnSyncCompleted(SyncCompletedEventArgs.CompleteSync); }
+        }
+
+        private async Task SyncShowProgress(TraktSyncLastActivities lastActivities)
+        {
+            var oldWatchedList = WatchedList;
+            await UpdateWatchedShowList();
+            await UpdateWatchedProgress();
+            List<Task> taskList = new List<Task>();
+            foreach (TraktWatchedShow show in WatchedList)
+            {
+                if (show.Show.Seasons == null || show.Show.Seasons.Any(x => x.Episodes == null))
+                {
+                    var oldShow = oldWatchedList.Where(x => x.Show.Title.Equals(show.Show.Title)).FirstOrDefault();
+                    if (oldShow != null && oldShow.Show.Seasons != null)
+                    {
+                        show.Show.Seasons = oldShow.Show.Seasons;
+                    }
+                    else taskList.Add(Task.Run(() => show.Show.SyncShowOverview(TraktClient)));
+                }
+            }
+            await Task.WhenAll(taskList);
+            LastWatched = lastActivities.Episodes.WatchedAt.Value;
+        }
+
+        private async Task SyncShowCollection(TraktSyncLastActivities lastActivities)
+        {
+            await UpdateCollectedShowList();
+            await UpdateCollectionProgress();
+            LastCollected = lastActivities.Episodes.CollectedAt.Value;
+        }
+
+        private async Task SyncRatings(TraktSyncLastActivities lastActivities)
+        {
+            await UpdateRatingsList();
+            LastRating = lastActivities.Shows.RatedAt.Value;
         }
 
         public void AddRequestToCache(TraktRequest rq)
@@ -285,6 +303,12 @@ namespace TraktTVUpdateClient.Cache
                         taskList.Add(Task.Run(() => SyncShowCollection(show.Show.Ids.Slug)));
                     }
                     await Task.WhenAll(taskList);
+                    List<string> removeList = new List<string>();
+                    foreach (var showSlug in ShowCollectionProgress.Select(x => x.Key))
+                    {
+                        if (CollectionList.Where(x => x.Show.Ids.Slug == showSlug).FirstOrDefault() == null) removeList.Add(showSlug);
+                    }
+                    foreach (var showSlug in removeList) ShowCollectionProgress.Remove(showSlug);
                     return true;
                 }
                 return false;
