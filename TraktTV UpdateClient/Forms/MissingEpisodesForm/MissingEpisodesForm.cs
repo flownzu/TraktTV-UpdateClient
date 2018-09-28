@@ -12,7 +12,7 @@ namespace TraktTVUpdateClient.Forms
         public MissingEpisodeForm(TraktCache cache)
         {
             InitializeComponent();
-            foreach (var showProgress in cache.ProgressList.OrderBy(x => x.Key))
+            foreach (var showProgress in cache.ShowCollectionProgress.OrderBy(x => x.Key))
             {
                 if (showProgress.Value.Seasons.Any(x => x.Completed < x.Aired))
                 {

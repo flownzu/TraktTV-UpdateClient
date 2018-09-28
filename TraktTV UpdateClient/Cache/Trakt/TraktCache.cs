@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TraktApiSharp;
 using TraktApiSharp.Enums;
 using TraktApiSharp.Objects.Basic;
+using TraktApiSharp.Objects.Get.Collection;
 using TraktApiSharp.Objects.Get.History;
 using TraktApiSharp.Objects.Get.Ratings;
 using TraktApiSharp.Objects.Get.Shows;
@@ -21,11 +22,17 @@ namespace TraktTVUpdateClient.Cache
         [JsonProperty(PropertyName = "WatchedList")]
         internal IEnumerable<TraktWatchedShow> WatchedList { get; private set; }
 
+        [JsonProperty(PropertyName = "CollectionList")]
+        internal IEnumerable<TraktCollectionShow> CollectionList { get; private set; }
+
         [JsonProperty(PropertyName = "RatingList")]
         internal IEnumerable<TraktRatingsItem> RatingList { get; private set; }
 
-        [JsonProperty(PropertyName = "ProgressList")]
-        internal Dictionary<string, TraktShowWatchedProgress> ProgressList { get; private set; }
+        [JsonProperty(PropertyName = "ShowWatchedProgress")]
+        internal Dictionary<string, TraktShowWatchedProgress> ShowWatchedProgress { get; private set; }
+
+        [JsonProperty(PropertyName = "ShowCollectionProgress")]
+        internal Dictionary<string, TraktShowCollectionProgress> ShowCollectionProgress { get; private set; }
 
         [JsonProperty(PropertyName = "RequestCache")]
         internal List<TraktRequest> RequestCache { get; private set; }
@@ -39,6 +46,9 @@ namespace TraktTVUpdateClient.Cache
         [JsonProperty(PropertyName = "LastWatched")]
         internal DateTime LastWatched { get; set; }
 
+        [JsonProperty(PropertyName = "LastCollected")]
+        internal DateTime LastCollected { get; set; }
+
         public event EventHandler<SyncStartedEventArgs> SyncStarted;
         public event EventHandler<SyncCompletedEventArgs> SyncCompleted;
         public event EventHandler<RequestCachedEventArgs> RequestCached;
@@ -49,8 +59,10 @@ namespace TraktTVUpdateClient.Cache
             TraktClient = Client;
             RequestCache = new List<TraktRequest>();
             WatchedList = Enumerable.Empty<TraktWatchedShow>();
+            CollectionList = Enumerable.Empty<TraktCollectionShow>();
             RatingList = Enumerable.Empty<TraktRatingsItem>();
-            ProgressList = new Dictionary<string, TraktShowWatchedProgress>();
+            ShowWatchedProgress = new Dictionary<string, TraktShowWatchedProgress>();
+            ShowCollectionProgress = new Dictionary<string, TraktShowCollectionProgress>();
         }
 
         public async Task RequestCacheThread()
@@ -87,11 +99,12 @@ namespace TraktTVUpdateClient.Cache
             {
                 OnSyncStarted(SyncStartedEventArgs.CompleteSync);
                 var lastActivites = await TraktClient.Sync.GetLastActivitiesAsync();
+
                 if (lastActivites.Episodes.WatchedAt.HasValue && lastActivites.Episodes.WatchedAt != LastWatched)
                 {
                     var oldWatchedList = WatchedList;
                     await UpdateWatchedShowList();
-                    await UpdateProgressList();
+                    await UpdateWatchedProgress();
                     List<Task> taskList = new List<Task>();
                     foreach (TraktWatchedShow show in WatchedList)
                     {
@@ -108,12 +121,22 @@ namespace TraktTVUpdateClient.Cache
                     await Task.WhenAll(taskList);
                     LastWatched = lastActivites.Episodes.WatchedAt.Value;
                 }
-                else await UpdateProgressList();
+                else await UpdateWatchedProgress();
+
+                if (lastActivites.Episodes.CollectedAt.HasValue && lastActivites.Episodes.CollectedAt != LastCollected)
+                {
+                    await UpdateCollectedShowList();
+                    await UpdateCollectionProgress();
+                    LastCollected = lastActivites.Episodes.CollectedAt.Value;
+                }
+                else await UpdateCollectionProgress();
+
                 if (lastActivites.Shows.RatedAt.HasValue && lastActivites.Shows.RatedAt != LastRating)
                 {
                     await UpdateRatingsList();
                     LastRating = lastActivites.Shows.RatedAt.Value;
                 }
+
                 OnSyncCompleted(SyncCompletedEventArgs.CompleteSync);
             }
             catch (Exception) { OnSyncCompleted(SyncCompletedEventArgs.CompleteSync); }
@@ -208,7 +231,17 @@ namespace TraktTVUpdateClient.Cache
                 WatchedList = await TraktClient.Sync.GetWatchedShowsAsync(new TraktExtendedInfo().SetFull().SetImages());
                 return true;
             }
-            catch (Exception) { return false; }
+            catch { return false; }
+        }
+
+        public async Task<bool> UpdateCollectedShowList()
+        {
+            try
+            {
+                CollectionList = await TraktClient.Sync.GetCollectionShowsAsync(new TraktExtendedInfo().SetFull().SetImages());
+                return true;
+            }
+            catch { return false; }
         }
 
         public async Task<bool> UpdateRatingsList()
@@ -218,10 +251,10 @@ namespace TraktTVUpdateClient.Cache
                 RatingList = await TraktClient.Sync.GetRatingsAsync(TraktRatingsItemType.Show);
                 return true;
             }
-            catch (Exception) { return false; }
+            catch { return false; }
         }
 
-        public async Task<bool> UpdateProgressList()
+        public async Task<bool> UpdateWatchedProgress()
         {
             try
             {
@@ -237,15 +270,43 @@ namespace TraktTVUpdateClient.Cache
                 }
                 return false;
             }
-            catch (Exception) { return false; }
+            catch { return false; }
+        }
+
+        public async Task<bool> UpdateCollectionProgress()
+        {
+            try
+            {
+                if (ShowCollectionProgress != null)
+                {
+                    List<Task> taskList = new List<Task>();
+                    foreach (TraktCollectionShow show in CollectionList)
+                    {
+                        taskList.Add(Task.Run(() => SyncShowCollection(show.Show.Ids.Slug)));
+                    }
+                    await Task.WhenAll(taskList);
+                    return true;
+                }
+                return false;
+            }
+            catch { return false; }
         }
 
         public async Task SyncShowProgress(string showSlug, bool updateCache = false)
         {
             if (updateCache) OnSyncStarted(SyncStartedEventArgs.PartialSync);
             var progress = await TraktClient.Shows.GetShowWatchedProgressAsync(showSlug, false, false, false);
-            if (ProgressList.ContainsKey(showSlug)) { ProgressList.Remove(showSlug); }
-            ProgressList.Add(showSlug, progress);
+            if (ShowWatchedProgress.ContainsKey(showSlug)) { ShowWatchedProgress.Remove(showSlug); }
+            ShowWatchedProgress.Add(showSlug, progress);
+            if (updateCache) OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
+        }
+
+        public async Task SyncShowCollection(string showSlug, bool updateCache = false)
+        {
+            if (updateCache) OnSyncStarted(SyncStartedEventArgs.PartialSync);
+            var collection = await TraktClient.Shows.GetShowCollectionProgressAsync(showSlug, false, false, false);
+            if (ShowCollectionProgress.ContainsKey(showSlug)) { ShowCollectionProgress.Remove(showSlug); }
+            ShowCollectionProgress.Add(showSlug, collection);
             if (updateCache) OnSyncCompleted(SyncCompletedEventArgs.PartialSync);
         }
     }

@@ -111,7 +111,7 @@ namespace TraktTVUpdateClient
             }
             else if (e.Request.Action == TraktRequestAction.AddEpisode || e.Request.Action == TraktRequestAction.RemoveEpisode)
             {
-                if (TraktCache.ProgressList.TryGetValue(e.Request.RequestShow.Ids.Slug, out TraktShowWatchedProgress showProgress))
+                if (TraktCache.ShowWatchedProgress.TryGetValue(e.Request.RequestShow.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
                     if (e.Request.RequestEpisode != null)
                     {
@@ -437,7 +437,7 @@ namespace TraktTVUpdateClient
         {
             foreach (TraktWatchedShow watchedShow in TraktCache.WatchedList)
             {
-                if (TraktCache.ProgressList.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
+                if (TraktCache.ShowWatchedProgress.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
                     var traktRating = TraktCache.RatingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
@@ -455,7 +455,7 @@ namespace TraktTVUpdateClient
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 int seasonNumber = 0;
                 int episodeNumber = 0;
-                if(show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
+                if(show != null && TraktCache.ShowWatchedProgress.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
                 {
                     try
                     {
@@ -510,7 +510,7 @@ namespace TraktTVUpdateClient
             if (dataGridViewWatched.SelectedRows.Count == 1 && Client.IsValidForUseWithAuthorization)
             {
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
-                if (TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress) && show != null)
+                if (TraktCache.ShowWatchedProgress.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress) && show != null)
                 {
                     int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
                     int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value;
@@ -634,7 +634,7 @@ namespace TraktTVUpdateClient
             }
             foreach (TraktWatchedShow watchedShow in TraktCache.WatchedList)
             {
-                if (TraktCache.ProgressList.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
+                if (TraktCache.ShowWatchedProgress.TryGetValue(watchedShow.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
                 {
                     var traktRating = TraktCache.RatingList.Where(x => x.Show.Ids.Slug.Equals(watchedShow.Show.Ids.Slug)).FirstOrDefault();
                     int showRating = (traktRating != null && traktRating.Rating.HasValue) ? traktRating.Rating.Value : 0;
@@ -735,7 +735,7 @@ namespace TraktTVUpdateClient
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 if (int.TryParse(currentEpisodeTextBox.Text, out int watchedEpisodes) && show != null)
                 {
-                    if(TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
+                    if(TraktCache.ShowWatchedProgress.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress showProgress))
                     {
                         if(showProgress.Completed != watchedEpisodes)
                         {
@@ -796,7 +796,7 @@ namespace TraktTVUpdateClient
             if (dataGridViewWatched.SelectedRows.Count == 1 && e.RowIndex > -1)
             {
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched[e.ColumnIndex, e.RowIndex].Value.ToString())).FirstOrDefault();
-                if (show != null && TraktCache.ProgressList.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
+                if (show != null && TraktCache.ShowWatchedProgress.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress))
                 {
                     showNameLabel.Text = show.Show.Title;
                     episodeCountLabel.Text = "/ " + progress.Aired.ToString();

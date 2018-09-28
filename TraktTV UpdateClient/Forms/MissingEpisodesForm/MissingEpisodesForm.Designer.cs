@@ -71,7 +71,7 @@
             this.Controls.Add(this.exportBtn);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MissingEpisodeForm";
-            this.Text = "Missing Episodes";
+            this.Text = "Missing Episodes in Collection";
             this.ResumeLayout(false);
             this.PerformLayout();
 
