@@ -137,6 +137,15 @@ namespace TraktTVUpdateClient.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to F48FVEWOZEMM4LPZ.
+        /// </summary>
+        internal static string TVDBAPIKey {
+            get {
+                return ResourceManager.GetString("TVDBAPIKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Update {

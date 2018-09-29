@@ -152,4 +152,8 @@
   <data name="verified_list_interface_symbol" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\verified-list-interface-symbol.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="TVDBAPIKey" xml:space="preserve">
+    <value>F48FVEWOZEMM4LPZ</value>
+    <comment>The TV Database API Key</comment>
+  </data>
 </root>

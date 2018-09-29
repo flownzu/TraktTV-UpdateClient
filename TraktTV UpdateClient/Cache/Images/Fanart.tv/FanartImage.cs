@@ -44,11 +44,6 @@ namespace TraktTVUpdateClient.Cache
         [Nullable]
         public string Season { get; set; }
 
-        public string GetFileExtension()
-        {
-            return Path.GetExtension(Url);
-        }
-
         public async Task Save(string imagePath)
         {
             try
@@ -58,7 +53,7 @@ namespace TraktTVUpdateClient.Cache
                     using (var response = await httpClient.GetAsync(Url))
                     {
                         var image = await response.Content.ReadAsByteArrayAsync();
-                        using (FileStream fs = new FileStream(imagePath + GetFileExtension(), FileMode.Create))
+                        using (FileStream fs = new FileStream(imagePath + Path.GetExtension(Url), FileMode.Create))
                         {
                             using (BinaryWriter bw = new BinaryWriter(fs))
                             {

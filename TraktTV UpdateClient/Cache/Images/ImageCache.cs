@@ -4,20 +4,26 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TraktApiSharp.Objects.Get.Shows;
 using TraktApiSharp.Objects.Get.Watched;
+using TraktTVUpdateClient.Cache.Images.TheTVDB;
 using TraktTVUpdateClient.Properties;
 
 namespace TraktTVUpdateClient.Cache
 {
     public class ImageCache
     {
-        private readonly Uri tmdbBaseAddress = new Uri("https://api.themoviedb.org/3/");
-        private readonly Uri fanartBaseAddress = new Uri("http://webservice.fanart.tv/v3/");
+        public static readonly Uri tmdbBaseAddress = new Uri("https://api.themoviedb.org/3/");
+        public static readonly Uri fanartBaseAddress = new Uri("http://webservice.fanart.tv/v3/");
+        public static readonly Uri tvdbBaseAddress = new Uri("https://api.thetvdb.com/");
+
+        internal static JWTToken tvdbAuthToken;
+        internal static TmdbConfiguration configuration;
+
         private bool IsReadyForImageCaching = false;
-        private TmdbConfiguration configuration;
 
         public readonly string ImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "images");
         public event EventHandler SyncCompleted;
@@ -48,6 +54,39 @@ namespace TraktTVUpdateClient.Cache
                 }
             }
             catch (Exception) { return null; }
+        }
+
+        private async Task<JWTToken> GetTvdbToken()
+        {
+            try
+            {
+                using (var httpClient = new HttpClient() { BaseAddress = tvdbBaseAddress })
+                {
+                    using (var response = await httpClient.PostAsync("login", new StringContent("{\"apikey\":\"" + Resources.TVDBAPIKey + "\"}", Encoding.UTF8, "application/json")))
+                    {
+                        return JsonConvert.DeserializeObject<JWTToken>(await response.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+            catch { return null; }
+        }
+
+        private async Task<TvdbImageResponse> GetTvdbImages(string tvdb_id)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient { BaseAddress = tvdbBaseAddress })
+                {
+                    httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + tvdbAuthToken.Token);
+                    httpClient.DefaultRequestHeaders.Add("Accept-Language", "en");
+                    httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                    using (var response = await httpClient.GetAsync("series/" + tvdb_id + "/images/query?keyType=poster"))
+                    {
+                        return JsonConvert.DeserializeObject<TvdbImageResponse>(await response.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+            catch { return null; }
         }
 
         private async Task<TmdbGetImagesResponse> GetTmdbImages(string tmdb_id)
@@ -82,7 +121,18 @@ namespace TraktTVUpdateClient.Cache
 
         private async Task SaveShowPoster(TraktShowIds ids)
         {
-            if (ids.Tmdb.HasValue)
+            if (ids.Tvdb.HasValue)
+            {
+                if (!string.IsNullOrEmpty(tvdbAuthToken?.Token))
+                {
+                    var imgList = await GetTvdbImages(ids.Tvdb.ToString());
+                    if (imgList != null && imgList.Images != null && imgList.Images.Length > 0)
+                    {
+                        await imgList.Images[0].Save(Path.Combine(ImagePath, ids.Trakt.ToString()));
+                    }
+                }
+            }
+            else if (ids.Tmdb.HasValue)
             {
                 TmdbRateLimiter.CheckLimiter();
                 var imgList = await GetTmdbImages(ids.Tmdb.ToString());
@@ -128,6 +178,7 @@ namespace TraktTVUpdateClient.Cache
 
         public async void Sync(TraktCache traktCache)
         {
+            if (tvdbAuthToken == null) tvdbAuthToken = await GetTvdbToken();
             Directory.CreateDirectory(ImagePath);
             List<Task> taskList = new List<Task>();
             foreach (TraktWatchedShow show in traktCache.WatchedList)

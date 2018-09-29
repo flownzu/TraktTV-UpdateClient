@@ -56,11 +56,6 @@ namespace TraktTVUpdateClient.Cache
         [JsonProperty(PropertyName = "width")]
         public int Width { get; set; }
 
-        public string GetFileExtension()
-        {
-            return Path.GetExtension(FilePath);
-        }
-
         public async Task Save(string imagePath, string imageBaseURL, string size)
         {
             try
@@ -70,7 +65,7 @@ namespace TraktTVUpdateClient.Cache
                     using (var response = await httpClient.GetAsync(size + "/" + FilePath))
                     {
                         var image = await response.Content.ReadAsByteArrayAsync();
-                        using (FileStream fs = new FileStream(imagePath + GetFileExtension(), FileMode.Create))
+                        using (FileStream fs = new FileStream(imagePath + Path.GetExtension(FilePath), FileMode.Create))
                         {
                             using (BinaryWriter bw = new BinaryWriter(fs))
                             {

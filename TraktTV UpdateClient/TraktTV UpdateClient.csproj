@@ -173,6 +173,11 @@
   <ItemGroup>
     <Compile Include="Cache\Images\Fanart.tv\FanartGetImagesResponse.cs" />
     <Compile Include="Cache\Images\Fanart.tv\FanartImage.cs" />
+    <Compile Include="Cache\Images\TheTVDB\JWTToken.cs" />
+    <Compile Include="Cache\Images\TheTVDB\RatingsInfo.cs" />
+    <Compile Include="Cache\Images\TheTVDB\TvdbImage.cs" />
+    <Compile Include="Cache\Images\TheTVDB\TvdbImageResponse.cs" />
+    <Compile Include="Cache\Images\TheTVDB\TvdbJsonErrors.cs" />
     <Compile Include="Cache\Images\TMDb\Configuration\TmdbRateLimiter.cs" />
     <Compile Include="Cache\Images\ImageCache.cs" />
     <Compile Include="Cache\Images\TMDb\Configuration\TmbdImageConfiguration.cs" />
@@ -254,9 +259,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
