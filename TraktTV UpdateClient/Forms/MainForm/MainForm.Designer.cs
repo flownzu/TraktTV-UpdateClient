@@ -282,7 +282,7 @@ namespace TraktTVUpdateClient
             this.seasonOverviewTreeView.Size = new System.Drawing.Size(145, 362);
             this.seasonOverviewTreeView.TabIndex = 19;
             this.seasonOverviewTreeView.BeforeCheck += new System.Windows.Forms.TreeViewCancelEventHandler(this.SeasonOverviewTreeView_BeforeCheck);
-            this.seasonOverviewTreeView.DoubleClick += new System.EventHandler(this.SeasonOverviewTreeView_DoubleClick);
+            this.seasonOverviewTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.SeasonOverviewTreeView_NodeMouseDoubleClick);
             // 
             // nameColumnHeader
             // 
@@ -326,6 +326,7 @@ namespace TraktTVUpdateClient
             this.dataGridViewWatched.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DataGridViewWatched_ColumnHeaderMouseClick);
             this.dataGridViewWatched.RowEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewWatched_RowEnter);
             this.dataGridViewWatched.SortCompare += new System.Windows.Forms.DataGridViewSortCompareEventHandler(this.DataGridViewWatched_SortCompare);
+            this.dataGridViewWatched.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DataGridViewWatched_MouseDoubleClick);
             // 
             // nameColumn
             // 

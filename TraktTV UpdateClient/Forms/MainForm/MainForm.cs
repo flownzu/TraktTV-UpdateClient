@@ -56,7 +56,7 @@ namespace TraktTVUpdateClient
             ShowPosterCache = new ImageCache();
             Task.Run(() => ShowPosterCache.Init()).Forget();
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
-            SyncWatchedListViewWithRequestCache();
+            SyncWatchedDataGridWithRequestCache();
         }
 
         private void TraktCache_RequestCacheSynced(object sender, RequestCacheSyncedEventArgs e)
@@ -91,7 +91,7 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private void SyncWatchedListViewWithRequestCache()
+        private void SyncWatchedDataGridWithRequestCache()
         {
             if(TraktCache.RequestCache != null && TraktCache.RequestCache.Count > 0)
             {
@@ -554,14 +554,6 @@ namespace TraktTVUpdateClient
             }
         }
 
-        private void WatchedListView_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            if(dataGridViewWatched.SelectedRows.Count == 1)
-            {
-                Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug);
-            }
-        }
-
         private async void ScoreComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             await TraktCache.SyncRequestCache();
@@ -695,32 +687,6 @@ namespace TraktTVUpdateClient
                 e.Cancel = true;
         }
 
-        private void SeasonOverviewTreeView_DoubleClick(object sender, EventArgs e)
-        {
-            TreeNode selectedNode = (sender as TreeViewEx).SelectedNode;
-
-            if (selectedNode != null)
-            {
-                if (selectedNode.Text.Contains("Season"))
-                {
-                    int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
-                    if (dataGridViewWatched.SelectedRows.Count == 1)
-                    {
-                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber);
-                    }
-                }
-                else if (selectedNode.Text.Contains("Episode"))
-                {
-                    int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
-                    int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
-                    if (dataGridViewWatched.SelectedRows.Count == 1)
-                    {
-                        Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
-                    }
-                }
-            }
-        }
-
         private async void RelogButton_Click(object sender, EventArgs e)
         {
             Client.Authorization = null;
@@ -808,7 +774,7 @@ namespace TraktTVUpdateClient
                     else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
                     showPosterBox.ImageLocation = Path.Combine(ShowPosterCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
 
-                    if (sender != null)
+                    if (sender != null || seasonOverviewTreeView.Nodes.Count == 0)
                     {
                         seasonOverviewTreeView.Nodes.Clear();
                         foreach (TraktSeasonWatchedProgress season in progress.Seasons)
@@ -881,6 +847,42 @@ namespace TraktTVUpdateClient
                 missingEpisodeForm.Show();
             }
             else missingEpisodeForm.Focus();
+        }
+
+        private void DataGridViewWatched_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && dataGridViewWatched.SelectedRows.Count == 1)
+            {
+                Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug);
+            }
+        }
+
+        private void SeasonOverviewTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                TreeNode selectedNode = (sender as TreeViewEx).SelectedNode;
+                if (selectedNode != null)
+                {
+                    if (selectedNode.Text.Contains("Season"))
+                    {
+                        int seasonNumber = int.Parse(selectedNode.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
+                        if (dataGridViewWatched.SelectedRows.Count == 1)
+                        {
+                            Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber);
+                        }
+                    }
+                    else if (selectedNode.Text.Contains("Episode"))
+                    {
+                        int seasonNumber = int.Parse(selectedNode.Parent.Text.Replace("Season ", ""), CultureInfo.CurrentCulture);
+                        int episodeNumber = int.Parse(selectedNode.Text.Replace("Episode ", ""), CultureInfo.CurrentCulture);
+                        if (dataGridViewWatched.SelectedRows.Count == 1)
+                        {
+                            Process.Start("https://trakt.tv/shows/" + TraktCache.WatchedList.ToList().Find(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells[0].Value.ToString())).Show.Ids.Slug + "/seasons/" + seasonNumber + "/episodes/" + episodeNumber);
+                        }
+                    }
+                }
+            }
         }
     }
 }
