@@ -469,7 +469,7 @@ namespace TraktTVUpdateClient
                         }
                         else
                         {
-                            seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
+                            seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).FirstOrDefault().Number.Value;
                             var season = progress.Seasons.Where(x => x.Number.Equals(seasonNumber)).First();
                             episodeNumber = 0;
                             if (season.Completed == season.Aired)
@@ -483,7 +483,7 @@ namespace TraktTVUpdateClient
                             }
                             else
                             {
-                                episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value + 1;
+                                episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).FirstOrDefault().Number.Value + 1;
                             }
                             if (await Client.MarkEpisodeWatched(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
                             {
@@ -512,8 +512,8 @@ namespace TraktTVUpdateClient
                 TraktWatchedShow show = TraktCache.WatchedList.Where(x => x.Show.Title.Equals(dataGridViewWatched.SelectedRows[0].Cells["nameColumn"].Value.ToString())).FirstOrDefault();
                 if (TraktCache.ShowWatchedProgress.TryGetValue(show.Show.Ids.Slug, out TraktShowWatchedProgress progress) && show != null)
                 {
-                    int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).Number.Value;
-                    int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).Number.Value;
+                    int seasonNumber = progress.Seasons.Where(x => x.Completed > 0).MaxBy(x => x.Number).FirstOrDefault().Number.Value;
+                    int episodeNumber = progress.Seasons.Where(x => x.Number == seasonNumber).First().Episodes.Where(x => x.Completed == true).MaxBy(x => x.Number).FirstOrDefault().Number.Value;
                     try
                     {
                         if (await Client.RemoveWatchedEpisode(show.Show, show.Show.Seasons.Where(x => x.Number.Equals(seasonNumber)).FirstOrDefault()?.Episodes.Where(x => x.Number.Equals(episodeNumber)).FirstOrDefault()))
