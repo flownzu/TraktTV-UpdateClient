@@ -16,7 +16,6 @@ using TraktApiSharp.Objects.Post.Syncs.History;
 using TraktApiSharp.Objects.Post.Syncs.Ratings;
 using TraktApiSharp.Services;
 using TraktTVUpdateClient.Cache;
-using static System.Windows.Forms.ListView;
 
 namespace TraktTVUpdateClient.Extension
 {
