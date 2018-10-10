@@ -20,6 +20,7 @@ using TraktApiSharp.Objects.Get.Watched;
 using TraktTVUpdateClient.Cache;
 using TraktTVUpdateClient.Extension;
 using TraktTVUpdateClient.Forms;
+using TraktTVUpdateClient.Media;
 using TraktTVUpdateClient.Properties;
 using TraktTVUpdateClient.VLC;
 
@@ -31,6 +32,7 @@ namespace TraktTVUpdateClient
         public TraktCache TraktCache;
         public ImageCache ShowPosterCache;
         public VLCConnection vlcClient;
+        public LibrarySettings librarySettings;
         public TraktShow CurrentShow;
         public List<TraktEpisode> CurrentEpisodes;
 
@@ -57,6 +59,7 @@ namespace TraktTVUpdateClient
             Task.Run(() => ShowPosterCache.Init()).Forget();
             ShowPosterCache.SyncCompleted += ShowPosterCache_SyncCompleted;
             SyncWatchedDataGridWithRequestCache();
+            Task.Run(() => librarySettings = LibrarySettings.Load()).ContinueWith((Task) => librarySettings.LoadFiles()).ContinueWith((Task) => this.InvokeIfRequired(() => DataGridViewWatched_RowEnter(null, new DataGridViewCellEventArgs(dataGridViewWatched.SelectedCells.Count > 0 ? dataGridViewWatched.SelectedCells[0].ColumnIndex : -1, dataGridViewWatched.SelectedCells.Count > 0 ? dataGridViewWatched.SelectedCells[0].RowIndex : -1))));
         }
 
         private void TraktCache_RequestCacheSynced(object sender, RequestCacheSyncedEventArgs e)
@@ -770,8 +773,32 @@ namespace TraktTVUpdateClient
                     yearLabel.Text = "Year: " + show.Show.Year.ToString();
                     scoreComboBox.SelectedIndex = scoreComboBox.FindStringExact(dataGridViewWatched[2, e.RowIndex].Value.ToString());
                     genreLabel.Text = "Genre: " + show.Show.Genres.ToGenreString();
-                    if (progress.NextEpisode != null) nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
-                    else nextUnwatchedEpisodeLbl.Text = "Next Episode:";
+                    if (progress.NextEpisode != null)
+                    {
+                        nextUnwatchedEpisodeLbl.Text = "Next Episode: S" + progress.NextEpisode.SeasonNumber.ToString().PadLeft(2, '0') + "E" + progress.NextEpisode.Number.ToString().PadLeft(2, '0');
+                        if (librarySettings.Libraries.Where(x => x.VideoFiles.ContainsKey(show.Show.Title)) is var mediaLib && mediaLib.Count() > 0)
+                        {
+                            var mediaItem = mediaLib.Select(x => x.VideoFiles[show.Show.Title].Where
+                            (
+                                y => y.Season == (progress.NextEpisode.SeasonNumber ?? 0) &&
+                                ((y.EpisodeNumberStart == (progress.NextEpisode.Number ?? 1) || y.EpisodeNumberEnd == (progress.NextEpisode.Number ?? 1)))
+                                ||
+                                ((y.AbsoluteNumber && (y.AbsoluteNumberStart == (int.Parse(currentEpisodeTextBox.Text) + 1) || y.EpisodeNumberEnd == (int.Parse(currentEpisodeTextBox.Text) + 1))))
+                            ).FirstOrDefault()).FirstOrDefault();
+                            if (mediaItem != null)
+                            {
+                                buttonPlay.Tag = mediaItem;
+                                buttonPlay.Show();
+                            }
+                            else buttonPlay.Hide();
+                        }
+                    }
+                    else
+                    {
+                        buttonPlay.Tag = null;
+                        buttonPlay.Hide();
+                        nextUnwatchedEpisodeLbl.Text = "Next Episode:";
+                    }
                     showPosterBox.ImageLocation = Path.Combine(ShowPosterCache.ImagePath, show.Show.Ids.Trakt + ".jpg");
 
                     if (sender != null || seasonOverviewTreeView.Nodes.Count == 0)
@@ -882,6 +909,14 @@ namespace TraktTVUpdateClient
                         }
                     }
                 }
+            }
+        }
+
+        private void ButtonPlay_Click(object sender, EventArgs e)
+        {
+            if (buttonPlay.Tag is MediaItem mediaItem)
+            {
+                mediaItem.Play();
             }
         }
     }

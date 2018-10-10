@@ -95,6 +95,17 @@ namespace TraktTVUpdateClient.Extension
             return s;
         }
 
+        public static string CleanFilename(this string s)
+        {
+            s = Regex.Replace(s, @"[hHXx][\.]?264", "");
+            s = Regex.Replace(s, @"\d{3,4}[pP]", "");
+            s = Regex.Replace(s, @"\d{3,4}[Xx]\d{3,4}", "");
+            s = Regex.Replace(s, @"[Hh][Ii]10[Pp]", "");
+            s = Regex.Replace(s, @"(\d+)v\d+", "$1");
+            s = Regex.Replace(s, @"(10|8)[-]?[Bb][Ii][Tt]", "");
+            return s;
+        }
+
         public static string UpperCase(this string s)
         {
             char[] array = s.ToCharArray();

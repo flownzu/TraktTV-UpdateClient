@@ -219,6 +219,9 @@
     <Compile Include="Forms\SettingsForm\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Media\LibrarySettings.cs" />
+    <Compile Include="Media\MediaItem.cs" />
+    <Compile Include="Media\MediaLibrary.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Forms\AuthorizationViewModel\NativeMethods.cs" />
@@ -301,6 +304,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\verified-list-interface-symbol.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\Play.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">

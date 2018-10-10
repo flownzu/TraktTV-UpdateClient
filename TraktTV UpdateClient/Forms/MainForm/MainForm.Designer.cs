@@ -61,6 +61,7 @@ namespace TraktTVUpdateClient
             this.progressColumn = new TraktTVUpdateClient.Extension.DataGridViewProgressColumn();
             this.ratingColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.missingEpisodesButton = new System.Windows.Forms.Button();
+            this.buttonPlay = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.showPosterBox)).BeginInit();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWatched)).BeginInit();
@@ -364,11 +365,23 @@ namespace TraktTVUpdateClient
             this.missingEpisodesButton.UseVisualStyleBackColor = true;
             this.missingEpisodesButton.Click += new System.EventHandler(this.MissingEpisodesButton_Click);
             // 
+            // buttonPlay
+            // 
+            this.buttonPlay.BackgroundImage = global::TraktTVUpdateClient.Properties.Resources.Play;
+            this.buttonPlay.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonPlay.Location = new System.Drawing.Point(433, 34);
+            this.buttonPlay.Name = "buttonPlay";
+            this.buttonPlay.Size = new System.Drawing.Size(32, 32);
+            this.buttonPlay.TabIndex = 26;
+            this.buttonPlay.UseVisualStyleBackColor = true;
+            this.buttonPlay.Click += new System.EventHandler(this.ButtonPlay_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 388);
+            this.Controls.Add(this.buttonPlay);
             this.Controls.Add(this.missingEpisodesButton);
             this.Controls.Add(this.dataGridViewWatched);
             this.Controls.Add(this.statusStrip);
@@ -438,6 +451,7 @@ namespace TraktTVUpdateClient
         private DataGridViewProgressColumn progressColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn ratingColumn;
         private System.Windows.Forms.Button missingEpisodesButton;
+        private System.Windows.Forms.Button buttonPlay;
     }
 }
 

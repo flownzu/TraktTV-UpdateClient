@@ -9,10 +9,10 @@ namespace TraktTVUpdateClient.Extension
         (() =>
                 new Regex[]
                 {
-                    new Regex(@"^\[(?<group>.+?)\][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumberstart>\d+)[ ]?[-_][ ]?(?<episodenumberend>\d+)([\.\- ].*\d+[Pp])(?=.*\[(?<crc>.+?)\])?"),
-                    new Regex(@"^\[(?<group>.+?)\][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumberstart>\d+)[ ]?[-_][ ]?(?<episodenumberend>\d+)(?=.*\[(?<crc>.+?)\])?"),
-                    new Regex(@"^\[(?<group>.+?)\][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumber>\d+)([\.\- ].*\d+[Pp])(?=.*\[(?<crc>.+?)\])?"),
-                    new Regex(@"^\[(?<group>.+?)\][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumber>\d+)(?=.*\[(?<crc>.+?)\])?"),
+                    new Regex(@"^[\(\[](?<group>.+?)[\)\]][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumberstart>\d+)[ ]?[-_][ ]?(?<episodenumberend>\d+)([\.\- ].*\d+[Pp])(?=.*\[(?<crc>.+?)\])?"),
+                    new Regex(@"^[\(\[](?<group>.+?)[\)\]][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumberstart>\d+)[ ]?[-_][ ]?(?<episodenumberend>\d+)(?=.*\[(?<crc>.+?)\])?"),
+                    new Regex(@"^[\(\[](?<group>.+?)[\)\]][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumber>\d+)([\.\- ].*\d+[Pp])(?=.*\[(?<crc>.+?)\])?"),
+                    new Regex(@"^[\(\[](?<group>.+?)[\)\]][ ]?(?<seriesname>.*)[ ]?[-_ ][ ]?(?<episodenumber>\d+)(?=.*\[(?<crc>.+?)\])?"),
                     new Regex(@"^((?<seriesname>.*?)[ \._\-])?[Ss](?<seasonnumber>[0-9]+)[\.\- ]?[Ee](?<episodenumberstart>[0-9]+)([\.\- ]+[Ss](\k<seasonnumber>)[\.\- ]?[Ee][0-9]+)*([\.\- ]+[Ss](\k<seasonnumber>)[\.\- ]?[Ee](?<episodenumberend>[0-9]+))"),
                     new Regex(@"^((?<seriesname>.*?)[ \._\-])?[Ss](?<seasonnumber>[0-9]+)[\.\- ]?[Ee](?<episodenumberstart>[0-9]+)([\.\- ]?[Ee][0-9]+)*[\.\- ]?[Ee](?<episodenumberend>[0-9]+)"),
                     new Regex(@"^((?<seriesname>.*?)[ \._\-])?(?<seasonnumber>[0-9]+)[xX](?<episodenumberstart>[0-9]+)([ \._\-]+(\k<seasonnumber>)[xX][0-9]+)*([ \._\-]+(\k<seasonnumber>)[xX](?<episodenumberend>[0-9]+))"),
@@ -54,7 +54,7 @@ namespace TraktTVUpdateClient.Extension
                     return m;
                 }
             }
-            return default;
+            return Match.Empty;
         }
     }
 }
