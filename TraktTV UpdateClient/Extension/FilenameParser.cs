@@ -5,7 +5,7 @@ namespace TraktTVUpdateClient.Extension
 {
     class FilenameParser
     {
-        public static Lazy<Regex[]> Patterns = new Lazy<Regex[]>
+        public static Lazy<Regex[]> CompletePatterns = new Lazy<Regex[]>
         (() =>
                 new Regex[]
                 {
@@ -44,9 +44,31 @@ namespace TraktTVUpdateClient.Extension
                 }
         );
 
+        public static Lazy<Regex[]> EpisodePatterns = new Lazy<Regex[]>
+        (() =>
+            new Regex[]
+            {
+                new Regex(@"(?:(?:\b|_)(?:ep?[ .]?)?(?<episodenumberstart>\d{1,4})(?:\.(0?[a-i1-9]))?(?:[_ ]?v\d)?[\s_.-]+)(?![^([{]*\b\d{1,4}(?:[_\s]?v\d+)?\b)(?:\w+[\s_.-]*)*?(?:(?:\[[^]]+\]|\([^)]+\)|\{[^}]+\})(?:[\s_]*))*(?:[[({][\da-f]{8}[])}])?"),
+                new Regex(@"(?:\b|(?:[e][p]?))\s?(?<episodenumberstart>[0-9]+)\b(?:\s?-\s?|\b)?(?<episodenumberend>[0-9]+)?")
+            }
+        );
+
         public static Match Parse(string fileName)
         {
-            foreach (Regex r in Patterns.Value)
+            foreach (Regex r in CompletePatterns.Value)
+            {
+                Match m = r.Match(fileName);
+                if (m.Success)
+                {
+                    return m;
+                }
+            }
+            return Match.Empty;
+        }
+
+        public static Match ParseEpisode(string fileName)
+        {
+            foreach (Regex r in EpisodePatterns.Value)
             {
                 Match m = r.Match(fileName);
                 if (m.Success)

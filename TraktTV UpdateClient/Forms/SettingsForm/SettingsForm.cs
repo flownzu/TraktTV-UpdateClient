@@ -139,7 +139,7 @@ namespace TraktTVUpdateClient.Forms
         {
             if (e.Node.Tag is MediaItem mediaItem)
             {
-                richTextBoxMediaInfo.Text = mediaItem.FilePath + " parsed to " + e.Node.Parent.Parent.Text + " " + (mediaItem.Season > 0 ? "S" + mediaItem.Season.ToString().PadLeft(2, '0') : "") + "E" + (mediaItem.AbsoluteNumber ? mediaItem.AbsoluteNumberStart + (mediaItem.AbsoluteNumberEnd > 0 ? ("-" + mediaItem.AbsoluteNumberEnd) : "") : mediaItem.EpisodeNumberStart + (mediaItem.EpisodeNumberEnd > 0 ? ("-" + mediaItem.EpisodeNumberEnd) : ""));
+                richTextBoxMediaInfo.Text = mediaItem.FilePath + " parsed to " + e.Node.Parent.Parent.Text + " " + (mediaItem.Season > 0 ? "S" + mediaItem.Season.ToString().PadLeft(2, '0') : "") + "E" + (mediaItem.AbsoluteNumber ? mediaItem.AbsoluteNumberStart + (mediaItem.AbsoluteNumberEnd > 0 ? ("-" + mediaItem.AbsoluteNumberEnd) : "") : mediaItem.EpisodeNumberStart + (mediaItem.EpisodeNumberEnd > 0 ? ("-" + mediaItem.EpisodeNumberEnd) : "")).PadLeft(2, '0');
             }
         }
 

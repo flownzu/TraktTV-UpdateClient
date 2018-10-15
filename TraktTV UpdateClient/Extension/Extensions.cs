@@ -97,12 +97,14 @@ namespace TraktTVUpdateClient.Extension
 
         public static string CleanFilename(this string s)
         {
-            s = Regex.Replace(s, @"[hHXx][\.]?264", "");
+            s = Regex.Replace(s, "[ _\\,\\.\\(\\)\\[\\]\\-](ac3|dts|custom|dc|remastered|divx|divx5|dsr|dsrip|dutch|dvd|dvd5|dvd9|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|extended|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|3d|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|cd[1-9]|\\[.*\\])([ _\\,\\.\\(\\)\\[\\]\\-]|$)", "-", RegexOptions.IgnoreCase);
+            s = Regex.Replace(s, "(\\[.*\\])", "");
+            /*s = Regex.Replace(s, @"[hHXx][\.]?264", "");
             s = Regex.Replace(s, @"\d{3,4}[pP]", "");
             s = Regex.Replace(s, @"\d{3,4}[Xx]\d{3,4}", "");
             s = Regex.Replace(s, @"[Hh][Ii]10[Pp]", "");
             s = Regex.Replace(s, @"(\d+)v\d+", "$1");
-            s = Regex.Replace(s, @"(10|8)[-]?[Bb][Ii][Tt]", "");
+            s = Regex.Replace(s, @"(10|8)[-]?[Bb][Ii][Tt]", "");*/
             return s;
         }
 
