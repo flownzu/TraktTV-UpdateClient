@@ -38,7 +38,7 @@ namespace TraktTVUpdateClient.Media
                 {
                     string showFolder = Regex.Replace(file, @".*\\(.*?)\\.*?\\.*", "$1");
                     string seasonFolder = Regex.Replace(file, @".*\\.*?\\(.*?)\\.*", "$1");
-                    Match seasonMatch = Regex.Match(seasonFolder, @"s(?:eason|taffel)?\s?(\d{1,3})", RegexOptions.IgnoreCase);
+                    Match seasonMatch = Regex.Match(seasonFolder, @"s(?:eason|taffel)?(?:\s?[-_]?\s?)?(\d{1,3})", RegexOptions.IgnoreCase);
                     if (seasonMatch.Success)
                     {
                         int seasonNumber = int.Parse(seasonMatch.Groups[1].Value);

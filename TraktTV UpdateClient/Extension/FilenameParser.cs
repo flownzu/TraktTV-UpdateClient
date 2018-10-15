@@ -48,8 +48,9 @@ namespace TraktTVUpdateClient.Extension
         (() =>
             new Regex[]
             {
-                new Regex(@"(?:(?:\b|_)(?:ep?[ .]?)?(?<episodenumberstart>\d{1,4})(?:\.(0?[a-i1-9]))?(?:[_ ]?v\d)?[\s_.-]+)(?![^([{]*\b\d{1,4}(?:[_\s]?v\d+)?\b)(?:\w+[\s_.-]*)*?(?:(?:\[[^]]+\]|\([^)]+\)|\{[^}]+\})(?:[\s_]*))*(?:[[({][\da-f]{8}[])}])?"),
-                new Regex(@"(?:\b|(?:[e][p]?))\s?(?<episodenumberstart>[0-9]+)\b(?:\s?-\s?|\b)?(?<episodenumberend>[0-9]+)?")
+                new Regex(@"s(?<seasonnumber>\d{1,3})e(?<episodenumberstart>\d{1,3})(?:\s?-\s?)?(?<episodenumberend>\d{1,3})?", RegexOptions.IgnoreCase),
+                new Regex(@"(?:(?:\b|_)(?:ep?[ .]?)?(?<episodenumberstart>\d{1,4})(?:\.(0?[a-i1-9]))?(?:[_ ]?v\d)?[\s_.-]+)(?![^([{]*\b\d{1,4}(?:[_\s]?v\d+)?\b)(?:\w+[\s_.-]*)*?(?:(?:\[[^]]+\]|\([^)]+\)|\{[^}]+\})(?:[\s_]*))*(?:[[({][\da-f]{8}[])}])?", RegexOptions.IgnoreCase),
+                new Regex(@".*(?:\b|(?:[e][p]?))\s?(?<episodenumberstart>[0-9]+)\b(?:\s?-\s?|\b)?(?<episodenumberend>[0-9]+)?", RegexOptions.IgnoreCase)
             }
         );
 
